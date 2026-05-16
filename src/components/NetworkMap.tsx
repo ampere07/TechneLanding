@@ -16,30 +16,40 @@ export const NetworkMap: React.FC = () => {
   const [activeLocation, setActiveLocation] = useState<Location | null>(null);
 
   const locations: Location[] = [
-    {
-      id: 'luzon',
-      name: 'Manila Node',
-      region: 'Luzon',
-      description: 'Primary core backbone and international peering gateway.',
-      top: '25%',
-      left: '46%'
-    },
-    {
-      id: 'visayas',
-      name: 'Cebu Hub',
-      region: 'Visayas',
-      description: 'Regional distribution hub and primary Visayas aggregation point.',
-      top: '52%',
-      left: '55%'
-    },
-    {
-      id: 'mindanao',
-      name: 'Davao Data Center',
-      region: 'Mindanao',
-      description: 'Southern edge node providing low-latency access to Mindanao.',
-      top: '75%',
-      left: '68%'
-    }
+    // Luzon (21 pins)
+    { id: 'luzon_1', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '25%', left: '46%' },
+    { id: 'luzon_2', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '27%', left: '45%' },
+    { id: 'luzon_3', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '40%', left: '48%' },
+    { id: 'luzon_4', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '40%', left: '44.5%' },
+    { id: 'luzon_5', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '45%', left: '44%' },
+    { id: 'luzon_6', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '29%', left: '43.5%' },
+    { id: 'luzon_7', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '31%', left: '43%' },
+    { id: 'luzon_8', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '35%', left: '43.5%' },
+    { id: 'luzon_9', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '33%', left: '44%' },
+    { id: 'luzon_10', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '29%', left: '46%' },
+    { id: 'luzon_11', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '30%', left: '46.5%' },
+    { id: 'luzon_12', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '31%', left: '45%' },
+    { id: 'luzon_13', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '32%', left: '47.5%' },
+    { id: 'luzon_14', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '33%', left: '45.5%' },
+    { id: 'luzon_15', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '34%', left: '47%' },
+    { id: 'luzon_16', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '36%', left: '46.5%' },
+    { id: 'luzon_17', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '38%', left: '46.5%' },
+    { id: 'luzon_18', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '35%', left: '48%' },
+    { id: 'luzon_19', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '47%', left: '47%' },
+    { id: 'luzon_20', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '44%', left: '59%' },
+    { id: 'luzon_21', name: 'Luzon', region: 'Luzon', description: 'Luzon Area.', top: '44%', left: '53.5%' },
+
+    // Visayas (4 pins)
+    { id: 'visayas_1', name: 'Visayas', region: 'Visayas', description: 'Visayas Area.', top: '62%', left: '61%' },
+    { id: 'visayas_2', name: 'Visayas', region: 'Visayas', description: 'Visayas Area.', top: '58%', left: '54%' },
+    { id: 'visayas_3', name: 'Visayas', region: 'Visayas', description: 'Visayas Area.', top: '64%', left: '56%' },
+    { id: 'visayas_4', name: 'Visayas', region: 'Visayas', description: 'Visayas Area.', top: '58%', left: '67%' },
+
+    // Mindanao (4 pins)
+    { id: 'mindanao_1', name: 'Mindanao', region: 'Mindanao', description: 'Mindanao Area.', top: '75%', left: '68%' },
+    { id: 'mindanao_2', name: 'Mindanao', region: 'Mindanao', description: 'Mindanao Area.', top: '75%', left: '61%' },
+    { id: 'mindanao_3', name: 'Mindanao', region: 'Mindanao', description: 'Mindanao Area.', top: '75%', left: '65%' },
+    { id: 'mindanao_4', name: 'Mindanao', region: 'Mindanao', description: 'Mindanao Area.', top: '78%', left: '65%' }
   ];
 
   return (
@@ -66,16 +76,16 @@ export const NetworkMap: React.FC = () => {
           transition={{ duration: 0.8 }}
           className="relative max-w-xl mx-auto"
         >
-          <img 
-            src={phMap} 
-            alt="Philippines Map" 
-            className="w-full h-auto grayscale opacity-40 select-none pointer-events-none" 
+          <img
+            src={phMap}
+            alt="Philippines Map"
+            className="w-full h-auto grayscale opacity-40 select-none pointer-events-none"
             draggable="false"
           />
-          
+
           {/* Interactive Pins */}
           {locations.map((loc) => (
-            <div 
+            <div
               key={loc.id}
               className="absolute group cursor-pointer"
               style={{ top: loc.top, left: loc.left }}
@@ -84,7 +94,7 @@ export const NetworkMap: React.FC = () => {
               <div className="relative">
                 <div className="w-4 h-4 bg-brand-blue rounded-full shadow-lg shadow-brand-blue/40 relative z-10 border-2 border-white" />
                 <div className="absolute inset-0 bg-brand-blue rounded-full animate-ping opacity-75" />
-                
+
                 {/* Hover label */}
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                   {loc.name}
@@ -102,13 +112,13 @@ export const NetworkMap: React.FC = () => {
                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-72 bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 text-left"
               >
-                <button 
+                <button
                   onClick={() => setActiveLocation(null)}
                   className="absolute top-4 right-4 p-1 hover:bg-slate-50 rounded-full text-slate-400 transition-colors"
                 >
                   <X size={16} />
                 </button>
-                
+
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="p-2 bg-brand-blue/10 rounded-xl text-brand-blue">
                     <MapPin size={20} />
@@ -118,7 +128,7 @@ export const NetworkMap: React.FC = () => {
                     <span className="text-[10px] font-bold text-brand-blue uppercase tracking-wider">{activeLocation.region}</span>
                   </div>
                 </div>
-                
+
                 <p className="text-xs text-slate-500 leading-relaxed">
                   {activeLocation.description}
                 </p>

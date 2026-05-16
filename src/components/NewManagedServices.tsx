@@ -34,32 +34,6 @@ export const CoreConfig = () => (
           Techne provides a fully optimized Border Gateway Protocol (BGP) setup to ensure resilient, intelligent, and redundant routing across multiple upstream and peering partners.
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ml-4">
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center space-x-2">
-              <Network size={18} className="text-brand-blue" />
-              <span>1.1 IP Transit BGP Peering</span>
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-500">
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Establishment and optimization of BGP sessions with Tier-1 and Tier-2 providers</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Full route or selective route filtering</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Traffic engineering using communities, local preference, and MED tuning</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Automated failover and route protection</span></li>
-            </ul>
-          </div>
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center space-x-2">
-              <Network size={18} className="text-brand-blue" />
-              <span>1.2 Internet Exchange (IX) Peering</span>
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-500">
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Direct peering with major IXPs to reduce latency</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Route optimization for local and regional traffic</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Enhanced throughput for CDN and content-rich destinations</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Multilateral and bilateral peering arrangements</span></li>
-            </ul>
-          </div>
-        </div>
       </div>
 
       {/* 2. Data Center Network Infrastructure */}
@@ -158,32 +132,6 @@ export const DistConfig = () => (
           Our Aggregation Router configuration serves as the strategic handoff point between upstream transit, peering networks, and the local distribution network.
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ml-4">
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center space-x-2">
-              <Globe size={18} className="text-brand-blue" />
-              <span>1.1 Multi-Upstream Load Balancing</span>
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-500">
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Intelligent routing distribution across multiple upstream providers</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Automatic failover and path redundancy</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>BGP-based traffic engineering for optimal routing</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Reduced congestion during peak hours</span></li>
-            </ul>
-          </div>
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center space-x-2">
-              <Cpu size={18} className="text-brand-blue" />
-              <span>1.2 Distribution-to-Core Interconnection</span>
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-500">
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Secure handoff between distribution nodes and core</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>VLAN and VRF segmentation for multi-service environments</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Redundant uplink design (LACP, ECMP, MPLS)</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Enforced routing policies for predictable traffic</span></li>
-            </ul>
-          </div>
-        </div>
       </div>
 
       {/* 2. Access Concentrator Architecture */}
@@ -196,32 +144,6 @@ export const DistConfig = () => (
           Techne deploys a robust AC (Access Concentrator) configuration designed for scalability, stability, and seamless subscriber management.
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ml-4">
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center space-x-2">
-              <Server size={18} className="text-brand-blue" />
-              <span>2.1 High-Availability & Redundancy</span>
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-500">
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Active-Standby or Active-Active node configurations</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>State synchronization for PPPoE and IPoE (DHCP) sessions</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Minimal disruption during AC-level failover</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Redundant power, links, and upstream paths</span></li>
-            </ul>
-          </div>
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center space-x-2">
-              <Database size={18} className="text-brand-blue" />
-              <span>2.2 Centralized RADIUS Manager</span>
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-500">
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>AAA platform for authentication and accounting</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Unified subscriber profiles and bandwidth plans</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Real-time session monitoring and usage tracking</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Integration with billing and CRM systems</span></li>
-            </ul>
-          </div>
-        </div>
       </div>
 
       {/* 3. CGNAT Deployment */}
@@ -303,32 +225,6 @@ export const SystemIntegration = () => (
           Get deep, real-time visibility into your entire network infrastructure with enterprise-grade monitoring tools integrated and optimized by Techne.
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ml-4">
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-3 text-sm">1.1 Cacti Performance</h3>
-            <ul className="space-y-2 text-xs text-slate-500">
-              <li>High-resolution bandwidth tracking</li>
-              <li>Graphing for capacity planning</li>
-              <li>Customizable device templates</li>
-            </ul>
-          </div>
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-3 text-sm">1.2 LibreNMS Full-Stack</h3>
-            <ul className="space-y-2 text-xs text-slate-500">
-              <li>Auto-discovery of devices</li>
-              <li>Integrated alerting and mapping</li>
-              <li>API-ready platform</li>
-            </ul>
-          </div>
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-3 text-sm">1.3 Network Weathermap</h3>
-            <ul className="space-y-2 text-xs text-slate-500">
-              <li>Real-time traffic visualization</li>
-              <li>Custom NOC topology maps</li>
-              <li>Immediate outage detection</li>
-            </ul>
-          </div>
-        </div>
       </div>
 
       {/* 2 & 3 Combined - Alerting & Backups */}

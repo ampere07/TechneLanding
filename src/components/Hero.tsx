@@ -36,21 +36,27 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-left"
+            className="mt-20 flex items-center justify-center gap-12 md:gap-24"
           >
-            {[
-              { icon: <Zap className="text-brand-blue" />, title: "High Speed", desc: "Fiber-grade connectivity for peak performance." },
-              { icon: <Network className="text-brand-blue" />, title: "Scalable", desc: "Solutions that grow with your business needs." },
-              { icon: <ShieldCheck className="text-brand-blue" />, title: "Secure", desc: "Enterprise-level security for your network infrastructure." }
-            ].map((item, i) => (
-              <div key={i} className="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-brand-blue/5 hover:border-brand-blue/30 transition-all group">
-                <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-brand-blue/10 transition-colors">
-                  {item.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">{item.title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{item.desc}</p>
+            <div className="text-center">
+              <div className="text-5xl md:text-6xl font-bold text-slate-900 tracking-tight mb-2">
+                99.9 <span className="text-red-500">%</span>
               </div>
-            ))}
+              <div className="text-slate-500 font-medium text-sm md:text-base">
+                Network Uptime
+              </div>
+            </div>
+            
+            <div className="w-px h-16 bg-slate-200"></div>
+            
+            <div className="text-center">
+              <div className="text-5xl md:text-6xl font-bold text-slate-900 tracking-tight mb-2">
+                24/7
+              </div>
+              <div className="text-slate-500 font-medium text-sm md:text-base">
+                Local Support
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>

@@ -4,16 +4,47 @@ import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { PANEL_IDS } from '../constants';
 
+import amazonLogo from '../assets/cdns/Amazon_logo.svg.webp';
+import logo1 from '../assets/cdns/Logo (1).png';
+import metaLogo from '../assets/cdns/Meta_Platforms_Inc._logo.svg.png';
+import netskopeLogo from '../assets/cdns/Netskope_logo_logotype.png';
+import operaLogo from '../assets/cdns/Opera_Software_logo.png';
+import riotLogo from '../assets/cdns/Riot_Games_2022.svg';
+import steamLogo from '../assets/cdns/Steam_logo.svg';
+import tencentLogo from '../assets/cdns/Tencent_Logo.svg.png';
+import twitchLogo from '../assets/cdns/Twitch_logo_2019.svg.png';
+import alibabaLogo from '../assets/cdns/alibaba-brand-color.png';
+
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-white border-t border-slate-100 pt-20 pb-10 mt-auto">
+    <>
+      <div className="bg-[#0f172a] py-6 border-y border-slate-800 w-full overflow-hidden mt-auto">
+        <div className="container mx-auto px-6">
+          <p className="text-[10px] text-white font-bold tracking-widest text-center mb-5 uppercase">
+            Directly connected to leading CDNs & Networks
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+            <img src={tencentLogo} alt="Tencent" className="h-6 object-contain brightness-0 invert opacity-50 hover:opacity-100 hover:scale-105 transition-all duration-300" />
+            <img src={twitchLogo} alt="Twitch" className="h-6 object-contain grayscale invert contrast-200 opacity-50 hover:opacity-100 hover:scale-105 transition-all duration-300 mix-blend-screen" />
+            <img src={steamLogo} alt="Steam" className="h-6 object-contain brightness-0 invert opacity-50 hover:opacity-100 hover:scale-105 transition-all duration-300" />
+            <img src={riotLogo} alt="Riot Games" className="h-6 object-contain brightness-0 invert opacity-50 hover:opacity-100 hover:scale-105 transition-all duration-300" />
+            <img src={operaLogo} alt="Opera" className="h-6 object-contain brightness-0 invert opacity-50 hover:opacity-100 hover:scale-105 transition-all duration-300" />
+            <img src={netskopeLogo} alt="Netskope" className="h-6 object-contain brightness-0 invert opacity-50 hover:opacity-100 hover:scale-105 transition-all duration-300" />
+            <img src={alibabaLogo} alt="Alibaba" className="h-6 object-contain brightness-0 invert opacity-50 hover:opacity-100 hover:scale-105 transition-all duration-300" />
+            <img src={amazonLogo} alt="Amazon" className="h-6 object-contain brightness-0 invert opacity-50 hover:opacity-100 hover:scale-105 transition-all duration-300" />
+            <img src={metaLogo} alt="Meta" className="h-6 object-contain brightness-0 invert opacity-50 hover:opacity-100 hover:scale-105 transition-all duration-300" />
+            <img src={logo1} alt="CDN Partner" className="h-6 object-contain brightness-0 invert opacity-50 hover:opacity-100 hover:scale-105 transition-all duration-300" />
+          </div>
+        </div>
+      </div>
+      <footer className="bg-white border-t border-slate-100 pt-20 pb-10">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           {/* Brand Info */}
           <div className="flex flex-col">
             <div className="flex items-center space-x-3 mb-6">
               <img src={logo} alt="Techne Consulting Logo" className="h-8 w-auto object-contain" draggable="false" />
-              <span className="text-xl font-bold text-slate-900">Techne Consulting</span>
+              <span className="text-xl font-bold tracking-tight text-brand-blue">Tec<span className="text-slate-900">hne</span></span>
             </div>
             <p className="text-slate-500 mb-6 leading-relaxed text-sm">
               Leading the way in network consulting and internet services. Providing enterprise-grade solutions for businesses in the Philippines and beyond.
@@ -80,14 +111,14 @@ export const Footer: React.FC = () => {
               <p className="text-brand-blue text-xs uppercase tracking-wider font-bold">CEO</p>
             </div>
             <div className="mt-6 pt-6 border-t border-slate-100">
-               <a href="https://www.facebook.com/share/1KTi4qrzyZ/" target="_blank" rel="noopener noreferrer" className="text-brand-blue hover:underline text-xs font-medium">Visit Facebook Page</a>
+              <a href="https://www.facebook.com/share/1KTi4qrzyZ/" target="_blank" rel="noopener noreferrer" className="text-brand-blue hover:underline text-xs font-medium">Visit Facebook Page</a>
             </div>
           </div>
         </div>
-        
+
         <div className="pt-10 border-t border-slate-200 flex flex-col md:row items-center justify-between gap-4">
           <p className="text-slate-400 text-xs">
-            © {new Date().getFullYear()} Techne Consulting. All rights reserved.
+            © {new Date().getFullYear()} Techne. All rights reserved.
           </p>
           <div className="flex space-x-6 text-xs text-slate-400">
             <Link to="/999999999" className="hover:text-slate-600">Privacy Policy</Link>
@@ -96,5 +127,6 @@ export const Footer: React.FC = () => {
         </div>
       </div>
     </footer>
+    </>
   );
 };
