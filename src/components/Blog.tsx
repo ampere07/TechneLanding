@@ -11,8 +11,8 @@ export const Blog: React.FC = () => {
   const posts = [
     {
       id: PANEL_IDS.BLOG_INFRA,
-      title: "Optimizing Core Infrastructure for Scalability",
-      excerpt: "Learn the essential strategies for building a future-proof core network that can handle massive subscriber growth without compromising performance.",
+      title: "Lorem Ipsum",
+      excerpt: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
       date: "May 10, 2026",
       author: "Cliff Richard Perez Jr",
       category: "Infrastructure",
@@ -20,8 +20,8 @@ export const Blog: React.FC = () => {
     },
     {
       id: PANEL_IDS.BLOG_SECURITY,
-      title: "The Future of Network Security in the Philippines",
-      excerpt: "Exploring the latest regulatory requirements and technical defenses against evolving cyber threats in the local enterprise landscape.",
+      title: "Lorem Ipsum",
+      excerpt: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
       date: "April 28, 2026",
       author: "Cliff Richard Perez Jr",
       category: "Security",
@@ -29,8 +29,8 @@ export const Blog: React.FC = () => {
     },
     {
       id: PANEL_IDS.BLOG_NETWORKING,
-      title: "Understanding Next-Gen Global Connectivity",
-      excerpt: "A deep dive into BGP peering, transit optimization, and how localized hubs are reshaping global internet traffic patterns.",
+      title: "Lorem Ipsum",
+      excerpt: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
       date: "April 15, 2026",
       author: "Cliff Richard Perez Jr",
       category: "Networking",
@@ -65,10 +65,10 @@ export const Blog: React.FC = () => {
             >
               <Link to={`/${post.id}`}>
                 <div className="mb-6 overflow-hidden rounded-3xl bg-slate-50 aspect-[16/9] flex items-center justify-center border border-slate-100 relative shadow-sm hover:shadow-md transition-shadow">
-                  <img 
-                    src={post.image} 
-                    alt={post.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     draggable="false"
                   />
                   <div className="absolute top-4 left-4">

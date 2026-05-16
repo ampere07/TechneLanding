@@ -59,69 +59,71 @@ const PanelRenderer = () => {
       return <SystemIntegration />;
     case PANEL_IDS.PROTECTIVE_DNS:
       return <ProtectiveDNS />;
-    
+
     // Blog Details
     case PANEL_IDS.BLOG_INFRA:
       return (
-        <BlogDetail 
+        <BlogDetail
           title="Optimizing Core Infrastructure for Scalability"
           category="Infrastructure"
           date="May 10, 2026"
           author="Cliff Richard Perez Jr"
           image={blogInfra}
           content={`
-            As internet demand continues to surge across the Philippines, service providers and enterprises face the challenge of scaling their core infrastructure without sacrificing stability. 
+            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
             
-            The foundation of any high-performance network lies in its core router configuration and backbone fabric. Techne's approach focuses on high-speed fabrics—scaling from 10G to 400G—integrated with redundant architectures like MLAG, ECMP, and VRRP.
+            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
 
             Key considerations for core optimization:
-            1. Fabric Density: Ensuring your core switches can handle the north-south and east-west traffic growth.
-            2. Routing Protocols: Implementing Segment Routing or MPLS for more efficient traffic engineering.
-            3. Congestion Management: Utilizing advanced QoS and traffic shaping to prioritize mission-critical data.
+            1. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
+            2. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
+            3. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
             
-            By future-proofing the core, businesses can ensure they are ready for the next decade of digital transformation.
+            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard.
           `}
         />
       );
     case PANEL_IDS.BLOG_SECURITY:
       return (
-        <BlogDetail 
+        <BlogDetail
           title="The Future of Network Security in the Philippines"
           category="Security"
           date="April 28, 2026"
           author="Cliff Richard Perez Jr"
           image={blogSec}
           content={`
-            Cybersecurity is no longer just a technical requirement—it's a regulatory necessity. With the recent NTC mandates, including Memorandum No. 001-01-2025, Value-Added Service providers are now required to implement robust security measures like Protective DNS (PDNS).
+            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
             
-            Threat actors are becoming increasingly sophisticated, using AI-driven phishing and advanced botnet architectures to target Philippine businesses. 
-            
-            Techne's multi-layered security framework includes:
-            - PDNS Implementation: Actively monitoring and blocking malicious domain queries.
-            - RPKI Validation: Protecting your BGP routes from highjacking and route leaks.
-            - Automated Threat Intelligence: Real-time updates to edge filters based on global threat patterns.
+            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
 
-            Securing the network means protecting not just your data, but your reputation and your customers' trust.
+            Key considerations for core optimization:
+            1. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
+            2. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
+            3. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
+            
+            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard.
           `}
         />
       );
     case PANEL_IDS.BLOG_NETWORKING:
       return (
-        <BlogDetail 
+        <BlogDetail
           title="Understanding Next-Gen Global Connectivity"
           category="Networking"
           date="April 15, 2026"
           author="Cliff Richard Perez Jr"
           image={blogNet}
           content={`
-            Global connectivity is shifting from centralized transit hubs to localized peering environments. For businesses in Southeast Asia, this means a shift towards direct internet exchange (IX) peering and localized CDN distribution.
+            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
             
-            Optimizing global traffic involves a complex dance of BGP tuning, MED tuning, and AS-path prepending. By establishing direct sessions with Tier-1 providers and regional IXPs, we can drastically reduce latency for content-rich destinations like Google, Meta, and Netflix.
+            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
+
+            Key considerations for core optimization:
+            1. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
+            2. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
+            3. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
             
-            The benefits of localized peering:
-            1. Reduced Latency: Traffic stays local whenever possible, improving the user experience for streaming and gaming.
-            2. Cost Efficiency: Reducing reliance on expensive IP transit by utilizing "free" peering at major IXPs.
-            3. Resilience: Multiple paths to the global internet ensure that a single cable cut doesn't take your entire network offline.
+            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard.
           `}
         />
       );
