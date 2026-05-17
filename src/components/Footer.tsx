@@ -4,16 +4,16 @@ import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { PANEL_IDS } from '../constants';
 
-import amazonLogo from '../assets/cdns/Amazon_logo.svg.webp';
-import logo1 from '../assets/cdns/Logo (1).png';
-import metaLogo from '../assets/cdns/Meta_Platforms_Inc._logo.svg.png';
-import netskopeLogo from '../assets/cdns/Netskope_logo_logotype.png';
-import operaLogo from '../assets/cdns/Opera_Software_logo.png';
-import riotLogo from '../assets/cdns/Riot_Games_2022.svg';
-import steamLogo from '../assets/cdns/Steam_logo.svg';
-import tencentLogo from '../assets/cdns/Tencent_Logo.svg.png';
-import twitchLogo from '../assets/cdns/Twitch_logo_2019.svg.png';
-import alibabaLogo from '../assets/cdns/alibaba-brand-color.png';
+import amazonLogo from '../assets/CDNS/Amazon_logo.svg.webp';
+import logo1 from '../assets/CDNS/Logo (1).png';
+import metaLogo from '../assets/CDNS/Meta_Platforms_Inc._logo.svg.png';
+import netskopeLogo from '../assets/CDNS/Netskope_logo_logotype.png';
+import operaLogo from '../assets/CDNS/Opera_Software_logo.png';
+import riotLogo from '../assets/CDNS/Riot_Games_2022.svg';
+import steamLogo from '../assets/CDNS/Steam_logo.svg';
+import tencentLogo from '../assets/CDNS/Tencent_Logo.svg.png';
+import twitchLogo from '../assets/CDNS/Twitch_logo_2019.svg.png';
+import alibabaLogo from '../assets/CDNS/alibaba-brand-color.png';
 
 export const Footer: React.FC = () => {
   return (
