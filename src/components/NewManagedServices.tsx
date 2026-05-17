@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Network, Database, PencilRuler, CheckCircle2, Share2, Server, Cpu, Globe, Bell, Shield, Gauge, Lock, Search, AlertTriangle, ShieldCheck, Activity } from 'lucide-react';
+import { Database, PencilRuler, CheckCircle2, Share2, Bell, Shield, Gauge, Lock, Search, AlertTriangle, ShieldCheck, Activity } from 'lucide-react';
 
 const ServiceTemplate: React.FC<{ title: string, description: string, children?: React.ReactNode }> = ({ title, description, children }) => (
   <section className="py-24 bg-white min-h-[80vh]">
