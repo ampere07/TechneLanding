@@ -52,7 +52,7 @@ export const Footer: React.FC = () => {
       </div>
       <footer className="bg-white border-t border-slate-100 pt-20 pb-10">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
             {/* Brand Info */}
             <div className="flex flex-col">
               <div className="flex items-center space-x-3 mb-6">
@@ -113,18 +113,6 @@ export const Footer: React.FC = () => {
                   <span>Cebu City, Philippines</span>
                 </li>
               </ul>
-            </div>
-
-            {/* Executive */}
-            <div>
-              <h4 className="text-slate-900 font-semibold mb-6">Executive</h4>
-              <div className="space-y-2">
-                <p className="text-slate-900 font-medium text-sm">Cliff Richard Perez Jr</p>
-                <p className="text-brand-blue text-xs uppercase tracking-wider font-bold">CEO</p>
-              </div>
-              <div className="mt-6 pt-6 border-t border-slate-100">
-                <a href="https://www.facebook.com/techne.consulting" target="_blank" rel="noopener noreferrer" className="text-brand-blue hover:underline text-xs font-medium">Visit Facebook Page</a>
-              </div>
             </div>
           </div>
 
