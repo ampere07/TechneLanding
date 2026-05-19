@@ -113,6 +113,9 @@ export const Footer: React.FC = () => {
                   <span>Cebu City, Philippines</span>
                 </li>
               </ul>
+              <div className="mt-6 pt-6 border-t border-slate-100">
+                <a href="https://www.facebook.com/techne.consulting" target="_blank" rel="noopener noreferrer" className="text-brand-blue hover:underline text-xs font-medium">Visit Facebook Page</a>
+              </div>
             </div>
           </div>
 

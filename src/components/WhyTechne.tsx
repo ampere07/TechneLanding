@@ -110,7 +110,7 @@ export const WhyTechne: React.FC = () => {
           </div>
 
           {/* Navigation Buttons */}
-          <div className="flex space-x-4">
+          <div className="hidden md:flex space-x-4">
             <button 
               onClick={() => handleManualScroll('left')}
               className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:bg-brand-blue hover:text-white transition-all active:scale-95 group"
