@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, useParams, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useParams, Navigate, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Services } from './components/Services';
@@ -13,7 +14,7 @@ import { Colocation } from './components/Colocation';
 import { NetworkConsulting } from './components/NetworkConsulting';
 import { CoreConfig, DistConfig, SystemIntegration, ProtectiveDNS } from './components/NewManagedServices';
 import { WhyTechne } from './components/WhyTechne';
-import { NetworkMap } from './components/NetworkMap';
+import { NetworkMap, TrustedBrands } from './components/NetworkMap';
 import { PANEL_IDS } from './constants';
 
 import blogInfra from './assets/blog_infra.png';
@@ -25,6 +26,7 @@ const HomePanel = () => (
     <Hero />
     <WhyTechne />
     <NetworkMap />
+    <TrustedBrands />
     <Services />
   </>
 );
@@ -132,9 +134,20 @@ const PanelRenderer = () => {
   }
 };
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <div className="min-h-screen bg-white flex flex-col">
         <Header />
         <main className="flex-grow pt-20">

@@ -30,6 +30,12 @@ body {
 @theme {
   --color-brand-blue: #63b4b5;
   --color-primary: #63b4b5;
+  --animate-marquee: marquee 40s linear infinite;
+
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-100%); }
+  }
 }
 
 @layer base {

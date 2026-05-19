@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Network, ShieldCheck, Zap } from 'lucide-react';
+
 import { Link } from 'react-router-dom';
 import { PANEL_IDS } from '../constants';
 

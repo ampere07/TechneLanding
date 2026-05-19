@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Network, Database, PencilRuler, CheckCircle2, Share2, Server, Cpu, Globe, Bell, Shield, Gauge, Lock, Search, AlertTriangle, ShieldCheck, Activity } from 'lucide-react';
+import { PencilRuler, Share2, Gauge, Lock, Search, AlertTriangle, ShieldCheck, Activity } from 'lucide-react';
 
 const ServiceTemplate: React.FC<{ title: string, description: string, children?: React.ReactNode }> = ({ title, description, children }) => (
   <section className="py-24 bg-white min-h-[80vh]">
@@ -36,51 +36,10 @@ export const CoreConfig = () => (
         
       </div>
 
-      {/* 2. Data Center Network Infrastructure */}
-      <div className="space-y-8">
-        <div className="flex items-center space-x-4">
-           <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">2</div>
-           <h2 className="text-3xl font-bold text-slate-900">Data Center Network Infrastructure</h2>
-        </div>
-        <p className="text-slate-600 leading-relaxed">
-          Techne designs and implements a scalable, secure, and fully redundant data center network aimed at supporting heavy workloads, content delivery, and mission-critical applications.
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ml-4">
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center space-x-2">
-              <Database size={18} className="text-brand-blue" />
-              <span>2.1 CDN Appliance Integration</span>
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-500">
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Integration with Akamai, Cloudflare, Meta, Google, Netflix, etc.</span></li>
-              <li className="flex items-start space-y-2 text-sm text-slate-500">
-                <CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> 
-                <span>Bandwidth optimization and cache efficiency tuning</span>
-              </li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Deployment of dedicated VLANs and route filtering</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Monitoring and performance analytics for traffic flow</span></li>
-            </ul>
-          </div>
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center space-x-2">
-              <Database size={18} className="text-brand-blue" />
-              <span>2.2 Core & Backbone Configuration</span>
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-500">
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>High-speed fabric design (10G to 400G backbones)</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>Redundant core architecture (MLAG, ECMP, VRRP)</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>MPLS or Segment Routing support</span></li>
-              <li className="flex items-start space-x-2"><CheckCircle2 size={14} className="mt-1 shrink-0 text-brand-blue/60" /> <span>QoS, traffic shaping, and congestion management</span></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Core Network Design & Engineering */}
+      {/* 2. Core Network Design & Engineering */}
       <div className="space-y-8 pb-12">
         <div className="flex items-center space-x-4">
-           <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">3</div>
+           <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">2</div>
            <h2 className="text-3xl font-bold text-slate-900">Core Network Design & Engineering</h2>
         </div>
         <p className="text-slate-600 leading-relaxed">
@@ -146,37 +105,10 @@ export const DistConfig = () => (
         
       </div>
 
-      {/* 3. CGNAT Deployment */}
-      <div className="space-y-8">
-        <div className="flex items-center space-x-4">
-           <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">3</div>
-           <h2 className="text-3xl font-bold text-slate-900">CGNAT (Carrier-Grade NAT) Deployment</h2>
-        </div>
-        <div className="p-8 bg-slate-50 rounded-3xl border border-slate-100">
-          <p className="text-slate-600 mb-6 leading-relaxed">
-            Techne implements a carrier-grade NAT solution designed to support large-scale residential traffic while minimizing public IPv4 consumption.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              "Port-block allocation (PBA) for mapping",
-              "Load-balanced NAT pools across gateways",
-              "Logging and compliance for traceability",
-              "Optimized NAT for streaming, gaming, and VoIP",
-              "High-performance multi-gigabit throughput"
-            ].map((item, i) => (
-              <div key={i} className="flex items-center space-x-3 text-slate-500 text-sm">
-                <CheckCircle2 size={16} className="text-brand-blue" />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Distribution Network Design */}
+      {/* 3. Distribution Network Design */}
       <div className="space-y-8 pb-12">
         <div className="flex items-center space-x-4">
-           <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">4</div>
+           <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">3</div>
            <h2 className="text-3xl font-bold text-slate-900">Network Design & Implementation</h2>
         </div>
         
@@ -227,44 +159,10 @@ export const SystemIntegration = () => (
         
       </div>
 
-      {/* 2 & 3 Combined - Alerting & Backups */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ml-4">
-        <div className="space-y-6">
-          <div className="flex items-center space-x-4">
-             <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">2</div>
-             <h2 className="text-2xl font-bold text-slate-900">Centralized Alerting</h2>
-          </div>
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center space-x-2 text-sm">
-              <Bell size={16} className="text-brand-blue" />
-              <span>2.1 Syslog-to-Telegram</span>
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Real-time alerts delivered directly to Telegram channels. Custom severity-based filtering for faster incident response.
-            </p>
-          </div>
-        </div>
-        <div className="space-y-6">
-          <div className="flex items-center space-x-4">
-             <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">3</div>
-             <h2 className="text-2xl font-bold text-slate-900">Automated Backups</h2>
-          </div>
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center space-x-2 text-sm">
-              <Shield size={16} className="text-brand-blue" />
-              <span>3.1 Oxidized Automation</span>
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Version-controlled configuration backups with multi-vendor support. Historical comparison and quick rollback.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Network Performance */}
+      {/* 2. Network Performance */}
       <div className="space-y-8 pb-12">
         <div className="flex items-center space-x-4">
-           <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">4</div>
+           <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold">2</div>
            <h2 className="text-3xl font-bold text-slate-900">Performance & Speed Testing</h2>
         </div>
         

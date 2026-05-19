@@ -3,6 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import phMap from '../assets/ph_map.png';
 import { MapPin, X } from 'lucide-react';
 
+import brandVyos from '../assets/trusted/6.png';
+import brandArista from '../assets/trusted/Arista-networks-logo.svg';
+import brandCisco from '../assets/trusted/Cisco_logo_blue_2016.svg.png';
+import brandDell from '../assets/trusted/Dell_Logo.png';
+import brandHp from '../assets/trusted/HP_logo_2012.svg.png';
+import brandHuawei from '../assets/trusted/Huawei_Standard_logo.svg.png';
+import brandJuniper from '../assets/trusted/Juniper_Networks_logo.svg.png';
+import brandProxmox from '../assets/trusted/Logo_Proxmox.svg';
+import brandMikrotik from '../assets/trusted/MikroTik_Logo_(2022).svg.png';
+import brandPfsense from '../assets/trusted/PfSense_logo.png';
+import brandSupermicro from '../assets/trusted/Super_Micro_Computer_Logo.svg.png';
+import brandZte from '../assets/trusted/ZTE-logo.svg.png';
+import brandLibreqos from '../assets/trusted/libreqos.logo.svg';
+
 interface Location {
   id: string;
   name: string;
@@ -62,10 +76,11 @@ export const NetworkMap: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
-          <h2 className="text-sm font-bold text-brand-blue uppercase tracking-widest mb-4">Our Presence</h2>
-          <h3 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">Nationwide <span className="text-brand-blue">Connectivity</span></h3>
-          <p className="text-slate-500 text-lg leading-relaxed max-w-2xl mx-auto">
-            Click on our network nodes to view localized infrastructure details and regional coverage.
+          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 leading-tight max-w-3xl mx-auto tracking-tight mb-4">
+            Delivering Network Solutions Across 30+ Networks Nationwide
+          </h2>
+          <p className="text-slate-400 text-xs md:text-sm max-w-2xl mx-auto font-medium">
+            Note: Includes past and present network engagements.
           </p>
         </motion.div>
 
@@ -149,6 +164,66 @@ export const NetworkMap: React.FC = () => {
             />
           )}
         </AnimatePresence>
+      </div>
+    </section>
+  );
+};
+
+export const TrustedBrands: React.FC = () => {
+  const brands = [
+    { name: 'Cisco', logo: brandCisco },
+    { name: 'Juniper Networks', logo: brandJuniper },
+    { name: 'Arista Networks', logo: brandArista },
+    { name: 'MikroTik', logo: brandMikrotik },
+    { name: 'VyOS', logo: brandVyos },
+    { name: 'LibreQoS', logo: brandLibreqos },
+    { name: 'pfSense', logo: brandPfsense },
+    { name: 'Proxmox VE', logo: brandProxmox },
+    { name: 'Dell Enterprise', logo: brandDell },
+    { name: 'HP Enterprise', logo: brandHp },
+    { name: 'Supermicro', logo: brandSupermicro },
+    { name: 'Huawei', logo: brandHuawei },
+    { name: 'ZTE', logo: brandZte },
+  ];
+
+  return (
+    <section className="py-20 bg-slate-50 border-t border-slate-100 overflow-hidden">
+      <div className="container mx-auto px-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mb-12"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
+            Techne Trusted Brands
+          </h2>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-wrap justify-center items-center gap-10 md:gap-16 max-w-6xl mx-auto"
+        >
+          {brands.map((brand, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ y: -2, scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+              className="group cursor-pointer"
+            >
+              <img
+                src={brand.logo}
+                alt={brand.name}
+                className="h-10 md:h-12 w-auto object-contain opacity-75 group-hover:opacity-100 transition-all duration-300 select-none"
+                draggable="false"
+              />
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
