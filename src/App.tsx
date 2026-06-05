@@ -8,6 +8,7 @@ import { Footer } from './components/Footer';
 import { Blog } from './components/Blog';
 import { BlogDetail } from './components/BlogDetail';
 import { About } from './components/About';
+import { Pricing } from './components/Pricing';
 import { IPTransit } from './components/IPTransit';
 import { DIA } from './components/DIA';
 import { Colocation } from './components/Colocation';
@@ -41,6 +42,8 @@ const PanelRenderer = () => {
       return <Services />;
     case PANEL_IDS.BLOG:
       return <Blog />;
+    case PANEL_IDS.PRICING:
+      return <Pricing />;
     case PANEL_IDS.ABOUT:
       return <About />;
     case PANEL_IDS.CONTACT:

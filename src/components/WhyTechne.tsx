@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, animate } from 'framer-motion';
-import { ShieldCheck, Award, TrendingUp, Users, Zap, PhilippinePeso, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShieldCheck, Award, TrendingUp, Users, Zap, PhilippinePeso, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 
 export const WhyTechne: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -36,6 +36,33 @@ export const WhyTechne: React.FC = () => {
       icon: <PhilippinePeso size={28} className="text-brand-blue" />,
       title: "Enterprise Value",
       desc: "Enterprise-grade reliability at cost-effective price points, tailored for the Philippine market landscape."
+    }
+  ];
+
+  const reviews = [
+    {
+      name: "Engr. Emmanuel Santos",
+      initials: "ES",
+      role: "Chief Network Architect",
+      company: "Royal Cable Vision",
+      text: "Techne's expertise in BGP routing and local exchange peering helped us optimize our gateway latency by over 30%. Their support is unmatched.",
+      rating: 5
+    },
+    {
+      name: "Ma. Cristina Valenzuela",
+      initials: "CV",
+      role: "IT Infrastructure Director",
+      company: "Vanguard Retail Group",
+      text: "Setting up our private WAN and colocation with Techne was seamless. Their team handled NTC compliance and firewall configurations perfectly.",
+      rating: 5
+    },
+    {
+      name: "Atty. Ronaldo G. Tecson",
+      initials: "RT",
+      role: "CTO & Co-Founder",
+      company: "FinTech Pilipinas",
+      text: "With Techne's Protective DNS integration, we secured our cloud infrastructure and met BSP compliance requirements ahead of schedule.",
+      rating: 5
     }
   ];
 
@@ -146,6 +173,61 @@ export const WhyTechne: React.FC = () => {
               </p>
             </motion.div>
           ))}
+        </div>
+
+        {/* Separator */}
+        <div className="border-t border-slate-200/50 my-20"></div>
+
+        {/* Customer Reviews Section */}
+        <div className="mt-12">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <h2 className="text-sm font-bold text-brand-blue uppercase tracking-widest mb-4">Client Testimonials</h2>
+              <h3 className="text-4xl font-bold text-slate-900 mb-6">What Our <span className="text-brand-blue">Customers</span> Say</h3>
+              <p className="text-slate-500 text-lg leading-relaxed">
+                Read how ISPs, local telecom partners, and financial institutions scale their networks with Techne.
+              </p>
+            </motion.div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {reviews.map((review, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:shadow-brand-blue/5 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center space-x-1 mb-6">
+                    {[...Array(review.rating)].map((_, index) => (
+                      <Star key={index} size={16} className="fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-slate-600 text-base leading-relaxed mb-8 italic">
+                    "{review.text}"
+                  </p>
+                </div>
+                <div className="flex items-center space-x-4 border-t border-slate-50 pt-6">
+                  <div className="w-12 h-12 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue font-bold text-lg">
+                    {review.initials}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm">{review.name}</h4>
+                    <p className="text-xs text-slate-400 font-semibold">{review.role}</p>
+                    <p className="text-xs text-brand-blue font-bold mt-0.5">{review.company}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
 

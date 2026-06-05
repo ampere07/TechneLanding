@@ -86,6 +86,7 @@ export const Header: React.FC = () => {
             </AnimatePresence>
           </div>
 
+          <NavLink to={`/${PANEL_IDS.PRICING}`} className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-brand-blue' : 'text-slate-600 hover:text-brand-blue'}`}>Pricing</NavLink>
           <NavLink to={`/${PANEL_IDS.BLOG}`} className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-brand-blue' : 'text-slate-600 hover:text-brand-blue'}`}>Blog</NavLink>
           <NavLink to={`/${PANEL_IDS.ABOUT}`} className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-brand-blue' : 'text-slate-600 hover:text-brand-blue'}`}>About</NavLink>
 
@@ -122,6 +123,7 @@ export const Header: React.FC = () => {
             ))}
           </div>
 
+          <Link to={`/${PANEL_IDS.PRICING}`} className="text-lg font-medium text-slate-600" onClick={() => setIsOpen(false)}>Pricing</Link>
           <Link to={`/${PANEL_IDS.BLOG}`} className="text-lg font-medium text-slate-600" onClick={() => setIsOpen(false)}>Blog</Link>
           <Link to={`/${PANEL_IDS.ABOUT}`} className="text-lg font-medium text-slate-600" onClick={() => setIsOpen(false)}>About</Link>
           <div className="pt-4 flex flex-col space-y-3">
