@@ -1,0 +1,74 @@
+{
+  "version": "1.0",
+  "project": "TechneLanding",
+  "designSystem": "design.md",
+  "tokens": "tokens.css",
+  "runs": [
+    {
+      "date": "2026-06-19",
+      "verb": "redesign",
+      "scope": "all",
+      "operator": "raven@mynetteam.com",
+      "genre": "modern-minimal",
+      "macrostructures": {
+        "home": "Feature Stack",
+        "about": "Long Document",
+        "pricing": "Workbench",
+        "service-details": "Long Document",
+        "blog": "Long Document",
+        "contact": "Split (info + form)"
+      },
+      "archetypes": {
+        "nav": "N11 mega-menu",
+        "footer": "Ft5 Statement"
+      },
+      "tokens": {
+        "anchorHue": 199,
+        "colorSpace": "oklch",
+        "fontDisplay": "Space Grotesk",
+        "fontBody": "Inter",
+        "fontMono": "JetBrains Mono",
+        "radius": "4px"
+      },
+      "antiPatterns": {
+        "eliminated": [
+          "blue span highlights in headings",
+          "rounded-full pill eyebrows",
+          "centered hero headings",
+          "shadow-xl hover effects",
+          "rounded-2xl/3xl on cards",
+          "bg-[#63b4b5] left box in contact",
+          "bg-slate-50 card backgrounds",
+          "text-brand-blue span in titles",
+          "fade-in on every element"
+        ]
+      },
+      "filesChanged": [
+        "tokens.css",
+        "design.md",
+        "src/index.css",
+        "src/components/Header.tsx",
+        "src/components/Hero.tsx",
+        "src/components/Services.tsx",
+        "src/components/WhyTechne.tsx",
+        "src/components/Footer.tsx",
+        "src/components/About.tsx",
+        "src/components/Pricing.tsx",
+        "src/components/ContactForm.tsx",
+        "src/components/Blog.tsx",
+        "src/components/BlogDetail.tsx",
+        "src/components/NetworkMap.tsx",
+        "src/components/IPTransit.tsx",
+        "src/components/DIA.tsx",
+        "src/components/Colocation.tsx",
+        "src/components/NetworkConsulting.tsx",
+        "src/components/NewManagedServices.tsx"
+      ],
+      "preserved": [
+        "All Pricing.tsx TypeScript state, Leaflet map, and calculator logic",
+        "All SVG orbital ring paths, pin rendering, and animation in NetworkMap.tsx",
+        "brand-blue token for Pricing tab/selected states and NetworkMap SVG colors"
+      ]
+    }
+  ]
+}

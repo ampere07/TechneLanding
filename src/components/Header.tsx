@@ -22,59 +22,79 @@ export const Header: React.FC = () => {
       { name: 'Distribution Configuration', path: `/${PANEL_IDS.DIST_CONFIG}` },
       { name: 'System Integration', path: `/${PANEL_IDS.SYSTEM_INTEGRATION}` },
       { name: 'Protective DNS Integration', path: `/${PANEL_IDS.PROTECTIVE_DNS}` },
-      { name: 'Network consulting', path: `/${PANEL_IDS.NETWORK_CONSULTING}` },
+      { name: 'Network Consulting', path: `/${PANEL_IDS.NETWORK_CONSULTING}` },
     ]
   };
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `font-display text-sm font-medium transition-colors duration-[180ms] ${isActive ? 'text-accent' : 'text-ink-2 hover:text-ink'}`;
+
   return (
-    <header className="fixed top-0 left-0 w-full z-50 glass border-b border-slate-100">
-      <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-        <Link to={`/${PANEL_IDS.HOME}`} className="flex items-center space-x-3" onClick={() => setIsOpen(false)}>
-          <img src={logo} alt="Techne Logo" className="h-10 w-auto object-contain" draggable="false" />
-          <span className="text-xl font-bold tracking-tight text-brand-blue">Tec<span className="text-slate-900">hne</span></span>
+    <header className="fixed top-0 left-0 w-full z-50 bg-paper border-b border-rule">
+      <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+
+        <Link
+          to={`/${PANEL_IDS.HOME}`}
+          className="flex items-center gap-2.5"
+          onClick={() => setIsOpen(false)}
+        >
+          <img src={logo} alt="Techne" className="h-9 w-auto object-contain" draggable="false" />
+          <span className="font-display font-bold text-[1.125rem] tracking-tight text-ink">
+            Tec<span className="text-accent">hne</span>
+          </span>
         </Link>
 
-        <nav className="hidden md:flex items-center space-x-8">
-          <NavLink to={`/${PANEL_IDS.HOME}`} className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-brand-blue' : 'text-slate-600 hover:text-brand-blue'}`}>Home</NavLink>
+        <nav className="hidden md:flex items-center gap-7">
+          <NavLink to={`/${PANEL_IDS.HOME}`} className={navLinkClass}>Home</NavLink>
 
-          {/* Services Dropdown */}
           <div
-            className="relative h-20 flex items-center"
+            className="relative"
             onMouseEnter={() => setIsServicesHovered(true)}
             onMouseLeave={() => setIsServicesHovered(false)}
           >
-            <button className={`text-sm font-medium transition-colors flex items-center space-x-1 ${isServicesHovered ? 'text-brand-blue' : 'text-slate-600 hover:text-brand-blue'}`}>
-              <span>Services</span>
-              <ChevronDown size={14} className={`transition-transform duration-300 ${isServicesHovered ? 'rotate-180' : ''}`} />
+            <button
+              className={`font-display text-sm font-medium transition-colors duration-[180ms] flex items-center gap-1 ${isServicesHovered ? 'text-ink' : 'text-ink-2 hover:text-ink'}`}
+            >
+              Services
+              <ChevronDown
+                size={13}
+                className={`transition-transform duration-[180ms] ${isServicesHovered ? 'rotate-180' : ''}`}
+              />
             </button>
 
             <AnimatePresence>
               {isServicesHovered && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute top-20 left-1/2 -translate-x-1/2 w-[450px] bg-white border border-slate-100 shadow-2xl rounded-2xl p-6 grid grid-cols-2 gap-8"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 6 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[460px] bg-paper border border-rule rounded-[4px] shadow-sm grid grid-cols-2 divide-x divide-rule"
                 >
-                  <div>
-                    <h4 className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-4">Internet</h4>
-                    <ul className="space-y-3">
+                  <div className="p-5">
+                    <p className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-3">Internet</p>
+                    <ul className="space-y-2">
                       {servicesDropdown.internet.map(item => (
                         <li key={item.name}>
-                          <Link to={item.path} className="text-sm font-medium text-slate-600 hover:text-brand-blue transition-colors block">
+                          <Link
+                            to={item.path}
+                            className="font-display text-sm font-medium text-ink-2 hover:text-accent transition-colors duration-[180ms] block"
+                          >
                             {item.name}
                           </Link>
                         </li>
                       ))}
                     </ul>
                   </div>
-                  <div>
-                    <h4 className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-4">Managed Services</h4>
-                    <ul className="space-y-3">
+                  <div className="p-5">
+                    <p className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-3">Managed Services</p>
+                    <ul className="space-y-2">
                       {servicesDropdown.managed.map(item => (
                         <li key={item.name}>
-                          <Link to={item.path} className="text-sm font-medium text-slate-600 hover:text-brand-blue transition-colors block leading-tight">
+                          <Link
+                            to={item.path}
+                            className="font-display text-sm font-medium text-ink-2 hover:text-accent transition-colors duration-[180ms] block leading-snug"
+                          >
                             {item.name}
                           </Link>
                         </li>
@@ -86,54 +106,103 @@ export const Header: React.FC = () => {
             </AnimatePresence>
           </div>
 
-          <NavLink to={`/${PANEL_IDS.PRICING}`} className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-brand-blue' : 'text-slate-600 hover:text-brand-blue'}`}>Pricing</NavLink>
-          <NavLink to={`/${PANEL_IDS.BLOG}`} className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-brand-blue' : 'text-slate-600 hover:text-brand-blue'}`}>Blog</NavLink>
-          <NavLink to={`/${PANEL_IDS.ABOUT}`} className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-brand-blue' : 'text-slate-600 hover:text-brand-blue'}`}>About</NavLink>
+          <NavLink to={`/${PANEL_IDS.PRICING}`} className={navLinkClass}>Pricing</NavLink>
+          <NavLink to={`/${PANEL_IDS.BLOG}`} className={navLinkClass}>Blog</NavLink>
+          <NavLink to={`/${PANEL_IDS.ABOUT}`} className={navLinkClass}>About</NavLink>
 
           <button
             onClick={() => setIsLoginModalOpen(true)}
-            className="text-sm font-bold text-slate-900 hover:text-brand-blue transition-colors px-2"
+            className="font-display text-sm font-medium text-ink-2 hover:text-ink transition-colors duration-[180ms]"
           >
             Login
           </button>
-          <NavLink to={`/${PANEL_IDS.CONTACT}`} className="btn-primary flex items-center space-x-2 py-2 px-5">
-            <span>Inquire Now</span>
-            <ChevronRight size={16} />
-          </NavLink>
+
+          <Link
+            to={`/${PANEL_IDS.CONTACT}`}
+            className="btn-primary"
+          >
+            Inquire
+            <ChevronRight size={14} />
+          </Link>
         </nav>
 
-        <button className="md:hidden text-slate-600" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        <button
+          className="md:hidden text-ink-2 hover:text-ink transition-colors p-1"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {isOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b border-slate-100 p-6 flex flex-col space-y-4 animate-in slide-in-from-top duration-300 shadow-xl overflow-y-auto max-h-[80vh]">
-          <Link to={`/${PANEL_IDS.HOME}`} className="text-lg font-medium text-slate-600" onClick={() => setIsOpen(false)}>Home</Link>
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="md:hidden absolute top-full left-0 w-full bg-paper border-b border-rule overflow-y-auto max-h-[80vh]"
+          >
+            <div className="container mx-auto px-6 py-4 flex flex-col">
+              <Link
+                to={`/${PANEL_IDS.HOME}`}
+                className="font-display font-medium text-ink py-3 border-b border-rule"
+                onClick={() => setIsOpen(false)}
+              >
+                Home
+              </Link>
 
-          <div className="space-y-3">
-            <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Internet</span>
-            {servicesDropdown.internet.map(item => (
-              <Link key={item.name} to={item.path} className="text-lg font-medium text-slate-600 block pl-4" onClick={() => setIsOpen(false)}>{item.name}</Link>
-            ))}
-            <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400 pt-2 block">Managed Services</span>
-            {servicesDropdown.managed.map(item => (
-              <Link key={item.name} to={item.path} className="text-lg font-medium text-slate-600 block pl-4" onClick={() => setIsOpen(false)}>{item.name}</Link>
-            ))}
-          </div>
+              <div className="py-3 border-b border-rule space-y-2">
+                <p className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-2">Internet</p>
+                {servicesDropdown.internet.map(item => (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className="font-display text-sm font-medium text-ink-2 block pl-3 py-1"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+                <p className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mt-3 mb-2">Managed Services</p>
+                {servicesDropdown.managed.map(item => (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className="font-display text-sm font-medium text-ink-2 block pl-3 py-1"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
 
-          <Link to={`/${PANEL_IDS.PRICING}`} className="text-lg font-medium text-slate-600" onClick={() => setIsOpen(false)}>Pricing</Link>
-          <Link to={`/${PANEL_IDS.BLOG}`} className="text-lg font-medium text-slate-600" onClick={() => setIsOpen(false)}>Blog</Link>
-          <Link to={`/${PANEL_IDS.ABOUT}`} className="text-lg font-medium text-slate-600" onClick={() => setIsOpen(false)}>About</Link>
-          <div className="pt-4 flex flex-col space-y-3">
-            <button onClick={() => { setIsOpen(false); setIsLoginModalOpen(true); }} className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold rounded-xl text-center transition-colors">Login</button>
-            <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary text-center" onClick={() => setIsOpen(false)}>Contact Us</Link>
-          </div>
-        </div>
-      )}
+              <Link to={`/${PANEL_IDS.PRICING}`} className="font-display font-medium text-ink py-3 border-b border-rule" onClick={() => setIsOpen(false)}>Pricing</Link>
+              <Link to={`/${PANEL_IDS.BLOG}`} className="font-display font-medium text-ink py-3 border-b border-rule" onClick={() => setIsOpen(false)}>Blog</Link>
+              <Link to={`/${PANEL_IDS.ABOUT}`} className="font-display font-medium text-ink py-3 border-b border-rule" onClick={() => setIsOpen(false)}>About</Link>
 
-      {/* Login Under Construction Modal */}
+              <div className="pt-4 flex flex-col gap-3">
+                <button
+                  onClick={() => { setIsOpen(false); setIsLoginModalOpen(true); }}
+                  className="w-full py-2.5 border border-rule text-ink font-display font-semibold text-sm rounded-[4px] text-center transition-colors hover:bg-paper-2"
+                >
+                  Login
+                </button>
+                <Link
+                  to={`/${PANEL_IDS.CONTACT}`}
+                  className="btn-primary w-full justify-center"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Contact Us
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Login modal */}
       {createPortal(
         <AnimatePresence>
           {isLoginModalOpen && (
@@ -142,22 +211,24 @@ export const Header: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
                 onClick={() => setIsLoginModalOpen(false)}
-                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm cursor-pointer"
+                className="absolute inset-0 bg-ink/40 backdrop-blur-sm cursor-pointer"
               />
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                initial={{ opacity: 0, scale: 0.97, y: 16 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl z-10"
+                exit={{ opacity: 0, scale: 0.97, y: 16 }}
+                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                className="relative bg-paper border border-rule rounded-[4px] p-8 max-w-sm w-full text-center z-10 shadow-sm"
               >
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Under Construction</h3>
-                <p className="text-slate-500 text-sm mb-8 leading-relaxed">
-                  The customer portal is currently being built. Please check back later!
+                <h3 className="font-display text-lg font-bold text-ink mb-2">Under Construction</h3>
+                <p className="font-body text-sm text-ink-2 mb-8 leading-relaxed">
+                  The customer portal is currently being built. Please check back later.
                 </p>
                 <button
                   onClick={() => setIsLoginModalOpen(false)}
-                  className="w-full btn-primary py-3"
+                  className="btn-primary w-full justify-center py-3"
                 >
                   Got it
                 </button>

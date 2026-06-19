@@ -33,15 +33,7 @@ const locationCoordinates: { [key in LocationType]: [number, number] } = {
 };
 
 const datacenterOptions: { [key in LocationType]: string[] } = {
-  'Manila': [
-    'Vitro Makati 1',
-    'Vitro Makati 2',
-    'Vitro Pasig',
-    'Vitro Parañaque',
-    'TIM Carmona',
-    'Globe MK2',
-    'My location is not listed'
-  ],
+  'Manila': ['Vitro Makati 1','Vitro Makati 2','Vitro Pasig','Vitro Parañaque','TIM Carmona','Globe MK2','My location is not listed'],
   'Cebu City': ['Vitro Cebu', 'Globe Cebu', 'My location is not listed'],
   'Davao City': ['Vitro Davao', 'Globe Davao', 'My location is not listed'],
   'Hong Kong': ['Equinix HK1', 'Mega-i Advantage', 'My location is not listed'],
@@ -51,7 +43,6 @@ const datacenterOptions: { [key in LocationType]: string[] } = {
 export const Pricing: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('internet');
 
-  // 1. Internet State
   const [internetLoc, setInternetLoc] = useState<LocationType>('Manila');
   const [internetDC, setInternetDC] = useState<string>('Vitro Makati 1');
   const [isDcDropdownOpen, setIsDcDropdownOpen] = useState(false);
@@ -61,12 +52,10 @@ export const Pricing: React.FC = () => {
   const [reachPlanType, setReachPlanType] = useState<ReachPlanType>('Fixed Bandwidth');
   const [speedCommit, setSpeedCommit] = useState<SpeedCommitType>('None');
 
-  // Sync selected datacenter on location switch
   useEffect(() => {
     setInternetDC(datacenterOptions[internetLoc][0]);
   }, [internetLoc]);
 
-  // Click outside datacenter dropdown listener to auto-close it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dcDropdownRef.current && !dcDropdownRef.current.contains(event.target as Node)) {
@@ -74,26 +63,20 @@ export const Pricing: React.FC = () => {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
-  // 2. Colocation State
   const [coloLoc, setColoLoc] = useState<'Manila' | 'Cebu City' | 'Davao City'>('Manila');
   const [cabinetSize, setCabinetSize] = useState<ColoCabinetType>('1U Server');
   const [powerAlloc, setPowerAlloc] = useState<ColoPowerType>('1 kW');
 
-  // 3. Virtual Services State
   const [virtualLoc, setVirtualLoc] = useState<LocationType>('Manila');
   const [vService, setVService] = useState<VirtualServiceType>('Virtual Router');
   const [vTier, setVTier] = useState<VirtualTierType>('Starter');
   const [vSupport, setVSupport] = useState<VirtualSupportType>('Self-Managed');
 
-  // Global state
   const [contractTerm, setContractTerm] = useState<ContractTermType>('12 months');
 
-  // Leaflet Map References
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -107,10 +90,8 @@ export const Pricing: React.FC = () => {
     { name: '36 months', note: 'Save 15%' }
   ];
 
-  // Geolocation trigger state
   const [isLocating, setIsLocating] = useState(false);
 
-  // Active Location getter helper
   const getActiveLoc = () => {
     if (activeTab === 'internet') return internetLoc;
     if (activeTab === 'colocation') return coloLoc;
@@ -118,77 +99,44 @@ export const Pricing: React.FC = () => {
   };
   const activeLoc = getActiveLoc();
 
-  // Find nearest node using browser location coordinates
   const findMyLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
-      return;
-    }
-
+    if (!navigator.geolocation) { alert('Geolocation is not supported by your browser.'); return; }
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        
         let closestLoc: LocationType = 'Manila';
         let minDistance = Infinity;
-
-        // For Colocation, restrict geolocation mapping to Philippines sites only
         const isColo = activeTab === 'colocation';
-        const availableLocs = isColo 
-          ? (['Manila', 'Cebu City', 'Davao City'] as LocationType[]) 
-          : locations;
-
+        const availableLocs = isColo ? (['Manila', 'Cebu City', 'Davao City'] as LocationType[]) : locations;
         availableLocs.forEach((loc) => {
           const [locLat, locLon] = locationCoordinates[loc];
-          // Squared distance formula
           const dist = Math.pow(latitude - locLat, 2) + Math.pow(longitude - locLon, 2);
-          if (dist < minDistance) {
-            minDistance = dist;
-            closestLoc = loc;
-          }
+          if (dist < minDistance) { minDistance = dist; closestLoc = loc; }
         });
-
-        // Set state
         if (activeTab === 'internet') setInternetLoc(closestLoc);
         else if (activeTab === 'colocation') setColoLoc(closestLoc as any);
         else if (activeTab === 'virtual') setVirtualLoc(closestLoc);
-
         setIsLocating(false);
       },
-      (error) => {
-        console.error("Geolocation error:", error);
-        alert("Unable to determine your location. Please select a node directly on the map.");
-        setIsLocating(false);
-      },
+      (error) => { console.error('Geolocation error:', error); alert('Unable to determine your location.'); setIsLocating(false); },
       { enableHighAccuracy: true, timeout: 6000 }
     );
   };
 
-  // Load Leaflet dynamically from CDN
   useEffect(() => {
-    if (window.L) {
-      setLeafletLoaded(true);
-      return;
-    }
-
-    // Load Leaflet CSS
+    if (window.L) { setLeafletLoaded(true); return; }
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
     link.id = 'leaflet-css';
     document.head.appendChild(link);
-
-    // Load Leaflet JS
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
     script.id = 'leaflet-js';
     script.async = true;
-    script.onload = () => {
-      setLeafletLoaded(true);
-    };
+    script.onload = () => { setLeafletLoaded(true); };
     document.body.appendChild(script);
-
     return () => {
       const existingLink = document.getElementById('leaflet-css');
       const existingScript = document.getElementById('leaflet-js');
@@ -197,136 +145,75 @@ export const Pricing: React.FC = () => {
     };
   }, []);
 
-  // Initialize Map
   useEffect(() => {
     if (!leafletLoaded || !mapContainerRef.current) return;
     if (mapRef.current) return;
-
     const L = window.L;
-    const map = L.map(mapContainerRef.current, {
-      center: [12.0, 115.0],
-      zoom: 4,
-      zoomControl: false,
-      attributionControl: false,
-      scrollWheelZoom: true
-    });
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18,
-    }).addTo(map);
-
-    L.control.zoom({
-      position: 'bottomright'
-    }).addTo(map);
-
+    const map = L.map(mapContainerRef.current, { center: [12.0, 115.0], zoom: 4, zoomControl: false, attributionControl: false, scrollWheelZoom: true });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
     mapRef.current = map;
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
+    return () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; } };
   }, [leafletLoaded]);
 
-  // Update Marker and Map Click Handler
   useEffect(() => {
     if (!leafletLoaded || !mapRef.current) return;
-
     const L = window.L;
     const map = mapRef.current;
     const isColo = activeTab === 'colocation';
-
-    // Clear old markers
-    Object.keys(markersRef.current).forEach((key) => {
-      map.removeLayer(markersRef.current[key]);
-    });
+    Object.keys(markersRef.current).forEach((key) => { map.removeLayer(markersRef.current[key]); });
     markersRef.current = {};
-
-    // Draw only the single active marker
     const coords = locationCoordinates[activeLoc];
     const icon = L.divIcon({
-      html: `
-        <div class="relative flex items-center justify-center w-8 h-8 group">
-          <div class="absolute inset-0 rounded-full bg-brand-blue/30 animate-ping"></div>
-          <div class="w-4 h-4 rounded-full border-2 border-white shadow-lg bg-brand-blue scale-125 transition-all duration-300 relative z-10"></div>
-        </div>
-      `,
+      html: `<div class="relative flex items-center justify-center w-8 h-8"><div class="absolute inset-0 rounded-full bg-brand-blue/30 animate-ping"></div><div class="w-4 h-4 rounded-full border-2 border-white shadow-lg bg-brand-blue scale-125 transition-all duration-300 relative z-10"></div></div>`,
       className: 'custom-leaflet-marker',
       iconSize: [32, 32],
       iconAnchor: [16, 16],
     });
-
     const marker = L.marker(coords, { icon });
     marker.addTo(map);
     markersRef.current[activeLoc] = marker;
-
-    // Register click handler on map to find closest available node and jump there
     const onMapClick = (e: any) => {
       const { lat, lng } = e.latlng;
       let closestLoc: LocationType = 'Manila';
       let minDistance = Infinity;
-
-      const availableLocs = isColo 
-        ? (['Manila', 'Cebu City', 'Davao City'] as LocationType[]) 
-        : locations;
-
+      const availableLocs = isColo ? (['Manila', 'Cebu City', 'Davao City'] as LocationType[]) : locations;
       availableLocs.forEach((loc) => {
         const [locLat, locLon] = locationCoordinates[loc];
         const dist = Math.pow(lat - locLat, 2) + Math.pow(lng - locLon, 2);
-        if (dist < minDistance) {
-          minDistance = dist;
-          closestLoc = loc;
-        }
+        if (dist < minDistance) { minDistance = dist; closestLoc = loc; }
       });
-
       if (activeTab === 'internet') setInternetLoc(closestLoc);
       else if (activeTab === 'colocation') setColoLoc(closestLoc as any);
       else if (activeTab === 'virtual') setVirtualLoc(closestLoc);
     };
-
     map.on('click', onMapClick);
-
-    return () => {
-      map.off('click', onMapClick);
-    };
+    return () => { map.off('click', onMapClick); };
   }, [leafletLoaded, activeTab, internetLoc, coloLoc, virtualLoc, activeLoc]);
 
-  // Pan Map to active location
   useEffect(() => {
     if (!leafletLoaded || !mapRef.current) return;
     const coords = locationCoordinates[activeLoc];
-    mapRef.current.setView(coords, mapRef.current.getZoom(), {
-      animate: true,
-      duration: 0.8
-    });
+    mapRef.current.setView(coords, mapRef.current.getZoom(), { animate: true, duration: 0.8 });
   }, [leafletLoaded, activeTab, internetLoc, coloLoc, virtualLoc]);
 
-  // Pricing calculations
   const calculateCost = () => {
     let subtotal = 0;
     let details = '';
-
     if (activeTab === 'internet') {
       const isInt = internetLoc === 'Hong Kong' || internetLoc === 'Singapore';
       let portRate = 0;
       if (portSize === '1 Gbps') portRate = isInt ? 120 : 150;
       else if (portSize === '10 Gbps') portRate = isInt ? 450 : 600;
       else if (portSize === '100 Gbps') portRate = isInt ? 2500 : 3500;
-      
       const portCost = portRate * numPorts;
-
       let reachMbps = 0;
       switch (speedCommit) {
-        case '100 Mbps': reachMbps = 100; break;
-        case '200 Mbps': reachMbps = 200; break;
-        case '500 Mbps': reachMbps = 500; break;
-        case '1 Gbps': reachMbps = 1000; break;
-        case '2 Gbps': reachMbps = 2000; break;
-        case '5 Gbps': reachMbps = 5000; break;
+        case '100 Mbps': reachMbps = 100; break; case '200 Mbps': reachMbps = 200; break;
+        case '500 Mbps': reachMbps = 500; break; case '1 Gbps': reachMbps = 1000; break;
+        case '2 Gbps': reachMbps = 2000; break; case '5 Gbps': reachMbps = 5000; break;
         case '10 Gbps': reachMbps = 10000; break;
       }
-
       let reachCost = 0;
       if (reachMbps > 0) {
         let ratePerMbps = 2.0;
@@ -334,119 +221,91 @@ export const Pricing: React.FC = () => {
         else if (reachMbps <= 1000) ratePerMbps = 1.4;
         else if (reachMbps <= 5000) ratePerMbps = 0.9;
         else ratePerMbps = 0.7;
-
-        if (reachPlanType === 'Burstable') {
-          ratePerMbps *= 1.25;
-        }
+        if (reachPlanType === 'Burstable') ratePerMbps *= 1.25;
         reachCost = reachMbps * ratePerMbps;
       }
-
       subtotal = portCost + reachCost;
       details = `loc=${internetLoc}&dc=${internetDC}&ports=${numPorts}&size=${portSize}&reach=${speedCommit}&reachtype=${reachPlanType}`;
-
     } else if (activeTab === 'colocation') {
       let cabinetCost = 0;
       if (cabinetSize === '1U Server') cabinetCost = 99;
       else if (cabinetSize === '10U Quarter') cabinetCost = 299;
       else if (cabinetSize === '20U Half') cabinetCost = 499;
       else if (cabinetSize === '42U Full') cabinetCost = 799;
-
       let powerCost = 0;
       if (powerAlloc === '1 kW') powerCost = 100;
       else if (powerAlloc === '2 kW') powerCost = 200;
       else if (powerAlloc === '3 kW') powerCost = 300;
       else if (powerAlloc === '5 kW') powerCost = 500;
-
-      // Manila markup
       const locationMultiplier = coloLoc === 'Manila' ? 1.1 : 1.0;
-
       subtotal = (cabinetCost + powerCost) * locationMultiplier;
       details = `loc=${coloLoc}&space=${cabinetSize}&power=${powerAlloc}`;
-
     } else if (activeTab === 'virtual') {
       let serviceBase = 0;
       if (vService === 'Virtual Router') serviceBase = 49;
       else if (vService === 'Virtual Firewall') serviceBase = 79;
       else if (vService === 'Cloud Gateway') serviceBase = 119;
       else if (vService === 'SD-WAN Edge') serviceBase = 149;
-
       let tierCost = 0;
       if (vTier === 'Starter') tierCost = 20;
       else if (vTier === 'Professional') tierCost = 45;
       else if (vTier === 'Enterprise') tierCost = 90;
       else if (vTier === 'Carrier') tierCost = 180;
-
       let supportCost = 0;
       if (vSupport === 'Semi-Managed') supportCost = 99;
       else if (vSupport === 'Fully-Managed') supportCost = 249;
-
       subtotal = serviceBase + tierCost + supportCost;
       details = `loc=${virtualLoc}&service=${vService}&tier=${vTier}&support=${vSupport}`;
     }
-
-    // Discount Term
     let discountPercent = 0;
     if (contractTerm === '24 months') discountPercent = 0.10;
     else if (contractTerm === '36 months') discountPercent = 0.15;
-
     const discountAmount = subtotal * discountPercent;
     const finalUSD = Math.round(subtotal - discountAmount);
-
-    return {
-      monthlyUSD: finalUSD,
-      monthlyPHP: Math.round(finalUSD * 58),
-      discount: Math.round(discountAmount),
-      query: `type=${activeTab}&term=${contractTerm}&${details}`
-    };
+    return { monthlyUSD: finalUSD, monthlyPHP: Math.round(finalUSD * 58), discount: Math.round(discountAmount), query: `type=${activeTab}&term=${contractTerm}&${details}` };
   };
 
   const costResult = calculateCost();
 
   return (
-    <section className="py-20 bg-slate-50/50 min-h-[90vh]">
+    <section className="py-20 bg-paper-2 min-h-[90vh]">
       <div className="container mx-auto px-6 max-w-7xl">
-        
+
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <span className="text-[11px] uppercase tracking-widest font-bold text-brand-blue bg-brand-blue/10 px-3 py-1 rounded-full">
-              Subscription Cost Calculator
-            </span>
-          </motion.div>
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mt-4 mb-4 tracking-tight">
-            Tailored Interconnection <span className="text-brand-blue">Pricing</span>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-3xl mx-auto text-center mb-14"
+        >
+          <h1 className="font-display text-4xl md:text-5xl font-bold text-ink tracking-tight">
+            Tailored Interconnection Pricing
           </h1>
-          <p className="text-slate-500 text-lg">
+          <p className="font-body text-[1.125rem] text-ink-2 mt-4 leading-relaxed">
             Choose a service line, customize hardware and bandwidth commitments, and calculate your SLA-backed rates.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Top Service Tabs */}
-        <div className="bg-white border border-slate-200/80 p-1.5 rounded-2xl shadow-sm mb-12 flex flex-wrap justify-between items-center gap-1 max-w-3xl mx-auto">
+        {/* Service tabs */}
+        <div className="bg-paper border border-rule p-1 rounded-[4px] mb-10 flex flex-wrap justify-between items-center gap-1 max-w-3xl mx-auto">
           {(['internet', 'colocation', 'virtual'] as TabType[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="flex-1 min-w-[150px] text-center py-3.5 px-4 rounded-xl text-sm font-bold transition-all duration-300 relative flex items-center justify-center space-x-2"
+              className="flex-1 min-w-[120px] text-center py-3 px-4 rounded-[4px] font-display text-sm font-semibold transition-colors duration-[180ms] relative flex items-center justify-center gap-2"
             >
               {activeTab === tab && (
                 <motion.div
                   layoutId="activeCategoryTabBg"
-                  className="absolute inset-0 bg-brand-blue rounded-xl"
+                  className="absolute inset-0 bg-brand-blue rounded-[4px]"
                   transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                 />
               )}
-              <span className={`relative z-10 flex items-center justify-center space-x-2 transition-colors duration-300 ${
-                activeTab === tab ? 'text-white' : 'text-slate-500 hover:text-slate-900'
-              }`}>
-                {tab === 'internet' && <Wifi size={16} />}
-                {tab === 'colocation' && <Server size={16} />}
-                {tab === 'virtual' && <Cpu size={16} />}
-                <span className="capitalize">{tab === 'internet' ? 'Internet' : tab === 'colocation' ? 'Colocation' : 'Virtual Services'}</span>
+              <span className={`relative z-10 flex items-center justify-center gap-2 transition-colors duration-[180ms] ${activeTab === tab ? 'text-white' : 'text-ink-2 hover:text-ink'}`}>
+                {tab === 'internet' && <Wifi size={15} />}
+                {tab === 'colocation' && <Server size={15} />}
+                {tab === 'virtual' && <Cpu size={15} />}
+                <span>{tab === 'internet' ? 'Internet' : tab === 'colocation' ? 'Colocation' : 'Virtual Services'}</span>
               </span>
             </button>
           ))}
@@ -454,93 +313,77 @@ export const Pricing: React.FC = () => {
 
         {/* Calculator workspace */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-20">
-          
-          {/* Config Controls */}
-          <div className="lg:col-span-8 bg-white border border-slate-100 rounded-3xl p-6 md:p-8 shadow-xl shadow-slate-100/30 space-y-8">
-            
-            {/* Shared Location Map Selector */}
+
+          {/* Config panel */}
+          <div className="lg:col-span-8 bg-paper border border-rule rounded-[4px] p-6 md:p-8 space-y-8">
+
+            {/* Map selector */}
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Select Interconnection Node</h3>
-                <div className="flex items-center space-x-3 self-start sm:self-auto">
+                <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest">Select Interconnection Node</h3>
+                <div className="flex items-center gap-3 self-start sm:self-auto">
                   <button
                     onClick={findMyLocation}
                     disabled={isLocating}
-                    className="flex items-center space-x-1.5 px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:text-brand-blue hover:border-brand-blue transition-all duration-300 disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 border border-rule rounded-[4px] font-display text-xs font-semibold text-ink-2 hover:text-accent hover:border-accent transition-colors duration-[180ms] disabled:opacity-50"
                   >
                     {isLocating ? (
-                      <div className="w-3.5 h-3.5 border-2 border-brand-blue border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-3.5 h-3.5 border-2 border-brand-blue border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <Locate size={14} />
+                      <Locate size={13} />
                     )}
                     <span>Find My Location</span>
                   </button>
-                  <span className="text-xs font-bold text-brand-blue flex items-center space-x-1 bg-brand-blue/10 px-3 py-1.5 rounded-xl border border-brand-blue/10">
-                    <MapPin size={12} />
-                    <span>Active: {activeLoc}</span>
+                  <span className="font-mono text-xs text-accent flex items-center gap-1 bg-accent/8 px-3 py-1.5 rounded-[4px] border border-accent/20">
+                    <MapPin size={11} />
+                    <span>{activeLoc}</span>
                   </span>
                 </div>
               </div>
 
-              {/* Leaflet OSM Map */}
-              <div className="w-full h-[320px] rounded-2xl overflow-hidden border border-slate-200/80 shadow-inner relative bg-slate-100 z-0">
+              <div className="w-full h-[300px] rounded-[4px] overflow-hidden border border-rule relative bg-paper-2 z-0">
                 {!leafletLoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm font-medium bg-slate-50">
-                    <div className="w-6 h-6 border-2 border-brand-blue border-t-transparent rounded-full animate-spin mr-3"></div>
-                    Loading Interconnection Map...
+                  <div className="absolute inset-0 flex items-center justify-center text-ink-2 text-sm font-body bg-paper-2">
+                    <div className="w-5 h-5 border-2 border-brand-blue border-t-transparent rounded-full animate-spin mr-3" />
+                    Loading map...
                   </div>
                 )}
                 <div ref={mapContainerRef} className="w-full h-full" />
               </div>
             </div>
 
-            {/* Separator */}
-            <div className="border-t border-slate-100 my-6"></div>
+            <div className="border-t border-rule" />
 
-            {/* Internet Options Panel */}
+            {/* Internet options */}
             {activeTab === 'internet' && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-8"
-              >
-                {/* Port Size */}
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                 <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Port Size</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Port Size</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {(['1 Gbps', '10 Gbps', '100 Gbps'] as PortSizeType[]).map((size) => (
                       <button
                         key={size}
                         onClick={() => setPortSize(size)}
-                        className={`p-6 rounded-2xl border text-left transition-all duration-300 ${
-                          portSize === size 
-                            ? 'border-brand-blue bg-brand-blue/[0.03]' 
-                            : 'border-slate-200/60 hover:border-slate-400 hover:bg-slate-50'
-                        }`}
+                        className={`p-5 rounded-[4px] border text-left transition-colors duration-[180ms] ${portSize === size ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-2xl font-black text-slate-900 tracking-tight">{size}</span>
-                          {portSize === size && <div className="w-5.5 h-5.5 rounded-full bg-brand-blue flex items-center justify-center text-white"><Check size={12} strokeWidth={3} /></div>}
+                          <span className="font-mono text-xl font-bold text-ink">{size}</span>
+                          {portSize === size && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white"><Check size={11} strokeWidth={3} /></div>}
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Peering Interface</span>
+                        <span className="font-mono text-[10px] text-ink-2 uppercase tracking-widest">Peering Interface</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Number of Ports */}
                 <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Number of Ports</h3>
-                  <div className="grid grid-cols-4 gap-4 max-w-sm">
+                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Number of Ports</h3>
+                  <div className="grid grid-cols-4 gap-3 max-w-xs">
                     {[1, 2, 3, 4].map((num) => (
                       <button
                         key={num}
                         onClick={() => setNumPorts(num)}
-                        className={`py-3.5 rounded-xl border font-bold transition-all duration-300 ${
-                          numPorts === num
-                            ? 'border-brand-blue bg-brand-blue text-white'
-                            : 'border-slate-200/60 text-slate-600 hover:border-slate-400 hover:bg-slate-55'
-                        }`}
+                        className={`py-3 rounded-[4px] border font-display font-semibold text-sm transition-colors duration-[180ms] ${numPorts === num ? 'border-brand-blue bg-brand-blue text-white' : 'border-rule text-ink-2 hover:border-ink-2 bg-paper-2'}`}
                       >
                         {num}
                       </button>
@@ -548,21 +391,18 @@ export const Pricing: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Techne Reach Plan */}
-                <div className="pt-6 border-t border-slate-100">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+                <div className="pt-6 border-t border-rule">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
                     <div>
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Techne Reach Plan</h3>
-                      <p className="text-[11px] text-slate-400 mt-1">Global upstream & exchange cache paths</p>
+                      <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest">Techne Reach Plan</h3>
+                      <p className="font-body text-xs text-ink-2 mt-1">Global upstream & exchange cache paths</p>
                     </div>
-                    <div className="bg-slate-100 p-1 rounded-xl flex space-x-1">
+                    <div className="bg-paper-2 border border-rule p-1 rounded-[4px] flex gap-1">
                       {(['Fixed Bandwidth', 'Burstable'] as ReachPlanType[]).map((type) => (
                         <button
                           key={type}
                           onClick={() => setReachPlanType(type)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${
-                            reachPlanType === type ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'
-                          }`}
+                          className={`px-3 py-1.5 rounded-[4px] font-display text-xs font-semibold transition-colors duration-[180ms] ${reachPlanType === type ? 'bg-paper text-ink shadow-sm border border-rule' : 'text-ink-2 hover:text-ink'}`}
                         >
                           {type}
                         </button>
@@ -574,7 +414,7 @@ export const Pricing: React.FC = () => {
                     <select
                       value={speedCommit}
                       onChange={(e) => setSpeedCommit(e.target.value as SpeedCommitType)}
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-4 focus:ring-2 focus:ring-brand-blue outline-none transition-all duration-300 font-medium text-sm appearance-none cursor-pointer"
+                      className="input-field appearance-none cursor-pointer"
                     >
                       {speedCommits.map((speed) => (
                         <option key={speed} value={speed}>
@@ -582,49 +422,32 @@ export const Pricing: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
-                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                      </svg>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-ink-2">
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                     </div>
                   </div>
 
-                  {/* Datacenter Selection Dropdown */}
-                  <div className="mt-6" ref={dcDropdownRef}>
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Select Interface Datacenter</h3>
+                  <div className="mt-5" ref={dcDropdownRef}>
+                    <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-3">Select Interface Datacenter</h3>
                     <div className="relative">
                       <button
                         type="button"
                         onClick={() => setIsDcDropdownOpen(!isDcDropdownOpen)}
-                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-4 focus:ring-2 focus:ring-brand-blue outline-none transition-all duration-300 font-medium text-sm text-left flex justify-between items-center cursor-pointer"
+                        className="input-field text-left flex justify-between items-center cursor-pointer"
                       >
                         <span>{internetDC}</span>
-                        <svg
-                          className={`fill-current h-4 w-4 text-slate-400 transition-transform duration-300 ${isDcDropdownOpen ? 'rotate-180' : ''}`}
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                        </svg>
+                        <svg className={`fill-current h-4 w-4 text-ink-2 transition-transform duration-[180ms] ${isDcDropdownOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                       </button>
-                      
                       {isDcDropdownOpen && (
-                        <div className="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden flex flex-col z-30">
+                        <div className="absolute left-0 right-0 mt-1 bg-paper border border-rule rounded-[4px] shadow-sm overflow-hidden flex flex-col z-30">
                           {datacenterOptions[internetLoc].map((dc) => {
                             const isSelected = internetDC === dc;
                             return (
                               <button
                                 key={dc}
                                 type="button"
-                                onClick={() => {
-                                  setInternetDC(dc);
-                                  setIsDcDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-3.5 py-2.5 text-[15px] font-sans transition-colors leading-normal ${
-                                  isSelected
-                                    ? 'bg-[#0B66D6] text-white font-normal'
-                                    : 'bg-white text-slate-900 hover:bg-slate-50 font-normal'
-                                }`}
+                                onClick={() => { setInternetDC(dc); setIsDcDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 font-body text-sm transition-colors duration-[180ms] ${isSelected ? 'bg-brand-blue text-white' : 'bg-paper text-ink hover:bg-paper-2'}`}
                               >
                                 {dc}
                               </button>
@@ -638,17 +461,12 @@ export const Pricing: React.FC = () => {
               </motion.div>
             )}
 
-            {/* Colocation Options Panel */}
+            {/* Colocation options */}
             {activeTab === 'colocation' && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-8"
-              >
-                {/* Cabinet Size */}
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                 <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Cabinet Space Size</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Cabinet Space Size</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {([
                       { id: '1U Server', label: '1U Server Slot', desc: 'Best for standard rack servers' },
                       { id: '10U Quarter', label: '10U Quarter Cabinet', desc: 'Secure shared cabinet partition' },
@@ -658,15 +476,11 @@ export const Pricing: React.FC = () => {
                       <button
                         key={size.id}
                         onClick={() => setCabinetSize(size.id)}
-                        className={`p-5 rounded-2xl border text-left transition-all duration-300 flex justify-between items-start ${
-                          cabinetSize === size.id 
-                            ? 'border-brand-blue bg-brand-blue/[0.03]' 
-                            : 'border-slate-200/60 hover:border-slate-400 hover:bg-slate-55'
-                        }`}
+                        className={`p-4 rounded-[4px] border text-left transition-colors duration-[180ms] flex justify-between items-start ${cabinetSize === size.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
                         <div>
-                          <span className="font-bold text-slate-900 block mb-1 text-sm">{size.label}</span>
-                          <span className="text-[11px] text-slate-400">{size.desc}</span>
+                          <span className="font-display font-semibold text-ink block mb-1 text-sm">{size.label}</span>
+                          <span className="font-body text-xs text-ink-2">{size.desc}</span>
                         </div>
                         {cabinetSize === size.id && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white shrink-0 ml-3"><Check size={11} strokeWidth={3} /></div>}
                       </button>
@@ -674,19 +488,14 @@ export const Pricing: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Power Allocation */}
                 <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Redundant Power Limit</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Redundant Power Limit</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {(['1 kW', '2 kW', '3 kW', '5 kW'] as ColoPowerType[]).map((power) => (
                       <button
                         key={power}
                         onClick={() => setPowerAlloc(power)}
-                        className={`py-3.5 rounded-xl border font-bold text-sm transition-all duration-300 ${
-                          powerAlloc === power 
-                            ? 'border-brand-blue bg-brand-blue/10 text-brand-blue' 
-                            : 'border-slate-200/60 text-slate-500 hover:border-slate-400 hover:bg-slate-55'
-                        }`}
+                        className={`py-3 rounded-[4px] border font-mono font-semibold text-sm transition-colors duration-[180ms] ${powerAlloc === power ? 'border-brand-blue bg-brand-blue/10 text-brand-blue' : 'border-rule text-ink-2 hover:border-ink-2 bg-paper-2'}`}
                       >
                         {power}
                       </button>
@@ -696,17 +505,12 @@ export const Pricing: React.FC = () => {
               </motion.div>
             )}
 
-            {/* Virtual Services Options Panel */}
+            {/* Virtual options */}
             {activeTab === 'virtual' && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-8"
-              >
-                {/* Service Type */}
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                 <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Service Type</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Service Type</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {([
                       { id: 'Virtual Router', label: 'Virtual Router (vRouter)', desc: 'Enterprise routing engine with BGP supports' },
                       { id: 'Virtual Firewall', label: 'Virtual Firewall (vFirewall)', desc: 'Edge protection with unified threat control' },
@@ -716,15 +520,11 @@ export const Pricing: React.FC = () => {
                       <button
                         key={serv.id}
                         onClick={() => setVService(serv.id)}
-                        className={`p-5 rounded-2xl border text-left transition-all duration-300 flex justify-between items-start ${
-                          vService === serv.id 
-                            ? 'border-brand-blue bg-brand-blue/[0.03]' 
-                            : 'border-slate-200/60 hover:border-slate-400 hover:bg-slate-55'
-                        }`}
+                        className={`p-4 rounded-[4px] border text-left transition-colors duration-[180ms] flex justify-between items-start ${vService === serv.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
                         <div>
-                          <span className="font-bold text-slate-900 block mb-1 text-sm">{serv.label}</span>
-                          <span className="text-[11px] text-slate-400">{serv.desc}</span>
+                          <span className="font-display font-semibold text-ink block mb-1 text-sm">{serv.label}</span>
+                          <span className="font-body text-xs text-ink-2">{serv.desc}</span>
                         </div>
                         {vService === serv.id && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white shrink-0 ml-3"><Check size={11} strokeWidth={3} /></div>}
                       </button>
@@ -732,10 +532,9 @@ export const Pricing: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Resource Tier */}
                 <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Resource Capacity Tier</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Resource Capacity Tier</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {([
                       { id: 'Starter', specs: '1 vCPU / 2GB' },
                       { id: 'Professional', specs: '2 vCPU / 4GB' },
@@ -745,23 +544,18 @@ export const Pricing: React.FC = () => {
                       <button
                         key={tier.id}
                         onClick={() => setVTier(tier.id)}
-                        className={`p-4 rounded-xl border text-center transition-all duration-300 flex flex-col items-center justify-center ${
-                          vTier === tier.id 
-                            ? 'border-brand-blue bg-brand-blue/[0.03]' 
-                            : 'border-slate-200/60 hover:border-slate-400 hover:bg-slate-55'
-                        }`}
+                        className={`p-4 rounded-[4px] border text-center transition-colors duration-[180ms] flex flex-col items-center ${vTier === tier.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
-                        <span className="font-bold text-slate-900 text-sm">{tier.id}</span>
-                        <span className="text-[10px] text-slate-400 font-semibold mt-1">{tier.specs}</span>
+                        <span className="font-display font-semibold text-ink text-sm">{tier.id}</span>
+                        <span className="font-mono text-[10px] text-ink-2 mt-1">{tier.specs}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Managed Support Level */}
                 <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Managed Engineering Support</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Managed Engineering Support</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {([
                       { id: 'Self-Managed', label: 'Self-Managed', desc: 'No engineer support' },
                       { id: 'Semi-Managed', label: 'Semi-Managed', desc: 'Config backup & updates' },
@@ -770,15 +564,11 @@ export const Pricing: React.FC = () => {
                       <button
                         key={supp.id}
                         onClick={() => setVSupport(supp.id)}
-                        className={`p-4 rounded-xl border text-left transition-all duration-300 flex justify-between items-start ${
-                          vSupport === supp.id 
-                            ? 'border-brand-blue bg-brand-blue/[0.03]' 
-                            : 'border-slate-200/60 hover:border-slate-400 hover:bg-slate-55'
-                        }`}
+                        className={`p-4 rounded-[4px] border text-left transition-colors duration-[180ms] flex justify-between items-start ${vSupport === supp.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
                         <div>
-                          <span className="font-bold text-slate-900 text-sm block mb-1">{supp.label}</span>
-                          <span className="text-[10px] text-slate-400">{supp.desc}</span>
+                          <span className="font-display font-semibold text-ink text-sm block mb-1">{supp.label}</span>
+                          <span className="font-body text-xs text-ink-2">{supp.desc}</span>
                         </div>
                         {vSupport === supp.id && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white shrink-0 ml-2"><Check size={11} strokeWidth={3} /></div>}
                       </button>
@@ -788,23 +578,19 @@ export const Pricing: React.FC = () => {
               </motion.div>
             )}
 
-            {/* Global Contract Term */}
-            <div className="pt-6 border-t border-slate-100">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Contract Term</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Contract term */}
+            <div className="pt-6 border-t border-rule">
+              <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Contract Term</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {terms.map((t) => (
                   <button
                     key={t.name}
                     onClick={() => setContractTerm(t.name)}
-                    className={`p-5 rounded-2xl border text-center transition-all duration-300 relative flex flex-col items-center justify-center ${
-                      contractTerm === t.name 
-                        ? 'border-brand-blue bg-brand-blue/[0.03] shadow-md shadow-brand-blue/5' 
-                        : 'border-slate-200/60 hover:border-slate-400 hover:bg-slate-55'
-                    }`}
+                    className={`p-4 rounded-[4px] border text-center transition-colors duration-[180ms] flex flex-col items-center ${contractTerm === t.name ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                   >
-                    <span className="font-bold text-slate-900">{t.name}</span>
+                    <span className="font-display font-semibold text-ink text-sm">{t.name}</span>
                     {t.note && (
-                      <span className="text-[10px] text-brand-blue font-bold mt-1 bg-brand-blue/10 px-2 py-0.5 rounded-full">
+                      <span className="font-mono text-[10px] text-accent mt-1 bg-accent/10 px-2 py-0.5 rounded-[2px]">
                         {t.note}
                       </span>
                     )}
@@ -815,272 +601,187 @@ export const Pricing: React.FC = () => {
 
           </div>
 
-          {/* Quote Sidebar Panel */}
+          {/* Quote sidebar */}
           <div className="lg:col-span-4 lg:sticky lg:top-24">
-            <div className="bg-slate-900 text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[460px]">
-              
-              <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-brand-blue/15 blur-2xl pointer-events-none" />
-              <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-brand-blue/10 blur-xl pointer-events-none" />
+            <div className="bg-ink text-white rounded-[4px] p-8 flex flex-col justify-between min-h-[440px]">
+              <div>
+                <h3 className="font-mono text-[10px] text-white/40 uppercase tracking-widest mb-6">Your Subscription</h3>
 
-              <div className="relative z-10">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Your Subscription</h3>
-                
-                {/* Cost Output */}
                 <div className="mb-8 border-b border-white/10 pb-6">
-                  <div className="flex items-baseline">
-                    <span className="text-5xl font-black tracking-tight text-white">
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-mono font-bold text-white" style={{ fontSize: 'var(--text-4xl)', lineHeight: 1 }}>
                       ${costResult.monthlyUSD.toLocaleString()}
                     </span>
-                    <span className="text-slate-400 text-sm ml-2 font-medium">/ mo</span>
+                    <span className="font-body text-white/40 text-sm">/ mo</span>
                   </div>
-                  <div className="text-brand-blue text-xs font-bold mt-2">
+                  <div className="font-mono text-accent text-xs mt-2">
                     ~ ₱{costResult.monthlyPHP.toLocaleString()} PHP / month
                   </div>
                 </div>
 
-                {/* Selected Details List */}
-                <div className="space-y-4 text-sm">
-                  <div className="flex justify-between items-center text-slate-400">
-                    <span>Category:</span>
-                    <span className="text-white font-semibold capitalize">{activeTab}</span>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between items-center text-white/40">
+                    <span className="font-body">Category:</span>
+                    <span className="font-display font-semibold text-white capitalize">{activeTab}</span>
                   </div>
-                  
-                  {activeTab === 'internet' && (
-                    <>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Location:</span>
-                        <span className="text-white font-semibold flex items-center space-x-1">
-                          <MapPin size={12} className="text-brand-blue" />
-                          <span>{internetLoc}</span>
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Datacenter:</span>
-                        <span className="text-white font-semibold">{internetDC}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Ports:</span>
-                        <span className="text-white font-semibold">{numPorts} × {portSize}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Reach Plan:</span>
-                        <span className="text-white font-semibold">
-                          {speedCommit === 'None' ? 'Peering Only' : `${reachPlanType} (${speedCommit})`}
-                        </span>
-                      </div>
-                    </>
-                  )}
 
-                  {activeTab === 'colocation' && (
-                    <>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Location:</span>
-                        <span className="text-white font-semibold flex items-center space-x-1">
-                          <MapPin size={12} className="text-brand-blue" />
-                          <span>{coloLoc}</span>
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Space:</span>
-                        <span className="text-white font-semibold">{cabinetSize}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Power:</span>
-                        <span className="text-white font-semibold">{powerAlloc}</span>
-                      </div>
-                    </>
-                  )}
+                  {activeTab === 'internet' && (<>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Location:</span>
+                      <span className="font-display font-semibold text-white flex items-center gap-1"><MapPin size={11} className="text-accent" />{internetLoc}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Datacenter:</span>
+                      <span className="font-display font-semibold text-white text-right max-w-[10rem] truncate">{internetDC}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Ports:</span>
+                      <span className="font-mono font-semibold text-white">{numPorts} × {portSize}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Reach Plan:</span>
+                      <span className="font-display font-semibold text-white text-right">{speedCommit === 'None' ? 'Peering Only' : `${reachPlanType} (${speedCommit})`}</span>
+                    </div>
+                  </>)}
 
-                  {activeTab === 'virtual' && (
-                    <>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Edge Node:</span>
-                        <span className="text-white font-semibold flex items-center space-x-1">
-                          <MapPin size={12} className="text-brand-blue" />
-                          <span>{virtualLoc}</span>
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Service:</span>
-                        <span className="text-white font-semibold">{vService}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Tier:</span>
-                        <span className="text-white font-semibold">{vTier}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-slate-400">
-                        <span>Managed:</span>
-                        <span className="text-white font-semibold">{vSupport}</span>
-                      </div>
-                    </>
-                  )}
+                  {activeTab === 'colocation' && (<>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Location:</span>
+                      <span className="font-display font-semibold text-white flex items-center gap-1"><MapPin size={11} className="text-accent" />{coloLoc}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Space:</span>
+                      <span className="font-display font-semibold text-white">{cabinetSize}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Power:</span>
+                      <span className="font-mono font-semibold text-white">{powerAlloc}</span>
+                    </div>
+                  </>)}
 
-                  <div className="flex justify-between items-center text-slate-400">
-                    <span>Term Commitment:</span>
-                    <span className="text-white font-semibold">{contractTerm}</span>
+                  {activeTab === 'virtual' && (<>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Edge Node:</span>
+                      <span className="font-display font-semibold text-white flex items-center gap-1"><MapPin size={11} className="text-accent" />{virtualLoc}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Service:</span>
+                      <span className="font-display font-semibold text-white">{vService}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Tier:</span>
+                      <span className="font-display font-semibold text-white">{vTier}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-white/40">
+                      <span className="font-body">Managed:</span>
+                      <span className="font-display font-semibold text-white">{vSupport}</span>
+                    </div>
+                  </>)}
+
+                  <div className="flex justify-between items-center text-white/40">
+                    <span className="font-body">Term:</span>
+                    <span className="font-mono font-semibold text-white">{contractTerm}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="relative z-10 mt-8 pt-6 border-t border-white/10">
+              <div className="mt-8 pt-6 border-t border-white/10">
                 <Link
                   to={`/${PANEL_IDS.CONTACT}?${costResult.query}`}
-                  className="w-full py-4 bg-brand-blue text-white rounded-xl text-center font-bold text-sm hover:bg-opacity-90 transition-all duration-300 flex items-center justify-center space-x-1.5 shadow-lg shadow-brand-blue/10"
+                  className="w-full py-3.5 bg-accent hover:bg-accent-hover text-accent-ink rounded-[4px] text-center font-display font-semibold text-sm flex items-center justify-center gap-1.5 transition-colors duration-[180ms]"
                 >
-                  <span>Apply Now</span>
-                  <ChevronRight size={16} />
+                  Apply Now
+                  <ChevronRight size={15} />
                 </Link>
               </div>
-
             </div>
           </div>
 
         </div>
 
-        {/* Bottom Inclusions Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 border-t border-slate-200/80 pt-16">
-          
-          {/* Active Tab Left Column Inclusions */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2.5 bg-brand-blue/10 rounded-xl text-brand-blue">
-                {activeTab === 'internet' ? <Cpu size={20} /> : activeTab === 'colocation' ? <Server size={20} /> : <Shield size={20} />}
+        {/* Inclusions grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 border-t border-rule pt-16">
+
+          <div className="lg:col-span-4 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-accent/10 rounded-[4px] text-accent">
+                {activeTab === 'internet' ? <Cpu size={18} /> : activeTab === 'colocation' ? <Server size={18} /> : <Shield size={18} />}
               </div>
-              <h3 className="text-lg font-bold text-slate-900">
+              <h3 className="font-display font-semibold text-ink">
                 {activeTab === 'internet' && 'Port Plan Inclusions'}
                 {activeTab === 'colocation' && 'Datacenter Standards'}
                 {activeTab === 'virtual' && 'Virtual Edge Benefits'}
               </h3>
             </div>
-            
-            <ul className="space-y-3.5">
-              {activeTab === 'internet' && [
-                'Peered traffic from Alibaba, Amazon, Facebook, Fastly, Google, Riot Games, Swarmify, Tencent, TikTok, Twitch, Zenlayer',
-                'Bilateral/multilateral peering support via redundant route servers',
-                'Advanced BGP community-based route control',
-                'Private VLAN support for secure and isolated traffic exchange',
-                'Access to open-source mirror servers'
-              ].map((item, index) => (
-                <li key={index} className="flex items-start text-slate-600 text-sm">
-                  <div className="w-5 h-5 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0 mr-3 mt-0.5">
-                    <Check size={12} strokeWidth={3} />
-                  </div>
-                  <span className="leading-relaxed">{item}</span>
+            <ul className="space-y-3">
+              {activeTab === 'internet' && ['Peered traffic from Alibaba, Amazon, Facebook, Fastly, Google, Riot Games, Swarmify, Tencent, TikTok, Twitch, Zenlayer','Bilateral/multilateral peering support via redundant route servers','Advanced BGP community-based route control','Private VLAN support for secure and isolated traffic exchange','Access to open-source mirror servers'].map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-ink-2">
+                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
+                  <span className="font-body text-sm leading-relaxed">{item}</span>
                 </li>
               ))}
-
-              {activeTab === 'colocation' && [
-                'A+B Redundant Power allocation from separate UPS configurations',
-                'Carrier-Neutral cross connects with all major local fibers',
-                'Strict environmental controls (20-24°C, 40-60% humidity)',
-                'Direct physical access authorization workflows',
-                '24/7 smart-hands engineer support availability on-site'
-              ].map((item, index) => (
-                <li key={index} className="flex items-start text-slate-600 text-sm">
-                  <div className="w-5 h-5 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0 mr-3 mt-0.5">
-                    <Check size={12} strokeWidth={3} />
-                  </div>
-                  <span className="leading-relaxed">{item}</span>
+              {activeTab === 'colocation' && ['A+B Redundant Power allocation from separate UPS configurations','Carrier-Neutral cross connects with all major local fibers','Strict environmental controls (20-24°C, 40-60% humidity)','Direct physical access authorization workflows','24/7 smart-hands engineer support availability on-site'].map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-ink-2">
+                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
+                  <span className="font-body text-sm leading-relaxed">{item}</span>
                 </li>
               ))}
-
-              {activeTab === 'virtual' && [
-                'Instant automated deployment and configuration sync',
-                'Full IPv4/IPv6 dual stack support built-in',
-                'Redundant virtual backplane linking all Edge locations',
-                'Integrated stateful packet filters and access logs',
-                'Elastic scalability to dynamically resize CPU/RAM capacity'
-              ].map((item, index) => (
-                <li key={index} className="flex items-start text-slate-600 text-sm">
-                  <div className="w-5 h-5 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0 mr-3 mt-0.5">
-                    <Check size={12} strokeWidth={3} />
-                  </div>
-                  <span className="leading-relaxed">{item}</span>
+              {activeTab === 'virtual' && ['Instant automated deployment and configuration sync','Full IPv4/IPv6 dual stack support built-in','Redundant virtual backplane linking all Edge locations','Integrated stateful packet filters and access logs','Elastic scalability to dynamically resize CPU/RAM capacity'].map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-ink-2">
+                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
+                  <span className="font-body text-sm leading-relaxed">{item}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Active Tab Center Column Inclusions */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2.5 bg-brand-blue/10 rounded-xl text-brand-blue">
-                {activeTab === 'internet' ? <Activity size={20} /> : activeTab === 'colocation' ? <Cpu size={20} /> : <Activity size={20} />}
+          <div className="lg:col-span-4 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-accent/10 rounded-[4px] text-accent">
+                {activeTab === 'internet' ? <Activity size={18} /> : activeTab === 'colocation' ? <Cpu size={18} /> : <Activity size={18} />}
               </div>
-              <h3 className="text-lg font-bold text-slate-900">
+              <h3 className="font-display font-semibold text-ink">
                 {activeTab === 'internet' && 'Techne Reach Plan Inclusions'}
                 {activeTab === 'colocation' && 'Infrastructure Facilities'}
                 {activeTab === 'virtual' && 'Edge Node Integrations'}
               </h3>
             </div>
-
-            <ul className="space-y-3.5">
-              {activeTab === 'internet' && [
-                'Expanded content offering via partner Internet Exchanges and CDNs in Singapore and Hong Kong',
-                'Includes cached content from Akamai, Cloudflare, Conversant, Facebook, Google, Microsoft, Netflix (coming soon), and Steam',
-                'Burstable plans and usage-based pricing',
-                'Longer contract terms now available for Manila',
-                'Optimized for performance by serving content closer to your network'
-              ].map((item, index) => (
-                <li key={index} className="flex items-start text-slate-600 text-sm">
-                  <div className="w-5 h-5 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0 mr-3 mt-0.5">
-                    <Check size={12} strokeWidth={3} />
-                  </div>
-                  <span className="leading-relaxed">{item}</span>
+            <ul className="space-y-3">
+              {activeTab === 'internet' && ['Expanded content via partner Internet Exchanges in Singapore and Hong Kong','Cached content from Akamai, Cloudflare, Facebook, Google, Microsoft, Netflix (coming soon), Steam','Burstable plans and usage-based pricing','Longer contract terms available for Manila','Optimized performance by serving content closer to your network'].map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-ink-2">
+                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
+                  <span className="font-body text-sm leading-relaxed">{item}</span>
                 </li>
               ))}
-
-              {activeTab === 'colocation' && [
-                'Precision N+1 cooling infrastructure with hot/cold aisle setups',
-                'Gas-based fire suppression systems (FM-200 or equivalent)',
-                'Dual diesel engine backup generators with 72-hour fuel storage',
-                'Underfloor cable pathways for power and fiber routing',
-                'Dedicated client testing benches and assembly spaces'
-              ].map((item, index) => (
-                <li key={index} className="flex items-start text-slate-600 text-sm">
-                  <div className="w-5 h-5 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0 mr-3 mt-0.5">
-                    <Check size={12} strokeWidth={3} />
-                  </div>
-                  <span className="leading-relaxed">{item}</span>
+              {activeTab === 'colocation' && ['Precision N+1 cooling infrastructure with hot/cold aisle setups','Gas-based fire suppression systems (FM-200 or equivalent)','Dual diesel engine backup generators with 72-hour fuel storage','Underfloor cable pathways for power and fiber routing','Dedicated client testing benches and assembly spaces'].map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-ink-2">
+                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
+                  <span className="font-body text-sm leading-relaxed">{item}</span>
                 </li>
               ))}
-
-              {activeTab === 'virtual' && [
-                'Direct link to local Internet Peering (PHOpenIX)',
-                'Zero-downtime routing protocol migrations',
-                'Optional cloud-delivered DNS firewall integration',
-                'Custom API endpoint control keys',
-                'Comprehensive flow log export pipelines (NetFlow/IPFIX)'
-              ].map((item, index) => (
-                <li key={index} className="flex items-start text-slate-600 text-sm">
-                  <div className="w-5 h-5 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0 mr-3 mt-0.5">
-                    <Check size={12} strokeWidth={3} />
-                  </div>
-                  <span className="leading-relaxed">{item}</span>
+              {activeTab === 'virtual' && ['Direct link to local Internet Peering (PHOpenIX)','Zero-downtime routing protocol migrations','Optional cloud-delivered DNS firewall integration','Custom API endpoint control keys','Comprehensive flow log export pipelines (NetFlow/IPFIX)'].map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-ink-2">
+                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
+                  <span className="font-body text-sm leading-relaxed">{item}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Dedicated "Not sure what to choose" Card */}
-          <div className="lg:col-span-4 h-full">
-            <div className="p-8 bg-brand-blue/5 border border-brand-blue/20 rounded-3xl flex flex-col justify-between h-full min-h-[300px] relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-brand-blue/10 rounded-bl-full pointer-events-none" />
+          <div className="lg:col-span-4">
+            <div className="p-7 bg-paper border border-rule rounded-[4px] flex flex-col justify-between h-full min-h-[260px]">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-brand-blue mb-6 shadow-sm">
-                  <HelpCircle size={24} />
+                <div className="w-10 h-10 rounded-[4px] bg-paper-2 border border-rule flex items-center justify-center text-accent mb-5">
+                  <HelpCircle size={20} />
                 </div>
-                <h4 className="text-xl font-bold text-slate-900 mb-3">Not sure what to choose?</h4>
-                <p className="text-slate-500 text-sm leading-relaxed mb-6">
-                  Let our interconnection experts design a custom network structure tailored specifically for your business requirements, routing policies, and latency targets.
+                <h4 className="font-display font-bold text-ink mb-2">Not sure what to choose?</h4>
+                <p className="font-body text-sm text-ink-2 leading-relaxed mb-5">
+                  Let our interconnection experts design a custom network structure tailored for your routing policies, latency targets, and business requirements.
                 </p>
               </div>
-              <Link
-                to={`/${PANEL_IDS.CONTACT}`}
-                className="w-full py-3.5 bg-brand-blue text-white rounded-xl text-center font-bold text-sm hover:bg-opacity-90 transition-all duration-300 flex items-center justify-center space-x-1.5 shadow-md shadow-brand-blue/10"
-              >
-                <span>Contact Us</span>
-                <ChevronRight size={16} />
+              <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary w-full justify-center py-3">
+                Contact Us
+                <ChevronRight size={14} />
               </Link>
             </div>
           </div>

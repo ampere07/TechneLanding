@@ -75,9 +75,8 @@ export const NetworkMap: React.FC = () => {
   // Orbital system variables
   const xc = 400;
   const yc = 250;
-  const angleRad = -15 * Math.PI / 180; // ring tilt
+  const angleRad = -15 * Math.PI / 180;
 
-  // Map locations dynamically along the Saturn orbit
   const mapPointsForRing = (rawList: { id: string; name: string; region: string; description: string }[], ringA: number, ringB: number): Location[] => {
     return rawList.map((loc, idx) => {
       const t = (idx / rawList.length) * 2 * Math.PI;
@@ -85,16 +84,10 @@ export const NetworkMap: React.FC = () => {
       const y0 = ringB * Math.sin(t);
       const x = xc + x0 * Math.cos(angleRad) - y0 * Math.sin(angleRad);
       const y = yc + x0 * Math.sin(angleRad) + y0 * Math.cos(angleRad);
-      return {
-        ...loc,
-        x,
-        y,
-        t
-      };
+      return { ...loc, x, y, t };
     });
   };
 
-  // Calculate back and front paths
   const getEllipsePath = (tStart: number, tEnd: number, ringA: number, ringB: number) => {
     const steps = 60;
     const points: string[] = [];
@@ -109,27 +102,21 @@ export const NetworkMap: React.FC = () => {
     return points.join(' ');
   };
 
-  // Ring 1 (Inner) - Visayas (4 pins)
-  const ring1A = 150;
-  const ring1B = 48;
+  const ring1A = 150; const ring1B = 48;
   const ring1Points = mapPointsForRing(visayasLocations, ring1A, ring1B);
   const backRing1Path = getEllipsePath(Math.PI, 2 * Math.PI, ring1A, ring1B);
   const frontRing1Path = getEllipsePath(0, Math.PI, ring1A, ring1B);
   const backPoints1 = ring1Points.filter(p => p.t >= Math.PI && p.t < 2 * Math.PI);
   const frontPoints1 = ring1Points.filter(p => p.t >= 0 && p.t < Math.PI);
 
-  // Ring 2 (Middle) - Mindanao (4 pins)
-  const ring2A = 220;
-  const ring2B = 70;
+  const ring2A = 220; const ring2B = 70;
   const ring2Points = mapPointsForRing(mindanaoLocations, ring2A, ring2B);
   const backRing2Path = getEllipsePath(Math.PI, 2 * Math.PI, ring2A, ring2B);
   const frontRing2Path = getEllipsePath(0, Math.PI, ring2A, ring2B);
   const backPoints2 = ring2Points.filter(p => p.t >= Math.PI && p.t < 2 * Math.PI);
   const frontPoints2 = ring2Points.filter(p => p.t >= 0 && p.t < Math.PI);
 
-  // Ring 3 (Outer) - Luzon (24 pins)
-  const ring3A = 290;
-  const ring3B = 94;
+  const ring3A = 290; const ring3B = 94;
   const ring3Points = mapPointsForRing(luzonLocations, ring3A, ring3B);
   const backRing3Path = getEllipsePath(Math.PI, 2 * Math.PI, ring3A, ring3B);
   const frontRing3Path = getEllipsePath(0, Math.PI, ring3A, ring3B);
@@ -137,49 +124,39 @@ export const NetworkMap: React.FC = () => {
   const frontPoints3 = ring3Points.filter(p => p.t >= 0 && p.t < Math.PI);
 
   return (
-    <section className="py-24 bg-white overflow-hidden">
-      <div className="container mx-auto px-6 text-center relative">
+    <section className="py-24 bg-paper overflow-hidden border-t border-rule">
+      <div className="container mx-auto px-6 max-w-7xl">
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-16"
+          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-14 border-b border-rule pb-10"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 leading-tight max-w-3xl mx-auto tracking-tight mb-4">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-ink leading-tight max-w-2xl tracking-tight">
             Delivering Network Solutions Across 32+ Networks Nationwide
           </h2>
-          <p className="text-slate-500 text-xs md:text-sm max-w-2xl mx-auto font-medium">
-            Note: Includes past and present network engagements.
+          <p className="font-body text-sm text-ink-2 mt-3 max-w-xl">
+            Includes past and present network engagements.
           </p>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="relative max-w-6xl mx-auto w-full overflow-hidden h-[300px] sm:h-[420px] lg:h-auto lg:aspect-[8/5]"
         >
           <svg viewBox="0 0 800 500" className="absolute h-full left-1/2 -translate-x-1/2 select-none lg:static lg:w-full lg:h-full lg:translate-x-0 lg:left-0">
             <style>{`
               @keyframes flow-clockwise {
-                to {
-                  stroke-dashoffset: -100;
-                }
+                to { stroke-dashoffset: -100; }
               }
-              .animate-orbit-flow-1 {
-                stroke-dasharray: 15 15;
-                animation: flow-clockwise 10s linear infinite;
-              }
-              .animate-orbit-flow-2 {
-                stroke-dasharray: 20 20;
-                animation: flow-clockwise 15s linear infinite;
-              }
-              .animate-orbit-flow-3 {
-                stroke-dasharray: 25 25;
-                animation: flow-clockwise 20s linear infinite;
-              }
+              .animate-orbit-flow-1 { stroke-dasharray: 15 15; animation: flow-clockwise 10s linear infinite; }
+              .animate-orbit-flow-2 { stroke-dasharray: 20 20; animation: flow-clockwise 15s linear infinite; }
+              .animate-orbit-flow-3 { stroke-dasharray: 25 25; animation: flow-clockwise 20s linear infinite; }
             `}</style>
             <defs>
               <radialGradient id="planetGradient" cx="35%" cy="35%" r="65%">
@@ -196,40 +173,37 @@ export const NetworkMap: React.FC = () => {
                 <feGaussianBlur stdDeviation="3" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
-              {/* Paths for text rendering along the curves */}
               <path id="labelPath1" d={backRing1Path} fill="none" stroke="none" />
               <path id="labelPath2" d={backRing2Path} fill="none" stroke="none" />
               <path id="labelPath3" d={backRing3Path} fill="none" stroke="none" />
             </defs>
 
-            {/* 1. Back Ring Arcs (Rendered outer to inner: 3 -> 2 -> 1) */}
+            {/* Back ring arcs — outer to inner */}
             <path d={backRing3Path} className="animate-orbit-flow-3" fill="none" stroke="#63b4b5" strokeWidth="4.5" strokeLinecap="round" opacity="0.15" filter="url(#ringGlow)" />
             <path d={backRing3Path} className="animate-orbit-flow-3" fill="none" stroke="#63b4b5" strokeWidth="1.2" strokeLinecap="round" opacity="0.50" />
-
             <path d={backRing2Path} className="animate-orbit-flow-2" fill="none" stroke="#63b4b5" strokeWidth="4.0" strokeLinecap="round" opacity="0.18" filter="url(#ringGlow)" />
             <path d={backRing2Path} className="animate-orbit-flow-2" fill="none" stroke="#63b4b5" strokeWidth="1.2" strokeLinecap="round" opacity="0.55" />
-
             <path d={backRing1Path} className="animate-orbit-flow-1" fill="none" stroke="#63b4b5" strokeWidth="3.5" strokeLinecap="round" opacity="0.22" filter="url(#ringGlow)" />
             <path d={backRing1Path} className="animate-orbit-flow-1" fill="none" stroke="#63b4b5" strokeWidth="1.2" strokeLinecap="round" opacity="0.60" />
 
-            {/* 2. Back Pins (Rendered outer to inner: 3 -> 2 -> 1) */}
+            {/* Back pins */}
             {backPoints3.map((pin) => (
               <g key={pin.id} className="cursor-pointer group" onClick={() => setActiveLocation(pin)}>
-                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e] group-hover:r-[8px]" />
+                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e]" />
               </g>
             ))}
             {backPoints2.map((pin) => (
               <g key={pin.id} className="cursor-pointer group" onClick={() => setActiveLocation(pin)}>
-                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e] group-hover:r-[8px]" />
+                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e]" />
               </g>
             ))}
             {backPoints1.map((pin) => (
               <g key={pin.id} className="cursor-pointer group" onClick={() => setActiveLocation(pin)}>
-                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e] group-hover:r-[8px]" />
+                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e]" />
               </g>
             ))}
 
-            {/* 3. Central Planet (Techne) */}
+            {/* Central planet */}
             <g>
               <circle cx={xc} cy={yc} r="94" fill="#63b4b5" opacity="0.22" filter="url(#glow)" />
               <circle cx={xc} cy={yc} r="90" fill="url(#planetGradient)" />
@@ -238,78 +212,69 @@ export const NetworkMap: React.FC = () => {
               </text>
             </g>
 
-            {/* 4. Front Ring Arcs (Rendered inner to outer: 1 -> 2 -> 3) */}
+            {/* Front ring arcs — inner to outer */}
             <path d={frontRing1Path} className="animate-orbit-flow-1" fill="none" stroke="#63b4b5" strokeWidth="3.5" strokeLinecap="round" opacity="0.22" filter="url(#ringGlow)" />
             <path d={frontRing1Path} className="animate-orbit-flow-1" fill="none" stroke="#63b4b5" strokeWidth="1.2" strokeLinecap="round" opacity="0.60" />
-
             <path d={frontRing2Path} className="animate-orbit-flow-2" fill="none" stroke="#63b4b5" strokeWidth="4.0" strokeLinecap="round" opacity="0.18" filter="url(#ringGlow)" />
             <path d={frontRing2Path} className="animate-orbit-flow-2" fill="none" stroke="#63b4b5" strokeWidth="1.2" strokeLinecap="round" opacity="0.55" />
-
             <path d={frontRing3Path} className="animate-orbit-flow-3" fill="none" stroke="#63b4b5" strokeWidth="4.5" strokeLinecap="round" opacity="0.15" filter="url(#ringGlow)" />
             <path d={frontRing3Path} className="animate-orbit-flow-3" fill="none" stroke="#63b4b5" strokeWidth="1.2" strokeLinecap="round" opacity="0.50" />
 
-            {/* 5. Front Pins (Rendered inner to outer: 1 -> 2 -> 3) */}
+            {/* Front pins */}
             {frontPoints1.map((pin) => (
               <g key={pin.id} className="cursor-pointer group" onClick={() => setActiveLocation(pin)}>
-                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e] group-hover:r-[8px]" />
+                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e]" />
               </g>
             ))}
             {frontPoints2.map((pin) => (
               <g key={pin.id} className="cursor-pointer group" onClick={() => setActiveLocation(pin)}>
-                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e] group-hover:r-[8px]" />
+                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e]" />
               </g>
             ))}
             {frontPoints3.map((pin) => (
               <g key={pin.id} className="cursor-pointer group" onClick={() => setActiveLocation(pin)}>
-                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e] group-hover:r-[8px]" />
+                <circle cx={pin.x} cy={pin.y} r="6.5" fill="#63b4b5" stroke="white" strokeWidth="1.5" className="transition-all duration-300 group-hover:fill-[#2e6d6e]" />
               </g>
             ))}
 
-            {/* 6. Ring Labels (Curved along the top-left orbits) */}
+            {/* Ring labels */}
             <text fill="#63b4b5" opacity="0.8" dy="-8" className="text-xs font-bold uppercase tracking-widest select-none pointer-events-none font-sans">
-              <textPath href="#labelPath1" startOffset="15%" textAnchor="middle">
-                Visayas
-              </textPath>
+              <textPath href="#labelPath1" startOffset="15%" textAnchor="middle">Visayas</textPath>
             </text>
             <text fill="#63b4b5" opacity="0.8" dy="-8" className="text-xs font-bold uppercase tracking-widest select-none pointer-events-none font-sans">
-              <textPath href="#labelPath2" startOffset="15%" textAnchor="middle">
-                Mindanao
-              </textPath>
+              <textPath href="#labelPath2" startOffset="15%" textAnchor="middle">Mindanao</textPath>
             </text>
             <text fill="#63b4b5" opacity="0.8" dy="-8" className="text-xs font-bold uppercase tracking-widest select-none pointer-events-none font-sans">
-              <textPath href="#labelPath3" startOffset="15%" textAnchor="middle">
-                Luzon
-              </textPath>
+              <textPath href="#labelPath3" startOffset="15%" textAnchor="middle">Luzon</textPath>
             </text>
           </svg>
 
-          {/* Mini Modal */}
+          {/* Node tooltip modal */}
           <AnimatePresence>
             {activeLocation && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                initial={{ opacity: 0, scale: 0.94, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-72 bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 text-left"
+                exit={{ opacity: 0, scale: 0.94, y: 8 }}
+                transition={{ duration: 0.18 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-68 bg-paper border border-rule rounded-[4px] p-5 text-left shadow-sm"
               >
                 <button
                   onClick={() => setActiveLocation(null)}
-                  className="absolute top-4 right-4 p-1 hover:bg-slate-50 rounded-full text-slate-400 transition-colors"
+                  className="absolute top-3 right-3 p-1 hover:bg-paper-2 rounded-[2px] text-ink-2 transition-colors"
                 >
-                  <X size={16} />
+                  <X size={14} />
                 </button>
-
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="p-2 bg-brand-blue/10 rounded-xl text-brand-blue">
-                    <MapPin size={20} />
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="p-1.5 bg-accent/10 rounded-[4px] text-accent">
+                    <MapPin size={14} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm">{activeLocation.name}</h4>
-                    <span className="text-[10px] font-bold text-brand-blue uppercase tracking-wider">{activeLocation.region}</span>
+                    <h4 className="font-display font-semibold text-sm text-ink">{activeLocation.name}</h4>
+                    <span className="font-mono text-[10px] text-accent uppercase tracking-widest">{activeLocation.region}</span>
                   </div>
                 </div>
-
-                <p className="text-xs text-slate-500 leading-relaxed">
+                <p className="font-body text-xs text-ink-2 leading-relaxed">
                   {activeLocation.description}
                 </p>
               </motion.div>
@@ -317,7 +282,7 @@ export const NetworkMap: React.FC = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Backdrop for closing modal */}
+        {/* Backdrop */}
         <AnimatePresence>
           {activeLocation && (
             <motion.div
@@ -325,10 +290,11 @@ export const NetworkMap: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setActiveLocation(null)}
-              className="fixed inset-0 bg-slate-900/5 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-ink/5 backdrop-blur-sm z-40"
             />
           )}
         </AnimatePresence>
+
       </div>
     </section>
   );
@@ -352,43 +318,43 @@ export const TrustedBrands: React.FC = () => {
   ];
 
   return (
-    <section className="py-20 bg-slate-50 border-t border-slate-100 overflow-hidden">
-      <div className="container mx-auto px-6 text-center">
+    <section className="py-20 bg-paper-2 border-t border-rule overflow-hidden">
+      <div className="container mx-auto px-6 max-w-7xl">
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-12"
+          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-12 border-b border-rule pb-8"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-ink tracking-tight">
             Techne Trusted Brands
           </h2>
+          <p className="font-body text-sm text-ink-2 mt-2">
+            Hardware and software platforms we deploy and support.
+          </p>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="flex flex-wrap justify-center items-center gap-10 md:gap-16 max-w-6xl mx-auto"
+          transition={{ duration: 0.4 }}
+          className="flex flex-wrap items-center gap-10 md:gap-14"
         >
           {brands.map((brand, i) => (
-            <motion.div
-              key={i}
-              whileHover={{ y: -2, scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-              className="group cursor-pointer"
-            >
+            <div key={i} className="group cursor-default">
               <img
                 src={brand.logo}
                 alt={brand.name}
-                className="h-10 md:h-12 w-auto object-contain opacity-75 group-hover:opacity-100 transition-all duration-300 select-none"
+                className="h-9 md:h-11 w-auto object-contain opacity-50 group-hover:opacity-80 transition-opacity duration-[180ms] select-none grayscale"
                 draggable="false"
               />
-            </motion.div>
+            </div>
           ))}
         </motion.div>
+
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Calendar, Tag, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { Calendar, Tag, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PANEL_IDS } from '../constants';
 
@@ -13,8 +13,8 @@ interface BlogDetailProps {
   image: string;
 }
 
-export const BlogDetail: React.FC<BlogDetailProps> = ({ 
-  title, content, date, author, category, image 
+export const BlogDetail: React.FC<BlogDetailProps> = ({
+  title, content, date, author, category, image
 }) => {
   const navigate = useNavigate();
   const [showToast, setShowToast] = useState(false);
@@ -26,98 +26,98 @@ export const BlogDetail: React.FC<BlogDetailProps> = ({
   };
 
   return (
-    <motion.section 
+    <motion.section
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-white min-h-screen relative"
+      transition={{ duration: 0.28 }}
+      className="bg-paper min-h-screen"
     >
-      <div className="container mx-auto px-6 py-12">
-        {/* Back Button */}
-        <button 
+      <div className="container mx-auto px-6 py-20 max-w-4xl">
+
+        {/* Back link */}
+        <button
           onClick={() => navigate(`/${PANEL_IDS.BLOG}`)}
-          className="flex items-center space-x-2 text-slate-500 hover:text-brand-blue font-bold text-sm transition-colors mb-12"
+          className="flex items-center gap-1.5 font-body text-sm text-ink-2 hover:text-accent transition-colors duration-[180ms] mb-12"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={16} />
           <span>Back to Insights</span>
         </button>
 
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="mb-12">
-            <div className="flex items-center space-x-3 mb-6">
-              <span className="text-[10px] font-bold text-brand-blue uppercase tracking-widest px-3 py-1 bg-brand-blue/10 rounded-full">
-                {category}
-              </span>
-              <span className="w-1 h-1 bg-slate-200 rounded-full" />
-              <div className="flex items-center space-x-2 text-slate-400 text-xs">
-                <Calendar size={12} />
-                <span>{date}</span>
-              </div>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-8">
-              {title}
-            </h1>
-            
-            <div className="flex items-center space-x-4 text-slate-400 pb-8 border-b border-slate-50">
-              <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center">
-                <User size={24} className="text-brand-blue" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-slate-900 leading-none mb-1">{author}</p>
-                <p className="text-[10px] uppercase font-bold tracking-wider">Senior Network Engineer</p>
-              </div>
-            </div>
-          </div>
+        {/* Metadata strip */}
+        <div className="flex items-center gap-4 mb-6 border-b border-rule pb-6">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-accent bg-accent/8 px-2.5 py-1 rounded-[2px] border border-accent/20">
+            {category}
+          </span>
+          <span className="w-1 h-1 rounded-full bg-rule" />
+          <span className="font-mono text-xs text-ink-2 flex items-center gap-1.5">
+            <Calendar size={11} />
+            {date}
+          </span>
+        </div>
 
-          {/* Hero Image */}
-          <div className="rounded-[2.5rem] overflow-hidden mb-12 shadow-2xl shadow-slate-200/50">
-            <img 
-              src={image} 
-              alt={title} 
-              className="w-full h-auto object-cover max-h-[500px]" 
-              draggable="false"
-            />
-          </div>
+        {/* Title */}
+        <h1 className="font-display text-4xl md:text-5xl font-bold text-ink leading-tight tracking-tight mb-8">
+          {title}
+        </h1>
 
-          {/* Content */}
-          <div className="prose prose-slate max-w-none">
-            <div className="text-slate-600 leading-relaxed space-y-6 text-lg whitespace-pre-line">
-              {content}
-            </div>
+        {/* Author */}
+        <div className="flex items-center gap-3 mb-12 pb-8 border-b border-rule">
+          <div className="w-9 h-9 rounded-[4px] bg-accent/10 flex items-center justify-center text-accent font-display font-bold text-sm">
+            {author.split(' ').map(n => n[0]).join('').slice(0, 2)}
           </div>
-
-          {/* Footer */}
-          <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-            <button 
-              onClick={handleShare}
-              className="flex items-center space-x-2 text-brand-blue hover:text-brand-blue/80 font-bold text-sm transition-colors"
-            >
-              <Tag size={16} />
-              <span>Share this Insight</span>
-            </button>
-            
-            <button 
-              onClick={() => navigate(`/${PANEL_IDS.BLOG}`)}
-              className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all hover:shadow-lg active:scale-95"
-            >
-              Return to Blog Index
-            </button>
+          <div>
+            <p className="font-display font-semibold text-sm text-ink">{author}</p>
+            <p className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mt-0.5">Senior Network Engineer</p>
           </div>
         </div>
+
+        {/* Hero image */}
+        <div className="rounded-[4px] overflow-hidden mb-12 border border-rule">
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-auto object-cover max-h-[500px]"
+            draggable="false"
+          />
+        </div>
+
+        {/* Body */}
+        <div className="font-body text-[1.0625rem] text-ink-2 leading-[1.8] space-y-6 whitespace-pre-line mb-16">
+          {content}
+        </div>
+
+        {/* Footer bar */}
+        <div className="border-t border-rule pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1.5 font-body text-sm text-accent hover:text-accent-hover transition-colors duration-[180ms]"
+          >
+            <Tag size={14} />
+            <span>Share this Insight</span>
+          </button>
+          <button
+            onClick={() => navigate(`/${PANEL_IDS.BLOG}`)}
+            className="btn-secondary text-sm py-2.5 px-6"
+          >
+            Return to Blog Index
+          </button>
+        </div>
+
       </div>
 
-      {/* Copy Link Toast */}
+      {/* Copy toast */}
       <AnimatePresence>
         {showToast && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[200]"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.18 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200]"
           >
-            <div className="bg-white text-slate-900 px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 border border-slate-100 ring-1 ring-slate-900/5">
-              <CheckCircle2 size={20} className="text-emerald-500" />
-              <span className="font-bold text-sm tracking-tight">Link Copied to Clipboard</span>
+            <div className="bg-paper border border-rule rounded-[4px] px-5 py-3 flex items-center gap-2.5 shadow-sm">
+              <CheckCircle2 size={16} className="text-accent" />
+              <span className="font-display font-semibold text-sm text-ink">Link copied to clipboard</span>
             </div>
           </motion.div>
         )}

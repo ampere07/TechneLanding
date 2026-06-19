@@ -1,58 +1,56 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Check } from 'lucide-react';
 
 export const IPTransit: React.FC = () => {
   return (
-    <section className="py-24 bg-white min-h-[80vh] flex items-center">
-      <div className="container mx-auto px-6">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-5xl font-bold text-slate-900 mb-6">IP <span className="text-brand-blue">Transit</span></h1>
-            <p className="text-xl text-slate-500 leading-relaxed mb-8">
-              Techne Fiber offers IP Transit services for networks that need reliable internet connectivity, global reachability, and scalable bandwidth.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                <h3 className="font-bold text-slate-900 mb-2">Best For</h3>
-                <p className="text-sm text-slate-500">ISPs, enterprise networks, content networks, hosting providers, and network operators.</p>
-              </div>
-              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                <h3 className="font-bold text-slate-900 mb-2">Routing Ready</h3>
-                <p className="text-sm text-slate-500">Suitable for organizations with ASN, IP resources, and BGP connectivity requirements.</p>
-              </div>
-              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                <h3 className="font-bold text-slate-900 mb-2">Operational Focus</h3>
-                <p className="text-sm text-slate-500">Built for stable upstream connectivity and practical network growth.</p>
-              </div>
-              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                <h3 className="font-bold text-slate-900 mb-2">Scalable Service</h3>
-                <p className="text-sm text-slate-500">Designed to support bandwidth growth and future connectivity expansion.</p>
-              </div>
-            </div>
+    <section className="pt-36 pb-24 bg-paper min-h-[80vh]">
+      <div className="container mx-auto px-6 max-w-4xl">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <p className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Internet Services</p>
+          <h1 className="font-display text-4xl md:text-5xl font-bold text-ink leading-tight tracking-tight mb-6">
+            IP Transit
+          </h1>
+          <p className="font-body text-[1.125rem] text-ink-2 leading-relaxed mb-12 max-w-2xl border-b border-rule pb-12">
+            Techne offers IP Transit services for networks that need reliable internet connectivity, global reachability, and scalable bandwidth.
+          </p>
 
-            <div className="mt-12 p-8 bg-brand-blue/5 border border-brand-blue/20 rounded-2xl">
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Service Highlights</h3>
-              <ul className="space-y-2 text-slate-600">
-                <li className="flex items-start">
-                  <span className="text-brand-blue mr-2 font-bold">•</span>
-                  BGP-ready internet connectivity
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0 divide-y md:divide-y-0 divide-rule border border-rule rounded-[4px] mb-12">
+            {[
+              { title: 'Best For', desc: 'ISPs, enterprise networks, content networks, hosting providers, and network operators.' },
+              { title: 'Routing Ready', desc: 'Suitable for organizations with ASN, IP resources, and BGP connectivity requirements.' },
+              { title: 'Operational Focus', desc: 'Built for stable upstream connectivity and practical network growth.' },
+              { title: 'Scalable Service', desc: 'Designed to support bandwidth growth and future connectivity expansion.' },
+            ].map((item, i) => (
+              <div key={i} className={`p-6 bg-paper-2 ${i % 2 === 0 ? 'md:border-r border-rule' : ''} ${i < 2 ? 'border-b border-rule' : ''}`}>
+                <h3 className="font-display font-semibold text-ink mb-2">{item.title}</h3>
+                <p className="font-body text-sm text-ink-2 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-8 bg-paper border border-rule rounded-[4px]">
+            <h3 className="font-display font-semibold text-ink mb-5">Service Highlights</h3>
+            <ul className="space-y-3">
+              {[
+                'BGP-ready internet connectivity',
+                'Suitable for ISP and enterprise requirements',
+                'Supports networks preparing for expansion and higher capacity',
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-ink-2">
+                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5">
+                    <Check size={10} strokeWidth={3} />
+                  </div>
+                  <span className="font-body text-sm leading-relaxed">{item}</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="text-brand-blue mr-2 font-bold">•</span>
-                  Suitable for ISP and enterprise requirements
-                </li>
-                <li className="flex items-start">
-                  <span className="text-brand-blue mr-2 font-bold">•</span>
-                  Supports networks preparing for expansion and higher capacity
-                </li>
-              </ul>
-            </div>
-          </motion.div>
-        </div>
+              ))}
+            </ul>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

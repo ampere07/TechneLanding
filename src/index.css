@@ -1,14 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
+@import "../tokens.css";
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light;
-  color: #1e293b;
-  background-color: #ffffff;
-
+  color: var(--color-ink);
+  background-color: var(--color-paper);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -21,6 +22,11 @@ body {
   place-content: center;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: clip;
+}
+
+html {
+  overflow-x: clip;
 }
 
 #root {
@@ -28,8 +34,27 @@ body {
 }
 
 @theme {
+  /* Preserve for backward compatibility (Pricing map, SVG colors) */
   --color-brand-blue: #63b4b5;
   --color-primary: #63b4b5;
+
+  /* Hallmark OKLCH tokens — generates Tailwind color utilities */
+  --color-paper:         oklch(98.5% 0.005 199);
+  --color-paper-2:       oklch(96%   0.010 199);
+  --color-paper-3:       oklch(93%   0.015 199);
+  --color-ink:           oklch(9%    0.020 200);
+  --color-ink-2:         oklch(38%   0.040 199);
+  --color-rule:          oklch(88%   0.015 199);
+  --color-accent:        oklch(55%   0.130 199);
+  --color-accent-hover:  oklch(48%   0.140 199);
+  --color-accent-ink:    oklch(98.5% 0.005 199);
+  --color-focus:         oklch(55%   0.170 220);
+
+  /* Hallmark font tokens — generates Tailwind font utilities */
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-body:    "Inter", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", "Fira Code", monospace;
+
   --animate-marquee: marquee 40s linear infinite;
 
   @keyframes marquee {
@@ -40,7 +65,12 @@ body {
 
 @layer base {
   body {
-    @apply bg-white text-slate-800 antialiased selection:bg-brand-blue/30;
+    @apply bg-paper text-ink antialiased;
+    selection-color: var(--color-accent);
+  }
+
+  ::selection {
+    background: oklch(55% 0.13 199 / 0.15);
   }
 
   img {
@@ -51,30 +81,45 @@ body {
     user-drag: none;
     user-select: none;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @layer components {
-  .glass {
-    @apply bg-white/80 backdrop-blur-md border border-slate-100;
-  }
-
   .btn-primary {
-    @apply px-6 py-3 bg-brand-blue hover:opacity-90 text-white font-medium rounded-lg transition-all duration-300 shadow-md active:scale-95;
+    @apply inline-flex items-center justify-center gap-1.5 px-5 py-2.5 bg-accent hover:bg-accent-hover text-accent-ink font-display font-semibold text-sm transition-colors rounded-[4px] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus;
+    transition-duration: var(--dur-short);
   }
 
   .btn-secondary {
-    @apply px-6 py-3 bg-white hover:bg-slate-50 text-brand-blue font-medium rounded-lg transition-all duration-300 border border-brand-blue/20 active:scale-95;
+    @apply inline-flex items-center justify-center gap-1.5 px-5 py-2.5 bg-transparent hover:bg-paper-2 text-accent font-display font-semibold text-sm transition-colors border border-accent rounded-[4px] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus;
+    transition-duration: var(--dur-short);
   }
 
   .input-field {
-    @apply w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all duration-300 outline-none text-slate-800 placeholder:text-slate-400;
+    @apply w-full px-4 py-3 bg-paper border border-rule text-ink placeholder:text-ink-2/40 focus:border-accent outline-none transition-colors font-body text-sm rounded-[4px];
+    transition-duration: var(--dur-short);
+  }
+
+  .input-field:focus {
+    box-shadow: 0 0 0 3px oklch(55% 0.17 220 / 0.15);
   }
 
   .section-title {
-    @apply text-4xl font-bold text-slate-900 tracking-tight;
+    @apply font-display text-3xl md:text-4xl font-bold text-ink tracking-tight leading-tight;
   }
 
   .section-desc {
-    @apply text-slate-500 text-lg;
+    @apply font-body text-[1.125rem] text-ink-2 leading-relaxed;
   }
 }
