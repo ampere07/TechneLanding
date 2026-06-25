@@ -16,6 +16,7 @@ import { NetworkConsulting } from './components/NetworkConsulting';
 import { CoreConfig, DistConfig, SystemIntegration, ProtectiveDNS } from './components/NewManagedServices';
 import { WhyTechne } from './components/WhyTechne';
 import { NetworkMap, TrustedBrands } from './components/NetworkMap';
+import { Methodology, HomeFAQ } from './components/HomeSections';
 import { PANEL_IDS } from './constants';
 
 import blogInfra from './assets/blog_infra.png';
@@ -26,9 +27,11 @@ const HomePanel = () => (
   <>
     <Hero />
     <WhyTechne />
+    <Methodology />
     <NetworkMap />
     <TrustedBrands />
     <Services />
+    <HomeFAQ />
   </>
 );
 

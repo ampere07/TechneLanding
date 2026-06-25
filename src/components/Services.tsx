@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Eyebrow } from './ServiceLayout';
 
 const services = [
   {
@@ -46,9 +47,12 @@ export const Services: React.FC = () => {
           transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
           className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-4 border-b border-rule pb-10"
         >
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-ink tracking-tight leading-tight max-w-lg">
-            Comprehensive IT Infrastructure
-          </h2>
+          <div>
+            <Eyebrow className="mb-5">Services</Eyebrow>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-ink tracking-tight leading-tight max-w-lg">
+              Comprehensive IT Infrastructure
+            </h2>
+          </div>
           <p className="font-body text-[1rem] text-ink-2 leading-relaxed max-w-sm">
             A full suite of networking and internet services designed to keep your business running in the digital age.
           </p>

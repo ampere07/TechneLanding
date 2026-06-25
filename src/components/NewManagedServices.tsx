@@ -1,24 +1,25 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { PencilRuler, Share2, Gauge, Lock, Search, AlertTriangle, ShieldCheck, Activity, Check } from 'lucide-react';
+import {
+  ServiceLayout,
+  type ServiceMeta,
+  SectionTitle,
+  ProcessSteps,
+  SpecTable,
+  FAQ,
+  DEFAULT_PROCESS,
+} from './ServiceLayout';
 
-const ServiceTemplate: React.FC<{ label: string; title: string; description: string; children?: React.ReactNode }> = ({ label, title, description, children }) => (
-  <section className="pt-36 pb-24 bg-paper min-h-[80vh]">
-    <div className="container mx-auto px-6 max-w-4xl">
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <p className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">{label}</p>
-        <h1 className="font-display text-4xl md:text-5xl font-bold text-ink leading-tight tracking-tight mb-6">{title}</h1>
-        <p className="font-body text-[1.125rem] text-ink-2 leading-relaxed mb-16 max-w-2xl border-b border-rule pb-12">
-          {description}
-        </p>
-        {children}
-      </motion.div>
-    </div>
-  </section>
+const ServiceTemplate: React.FC<{
+  label: string;
+  title: string;
+  description: string;
+  meta?: ServiceMeta[];
+  children?: React.ReactNode;
+}> = ({ label, title, description, meta, children }) => (
+  <ServiceLayout eyebrow={label} title={title} lead={description} meta={meta}>
+    {children}
+  </ServiceLayout>
 );
 
 const SectionHeading: React.FC<{ number: string; title: string }> = ({ number, title }) => (
@@ -50,6 +51,12 @@ export const CoreConfig = () => (
     label="Managed Services"
     title="Core Network Configuration"
     description="Advanced backbone and core router configuration services to ensure maximum network stability and throughput for your enterprise."
+    meta={[
+      { label: 'Layer', value: 'Core / Backbone' },
+      { label: 'Protocols', value: 'BGP · OSPF' },
+      { label: 'Resilience', value: 'Multi-path' },
+      { label: 'Deliverables', value: 'SOP + diagrams' },
+    ]}
   >
     <div className="space-y-16">
       <div>
@@ -77,6 +84,49 @@ export const CoreConfig = () => (
           ]}
         />
       </div>
+
+      <div>
+        <SectionTitle
+          eyebrow="Engagement"
+          title="How we deliver"
+          intro="A staged path from assessment to a documented, monitored core network."
+        />
+        <ProcessSteps steps={DEFAULT_PROCESS} />
+      </div>
+
+      <div>
+        <SectionTitle eyebrow="Datasheet" title="Technical specifications" />
+        <SpecTable
+          rows={[
+            { k: 'Scope', v: 'Core / backbone routing' },
+            { k: 'Protocols', v: 'BGP, OSPF, IS-IS' },
+            { k: 'Resilience', v: 'ECMP, fast reroute, multi-path' },
+            { k: 'Addressing', v: 'IPv4 + IPv6 schema design' },
+            { k: 'Security', v: 'ACLs, RPKI validation, control-plane policing' },
+            { k: 'Deliverables', v: 'Topology diagrams and SOPs' },
+          ]}
+        />
+      </div>
+
+      <div>
+        <SectionTitle eyebrow="FAQ" title="Frequently asked questions" />
+        <FAQ
+          items={[
+            {
+              q: 'Which routers and platforms do you support?',
+              a: 'We configure across major vendors — Cisco, Juniper, MikroTik, and Arista — and document everything to your operational standards.',
+            },
+            {
+              q: 'Can you migrate our core without downtime?',
+              a: 'Yes. We plan staged cutovers with rollback paths and validation testing to minimize or eliminate downtime.',
+            },
+            {
+              q: 'Do you implement RPKI and route security?',
+              a: 'Yes — RPKI ROA validation, prefix filtering, and control-plane protections are part of a standard core build.',
+            },
+          ]}
+        />
+      </div>
     </div>
   </ServiceTemplate>
 );
@@ -86,6 +136,12 @@ export const DistConfig = () => (
     label="Managed Services"
     title="Distribution Configuration"
     description="Distribution Network Solutions provide a highly optimized, scalable, and resilient platform that bridges your core infrastructure to your access network. Designed for ISPs, enterprises, and carriers, our architecture ensures seamless traffic distribution, subscriber management, and high-availability service delivery."
+    meta={[
+      { label: 'Layer', value: 'Distribution' },
+      { label: 'Subscribers', value: 'PPPoE / IPoE' },
+      { label: 'Backhaul', value: 'Fiber · wireless' },
+      { label: 'Handover', value: 'Wholesale · ENT' },
+    ]}
   >
     <div className="space-y-16">
       <div>
@@ -117,6 +173,49 @@ export const DistConfig = () => (
           ]}
         />
       </div>
+
+      <div>
+        <SectionTitle
+          eyebrow="Engagement"
+          title="How we deliver"
+          intro="From aggregation design to live subscriber services, on a predictable plan."
+        />
+        <ProcessSteps steps={DEFAULT_PROCESS} />
+      </div>
+
+      <div>
+        <SectionTitle eyebrow="Datasheet" title="Technical specifications" />
+        <SpecTable
+          rows={[
+            { k: 'Layer', v: 'Aggregation and access' },
+            { k: 'Subscriber mgmt', v: 'PPPoE / IPoE via BNG / access concentrator' },
+            { k: 'Backhaul', v: 'Fiber and licensed / unlicensed wireless' },
+            { k: 'Redundancy', v: 'Redundant aggregation paths' },
+            { k: 'Segmentation', v: 'Multi-service VLAN and QoS' },
+            { k: 'Handover', v: 'Wholesale and enterprise packages' },
+          ]}
+        />
+      </div>
+
+      <div>
+        <SectionTitle eyebrow="FAQ" title="Frequently asked questions" />
+        <FAQ
+          items={[
+            {
+              q: 'Can this scale with subscriber growth?',
+              a: 'Yes. The distribution topology is designed so you can add aggregation and access capacity without re-architecting the network.',
+            },
+            {
+              q: 'Do you support PPPoE and IPoE?',
+              a: 'Yes — both subscriber models, with BNG / access-concentrator configuration tuned for stability at scale.',
+            },
+            {
+              q: 'Can you mix fiber and wireless backhaul?',
+              a: 'Yes. We plan hybrid backhaul with redundant paths so a single link failure does not isolate a segment.',
+            },
+          ]}
+        />
+      </div>
     </div>
   </ServiceTemplate>
 );
@@ -126,6 +225,12 @@ export const SystemIntegration = () => (
     label="Managed Services"
     title="System Integration"
     description="Bridging the gap between disparate IT systems and network infrastructure for a unified, efficient operational environment. Techne specializes in deploying and optimizing enterprise-grade tools for monitoring, alerting, and automated management."
+    meta={[
+      { label: 'Domain', value: 'NMS · Telemetry' },
+      { label: 'Testing', value: 'Ookla server' },
+      { label: 'Visibility', value: 'Real-time' },
+      { label: 'Delivery', value: 'Integrated' },
+    ]}
   >
     <div className="space-y-16">
       <div>
@@ -149,6 +254,39 @@ export const SystemIntegration = () => (
           ]}
         />
       </div>
+
+      <div>
+        <SectionTitle eyebrow="Datasheet" title="Technical specifications" />
+        <SpecTable
+          rows={[
+            { k: 'Monitoring', v: 'SNMP, flow (NetFlow / IPFIX), syslog' },
+            { k: 'Alerting', v: 'Threshold and anomaly, with escalation policies' },
+            { k: 'Speed testing', v: 'ISP-grade Ookla server deployment' },
+            { k: 'Dashboards', v: 'Real-time network visibility' },
+            { k: 'Integration', v: 'Existing NMS and ticketing tools' },
+          ]}
+        />
+      </div>
+
+      <div>
+        <SectionTitle eyebrow="FAQ" title="Frequently asked questions" />
+        <FAQ
+          items={[
+            {
+              q: 'Which monitoring tools do you deploy?',
+              a: 'We integrate enterprise-grade NMS, flow collectors, and dashboards, and can work with the tools you already run.',
+            },
+            {
+              q: 'What is the Ookla speedtest server for?',
+              a: 'It gives you and your customers accurate, branded performance validation and supports internal capacity checks.',
+            },
+            {
+              q: 'Can you integrate with our ticketing system?',
+              a: 'Yes — alerts can route directly into your existing escalation and ticketing workflows.',
+            },
+          ]}
+        />
+      </div>
     </div>
   </ServiceTemplate>
 );
@@ -158,6 +296,12 @@ export const ProtectiveDNS = () => (
     label="Security Services"
     title="Protective DNS Integration"
     description="Ensuring Compliance, Security, and Network Integrity. In alignment with NTC Memorandum No. 001-01-2025, Techne delivers a fully integrated Protective DNS solution that enables service providers to meet regulatory requirements while strengthening their network defenses."
+    meta={[
+      { label: 'Mandate', value: 'NTC 001-01-2025' },
+      { label: 'Function', value: 'DNS filtering' },
+      { label: 'Coverage', value: 'Real-time' },
+      { label: 'Status', value: 'Compliant' },
+    ]}
   >
     <div className="space-y-16">
       {/* NTC compliance callout */}
@@ -212,6 +356,30 @@ export const ProtectiveDNS = () => (
             </li>
           ))}
         </ul>
+      </div>
+
+      <div>
+        <SectionTitle eyebrow="FAQ" title="Frequently asked questions" />
+        <FAQ
+          items={[
+            {
+              q: 'Is this compliant with NTC requirements?',
+              a: 'Yes — our Protective DNS integration is built to meet NTC Memorandum No. 001-01-2025 for Value-Added Service providers.',
+            },
+            {
+              q: 'Will it slow down DNS resolution?',
+              a: 'No. Filtering happens in real time at the resolver level with negligible latency impact for end users.',
+            },
+            {
+              q: 'What threats does it block?',
+              a: 'Malicious domains, phishing and fraud sites, and botnet command-and-control communication.',
+            },
+            {
+              q: 'How long does deployment take?',
+              a: 'Integration is straightforward and typically completed within a few business days.',
+            },
+          ]}
+        />
       </div>
     </div>
   </ServiceTemplate>

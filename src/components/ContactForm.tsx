@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Send, CheckCircle, Loader2, Mail, Phone, MapPin, MessageSquare } from 'lucide-react';
+import { Eyebrow } from './ServiceLayout';
 
 export const ContactForm: React.FC = () => {
   const [formState, setFormState] = useState({
@@ -35,6 +36,7 @@ export const ContactForm: React.FC = () => {
           transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
           className="mb-14 border-b border-rule pb-10"
         >
+          <Eyebrow className="mb-6">Contact</Eyebrow>
           <h1 className="font-display text-4xl md:text-5xl font-bold text-ink tracking-tight leading-tight">
             Get in Touch
           </h1>

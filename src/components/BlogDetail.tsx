@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Tag, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { Calendar, Tag, ChevronLeft, CheckCircle2, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PANEL_IDS } from '../constants';
 
@@ -18,6 +18,7 @@ export const BlogDetail: React.FC<BlogDetailProps> = ({
 }) => {
   const navigate = useNavigate();
   const [showToast, setShowToast] = useState(false);
+  const readTime = Math.max(1, Math.round(content.trim().split(/\s+/).length / 200));
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -52,6 +53,11 @@ export const BlogDetail: React.FC<BlogDetailProps> = ({
           <span className="font-mono text-xs text-ink-2 flex items-center gap-1.5">
             <Calendar size={11} />
             {date}
+          </span>
+          <span className="w-1 h-1 rounded-full bg-rule" />
+          <span className="font-mono text-xs text-ink-2 flex items-center gap-1.5">
+            <Clock size={11} />
+            {readTime} min read
           </span>
         </div>
 

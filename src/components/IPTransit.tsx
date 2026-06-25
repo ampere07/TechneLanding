@@ -1,57 +1,108 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import {
+  ServiceLayout,
+  FeatureGrid,
+  HighlightsPanel,
+  SectionTitle,
+  ProcessSteps,
+  SpecTable,
+  FAQ,
+  DEFAULT_PROCESS,
+} from './ServiceLayout';
 
 export const IPTransit: React.FC = () => {
   return (
-    <section className="pt-36 pb-24 bg-paper min-h-[80vh]">
-      <div className="container mx-auto px-6 max-w-4xl">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <p className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Internet Services</p>
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-ink leading-tight tracking-tight mb-6">
-            IP Transit
-          </h1>
-          <p className="font-body text-[1.125rem] text-ink-2 leading-relaxed mb-12 max-w-2xl border-b border-rule pb-12">
-            Techne offers IP Transit services for networks that need reliable internet connectivity, global reachability, and scalable bandwidth.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-0 divide-y md:divide-y-0 divide-rule border border-rule rounded-[4px] mb-12">
-            {[
+    <ServiceLayout
+      eyebrow="Internet Services"
+      title="IP Transit"
+      lead="Techne offers IP Transit services for networks that need reliable internet connectivity, global reachability, and scalable bandwidth — delivered over a carrier-neutral backbone with full BGP control."
+      meta={[
+        { label: 'Delivery', value: 'BGP / ASN' },
+        { label: 'Capacity', value: '1–100 Gbps' },
+        { label: 'SLA', value: '99.9% uptime' },
+        { label: 'Best for', value: 'ISP · Enterprise' },
+      ]}
+    >
+      <div className="space-y-16 md:space-y-20">
+        <section>
+          <SectionTitle
+            eyebrow="Overview"
+            title="Upstream connectivity built for growth"
+            intro="Full-table BGP transit with IPv4 and IPv6, diverse upstream paths, and burstable capacity — engineered for operators that need the global routing table, not just an internet connection."
+          />
+          <FeatureGrid
+            items={[
               { title: 'Best For', desc: 'ISPs, enterprise networks, content networks, hosting providers, and network operators.' },
               { title: 'Routing Ready', desc: 'Suitable for organizations with ASN, IP resources, and BGP connectivity requirements.' },
               { title: 'Operational Focus', desc: 'Built for stable upstream connectivity and practical network growth.' },
               { title: 'Scalable Service', desc: 'Designed to support bandwidth growth and future connectivity expansion.' },
-            ].map((item, i) => (
-              <div key={i} className={`p-6 bg-paper-2 ${i % 2 === 0 ? 'md:border-r border-rule' : ''} ${i < 2 ? 'border-b border-rule' : ''}`}>
-                <h3 className="font-display font-semibold text-ink mb-2">{item.title}</h3>
-                <p className="font-body text-sm text-ink-2 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
+            ]}
+          />
+        </section>
 
-          <div className="p-8 bg-paper border border-rule rounded-[4px]">
-            <h3 className="font-display font-semibold text-ink mb-5">Service Highlights</h3>
-            <ul className="space-y-3">
-              {[
-                'BGP-ready internet connectivity',
-                'Suitable for ISP and enterprise requirements',
-                'Supports networks preparing for expansion and higher capacity',
-              ].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-ink-2">
-                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5">
-                    <Check size={10} strokeWidth={3} />
-                  </div>
-                  <span className="font-body text-sm leading-relaxed">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </motion.div>
+        <section>
+          <HighlightsPanel
+            heading="Service Highlights"
+            items={[
+              'Full-table BGP (IPv4 + IPv6), default route optional',
+              'RPKI-validated route origin for safer routing',
+              'Committed-rate or 95th-percentile burstable billing',
+              'Diverse upstream paths for resilience',
+              'Global reachability across multiple carriers',
+              'Supports networks preparing for higher capacity',
+            ]}
+          />
+        </section>
+
+        <section>
+          <SectionTitle
+            eyebrow="Engagement"
+            title="How we deliver"
+            intro="A predictable path from first assessment to a fully operational, monitored circuit."
+          />
+          <ProcessSteps steps={DEFAULT_PROCESS} />
+        </section>
+
+        <section>
+          <SectionTitle eyebrow="Datasheet" title="Technical specifications" />
+          <SpecTable
+            rows={[
+              { k: 'Routing', v: 'Full-table BGP (IPv4 + IPv6); default route optional' },
+              { k: 'Port options', v: '1G, 10G, 25G, 100G over single-mode fiber' },
+              { k: 'Billing', v: 'Committed rate (CDR) or 95th-percentile burstable' },
+              { k: 'Requirements', v: 'Public ASN and your own IPv4/IPv6 resources' },
+              { k: 'Security', v: 'RPKI ROA validation; prefix filtering' },
+              { k: 'Redundancy', v: 'Dual-upstream and diverse-path options' },
+              { k: 'SLA', v: '99.9% availability, 24/7 NOC support' },
+              { k: 'Provisioning', v: 'Typically 5–10 business days' },
+            ]}
+          />
+        </section>
+
+        <section>
+          <SectionTitle eyebrow="FAQ" title="Frequently asked questions" />
+          <FAQ
+            items={[
+              {
+                q: 'Do I need my own ASN and IP space?',
+                a: 'For full BGP transit, yes — you need a public ASN and your own IPv4/IPv6 resources. If you are just starting out, we can advise on APNIC/PHNOG registration and interim addressing.',
+              },
+              {
+                q: 'What port speeds are available?',
+                a: 'We deliver 1G through 100G on single-mode fiber, with either committed-rate or burstable billing depending on your traffic profile.',
+              },
+              {
+                q: 'How is bandwidth billed?',
+                a: 'You can choose a fixed committed rate or 95th-percentile usage-based billing — whichever better matches how your traffic peaks.',
+              },
+              {
+                q: 'How long does provisioning take?',
+                a: 'Typically 5–10 business days once the cross-connect and LOA/CFA paperwork are in place.',
+              },
+            ]}
+          />
+        </section>
       </div>
-    </section>
+    </ServiceLayout>
   );
 };

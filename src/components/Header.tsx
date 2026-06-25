@@ -27,7 +27,9 @@ export const Header: React.FC = () => {
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `font-display text-sm font-medium transition-colors duration-[180ms] ${isActive ? 'text-accent' : 'text-ink-2 hover:text-ink'}`;
+    `relative font-display text-sm font-medium transition-colors duration-[180ms] after:absolute after:-bottom-1.5 after:left-0 after:h-px after:bg-accent after:transition-all after:duration-200 ${
+      isActive ? 'text-ink after:w-full' : 'text-ink-2 hover:text-ink after:w-0 hover:after:w-full'
+    }`;
 
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-paper border-b border-rule">

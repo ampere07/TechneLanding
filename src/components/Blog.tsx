@@ -11,8 +11,8 @@ export const Blog: React.FC = () => {
   const posts = [
     {
       id: PANEL_IDS.BLOG_INFRA,
-      title: "Lorem Ipsum",
-      excerpt: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+      title: "Optimizing Core Infrastructure for Scalability",
+      excerpt: "How resilient backbone design, BGP route optimization, and capacity planning let ISPs grow their subscriber base without re-architecting the core.",
       date: "May 10, 2026",
       author: "Cliff Richard Perez Jr",
       category: "Infrastructure",
@@ -20,8 +20,8 @@ export const Blog: React.FC = () => {
     },
     {
       id: PANEL_IDS.BLOG_SECURITY,
-      title: "Lorem Ipsum",
-      excerpt: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+      title: "The Future of Network Security in the Philippines",
+      excerpt: "From NTC Protective DNS mandates to BSP compliance, a look at how local operators are hardening their networks against evolving threats.",
       date: "April 28, 2026",
       author: "Cliff Richard Perez Jr",
       category: "Security",
@@ -29,8 +29,8 @@ export const Blog: React.FC = () => {
     },
     {
       id: PANEL_IDS.BLOG_NETWORKING,
-      title: "Lorem Ipsum",
-      excerpt: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+      title: "Understanding Next-Gen Global Connectivity",
+      excerpt: "Why carrier-neutral exchange paths and direct CDN peering are reshaping how Philippine networks reach the rest of the world.",
       date: "April 15, 2026",
       author: "Cliff Richard Perez Jr",
       category: "Networking",

@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Eyebrow } from './ServiceLayout';
 
 const stats = [
   { value: '200+', unit: 'Gbps', label: 'Backbone Capacity' },
@@ -64,6 +65,7 @@ export const About: React.FC = () => {
             transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-3xl"
           >
+            <Eyebrow className="mb-6">About Techne</Eyebrow>
             <h1 className="font-display font-bold text-ink tracking-tight leading-tight" style={{ fontSize: 'var(--text-display-s)' }}>
               Architecting Philippine Connectivity
             </h1>
@@ -93,7 +95,10 @@ export const About: React.FC = () => {
       {/* Mission & Values */}
       <section className="py-20 bg-paper border-b border-rule">
         <div className="container mx-auto px-6 max-w-7xl">
-          <h2 className="font-display text-2xl font-bold text-ink mb-10 tracking-tight">Mission, Vision & Values</h2>
+          <div className="mb-10">
+            <Eyebrow className="mb-4">Principles</Eyebrow>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-ink tracking-tight">Mission, Vision &amp; Values</h2>
+          </div>
           <div className="divide-y divide-rule">
             {values.map((val, idx) => (
               <motion.div
@@ -115,7 +120,10 @@ export const About: React.FC = () => {
       {/* Timeline */}
       <section className="py-20 bg-paper-2 border-b border-rule">
         <div className="container mx-auto px-6 max-w-7xl">
-          <h2 className="font-display text-2xl font-bold text-ink mb-10 tracking-tight">Milestones</h2>
+          <div className="mb-10">
+            <Eyebrow className="mb-4">Timeline</Eyebrow>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-ink tracking-tight">Milestones</h2>
+          </div>
           <div className="divide-y divide-rule">
             {milestones.map((m, idx) => (
               <div key={idx} className="py-7 grid grid-cols-1 md:grid-cols-[6rem_1fr] gap-4 md:gap-10">
@@ -135,7 +143,10 @@ export const About: React.FC = () => {
       {/* Leadership */}
       <section className="py-20 bg-paper">
         <div className="container mx-auto px-6 max-w-7xl">
-          <h2 className="font-display text-2xl font-bold text-ink mb-10 tracking-tight">Leadership Team</h2>
+          <div className="mb-10">
+            <Eyebrow className="mb-4">Team</Eyebrow>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-ink tracking-tight">Leadership Team</h2>
+          </div>
           <div className="divide-y divide-rule">
             {team.map((member, idx) => (
               <div key={idx} className="py-7 grid grid-cols-1 md:grid-cols-[14rem_1fr] gap-6">

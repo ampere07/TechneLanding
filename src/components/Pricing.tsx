@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Check, ChevronRight, MapPin, Activity, Cpu, Wifi, Server, Shield, Locate, HelpCircle } from 'lucide-react';
 import { PANEL_IDS } from '../constants';
+import { Eyebrow } from './ServiceLayout';
 
 declare global {
   interface Window {
@@ -278,6 +279,7 @@ export const Pricing: React.FC = () => {
           transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
           className="max-w-3xl mx-auto text-center mb-14"
         >
+          <Eyebrow align="center" className="mb-6">Pricing</Eyebrow>
           <h1 className="font-display text-4xl md:text-5xl font-bold text-ink tracking-tight">
             Tailored Interconnection Pricing
           </h1>

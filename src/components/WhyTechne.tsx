@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Eyebrow } from './ServiceLayout';
 
 const features = [
   {
@@ -65,6 +66,7 @@ export const WhyTechne: React.FC = () => {
           transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
           className="border-b border-rule pb-10 mb-12"
         >
+          <Eyebrow className="mb-5">Why Techne</Eyebrow>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-ink tracking-tight leading-tight max-w-lg">
             The Techne Advantage
           </h2>
@@ -105,6 +107,7 @@ export const WhyTechne: React.FC = () => {
             transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
             className="mb-12"
           >
+            <Eyebrow className="mb-5">Testimonials</Eyebrow>
             <h2 className="font-display text-2xl md:text-3xl font-bold text-ink tracking-tight">
               Client Testimonials
             </h2>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, MessageSquare } from 'lucide-react';
+import { Mail, Phone, MapPin, MessageSquare, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { PANEL_IDS } from '../constants';
@@ -64,12 +64,21 @@ export const Footer: React.FC = () => {
                 Techne
               </span>
             </div>
-            <p
-              className="font-display font-semibold text-white/70 leading-tight tracking-tight max-w-2xl"
-              style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)' }}
-            >
-              Carrier-neutral network infrastructure for the Philippines.
-            </p>
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+              <p
+                className="font-display font-semibold text-white/70 leading-tight tracking-tight max-w-2xl"
+                style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)' }}
+              >
+                Carrier-neutral network infrastructure for the Philippines.
+              </p>
+              <Link
+                to={`/${PANEL_IDS.CONTACT}`}
+                className="btn-primary px-6 py-3 shrink-0 self-start lg:self-auto"
+              >
+                Start a project
+                <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
 
           {/* Links grid */}

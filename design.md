@@ -1,3 +1,4 @@
+
 # Design — Techne
 
 A locked design system for this app. Every component redesign reads this file before
@@ -26,11 +27,13 @@ Custom — anchored on brand teal #63b4b5 (oklch 71% 0.07 199), deepened for con
 - `--color-focus`         oklch(55%   0.170 220)
 
 ## Typography
-- Display: Space Grotesk 600/700, style normal (never italic)
-- Body: Inter 400/500
-- Mono: JetBrains Mono 400/600 — for port specs, latency values, pricing numbers, timestamps
-- Display tracking: -0.02em
+- Display: IBM Plex Sans 600/700, style normal (never italic) — humanist grotesque, engineered for technical/infrastructure contexts
+- Body: IBM Plex Sans 400/500 — one superfamily for cohesion and a more corporate, professional read than Space Grotesk
+- Mono: IBM Plex Mono 400/500/600 — for port specs, latency values, pricing numbers, timestamps
+- Display tracking: -0.02em; headings enable `ss02`/`cv05` stylistic sets
+- Technical values (`.font-mono`) use tabular figures (`tnum`, slashed `zero`) so numeric columns align across the page
 - No italic headers — ever
+- Amended 2026-06-26: migrated Space Grotesk + Inter → IBM Plex Sans/Mono for a modern, professional infrastructure identity. The accent, layout, radius, and motion stance below are unchanged.
 
 ## Spacing
 4-point named scale. See `tokens.css` for values. Use named tokens (`var(--space-md)`), never raw px.
@@ -44,7 +47,7 @@ Custom — anchored on brand teal #63b4b5 (oklch 71% 0.07 199), deepened for con
 
 ## Nav: N11 mega-menu
 - Clean white header `bg-paper border-b border-rule`, no glass/blur
-- Space Grotesk links, `text-ink-2 hover:text-ink`
+- IBM Plex Sans links, `text-ink-2 hover:text-ink`
 - Dropdown: 2-col ruled grid, hairline shadow, 4px radius — NOT rounded-2xl shadow-2xl
 - CTA: `btn-primary` (4px radius, no shadow-md)
 
@@ -61,7 +64,7 @@ Custom — anchored on brand teal #63b4b5 (oklch 71% 0.07 199), deepened for con
 - Active: `active:scale-95` on CTAs only
 
 ## CTA voice
-- Primary: `btn-primary` — filled accent, 4px radius, Space Grotesk semibold
+- Primary: `btn-primary` — filled accent, 4px radius, IBM Plex Sans semibold
 - Secondary: `btn-secondary` — 1px accent border, transparent fill
 
 ## Anti-patterns BANNED on this project
@@ -75,8 +78,8 @@ Custom — anchored on brand teal #63b4b5 (oklch 71% 0.07 199), deepened for con
 
 ## What pages MUST share
 - The accent colour and placement (≤5% per viewport)
-- Space Grotesk for all headings
-- JetBrains Mono for all technical values (specs, numbers, latency, prices)
+- IBM Plex Sans for all headings
+- IBM Plex Mono for all technical values (specs, numbers, latency, prices)
 - The 4px border radius on all interactive elements
 - CTA voice (btn-primary / btn-secondary)
 - Horizontal rules (`border-rule`) as section dividers — not drop shadows
@@ -104,8 +107,8 @@ See `tokens.css` at project root — imported by `src/index.css`.
   --color-accent-hover:  oklch(48%   0.140 199);
   --color-accent-ink:    oklch(98.5% 0.005 199);
   --color-focus:         oklch(55%   0.170 220);
-  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
-  --font-body:    "Inter", system-ui, sans-serif;
-  --font-mono:    "JetBrains Mono", "Fira Code", monospace;
+  --font-display: "IBM Plex Sans", "Inter", system-ui, sans-serif;
+  --font-body:    "IBM Plex Sans", "Inter", system-ui, sans-serif;
+  --font-mono:    "IBM Plex Mono", "JetBrains Mono", monospace;
 }
 ```
