@@ -1,10 +1,11 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Plus } from 'lucide-react';
 import { PANEL_IDS } from '../constants';
-
-const EASE = [0.16, 1, 0.3, 1] as const;
+import { ENGAGEMENT_STEPS, serviceById, type ServiceSummary } from '../content/site';
+import type { FabricFocus } from '../three/FabricStage';
+import { ClosingCTA } from './ClosingCTA';
+import { FabricView } from './FabricView';
 
 export interface ServiceMeta {
   label: string;
@@ -15,223 +16,221 @@ interface ServiceLayoutProps {
   eyebrow: string;
   title: string;
   lead: string;
-  /** Optional spec rail rendered alongside the page title. */
+  /** Key facts shown in a band under the page header. */
   meta?: ServiceMeta[];
+  /** Highlights this service on the 3D hall in the page header. */
+  focus?: FabricFocus;
+  /** Other services worth reading about, shown before the closing band. */
+  related?: ServiceSummary['id'][];
   children: React.ReactNode;
 }
 
-/**
- * Shared chrome for every service / detail page: a ruled header band with a
- * breadcrumb, eyebrow, title, lead and an optional spec rail, followed by the
- * page body and a closing CTA band. Gives the whole "Long Document" page family
- * one consistent, professional rhythm instead of bespoke per-page headers.
- */
-export const ServiceLayout: React.FC<ServiceLayoutProps> = ({ eyebrow, title, lead, meta, children }) => {
-  const hasMeta = !!meta && meta.length > 0;
+/** Shared page frame for every service and detail page. */
+export const ServiceLayout: React.FC<ServiceLayoutProps> = ({ eyebrow, title, lead, meta, focus, related, children }) => (
+  <>
+    <section className="bg-paper-2 border-b border-rule overflow-hidden">
+      <div className={`wrap grid grid-cols-1 gap-6 items-center ${focus ? 'lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]' : ''}`}>
+        <div className={`pt-8 ${focus ? 'lg:py-12' : 'pb-12'}`}>
+          <nav aria-label="Breadcrumb" className="text-[0.8125rem] text-ink-2 mb-6 flex flex-wrap items-center gap-1.5">
+            <Link to={`/${PANEL_IDS.HOME}`} className="hover:text-accent transition-colors duration-150">Home</Link>
+            <span aria-hidden="true">/</span>
+            <Link to={`/${PANEL_IDS.SERVICES}`} className="hover:text-accent transition-colors duration-150">Services</Link>
+            <span aria-hidden="true">/</span>
+            <span className="text-ink">{title}</span>
+          </nav>
+          <p className="eyebrow mb-2">{eyebrow}</p>
+          <h1 className="heading-1">{title}</h1>
+          <p className="lede mt-5">{lead}</p>
+          <div className="flex flex-wrap gap-3 mt-7">
+            <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary">Request a quote</Link>
+            <Link to={`/${PANEL_IDS.PRICING}`} className="btn-secondary">View pricing</Link>
+          </div>
+        </div>
+        {focus && <FabricView focus={focus} framing="full" className="h-[280px] sm:h-[400px] lg:h-[480px] lg:-mr-20" />}
+      </div>
+    </section>
 
-  return (
-    <>
-      {/* Header band */}
-      <section className="bg-paper-2 border-b border-rule pt-32 pb-14">
-        <div className="container mx-auto px-6 max-w-6xl">
-          <motion.nav
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3, ease: EASE }}
-            className="font-mono text-[11px] tracking-[0.08em] uppercase mb-8 flex items-center gap-2 text-ink-2/70"
-            aria-label="Breadcrumb"
-          >
-            <Link to={`/${PANEL_IDS.HOME}`} className="hover:text-accent transition-colors">Home</Link>
-            <span className="text-rule">/</span>
-            <Link to={`/${PANEL_IDS.SERVICES}`} className="hover:text-accent transition-colors">Services</Link>
-            <span className="text-rule">/</span>
-            <span className="text-ink-2">{title}</span>
-          </motion.nav>
+    {meta && meta.length > 0 && (
+      <section aria-label="Key facts" className="bg-paper border-b border-rule">
+        <dl className="wrap grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5 py-7">
+          {meta.map((item) => (
+            <div key={item.label}>
+              <dt className="text-[0.8125rem] text-ink-3">{item.label}</dt>
+              <dd className="text-[1.0625rem] font-semibold text-ink mt-0.5 tabular-nums">{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    )}
 
-          <div className={`grid grid-cols-1 gap-10 lg:gap-16 items-end ${hasMeta ? 'lg:grid-cols-[1.5fr_1fr]' : ''}`}>
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.32, ease: EASE }}
-            >
-              <div className="flex items-center gap-3 mb-5">
-                <span className="h-px w-8 bg-accent" />
-                <span className="font-mono text-xs text-ink-2 tracking-[0.14em] uppercase">{eyebrow}</span>
-              </div>
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-ink leading-[1.05] tracking-tight">
-                {title}
-              </h1>
-              <p className="font-body text-[1.125rem] text-ink-2 leading-relaxed mt-6 max-w-2xl">
-                {lead}
-              </p>
-            </motion.div>
+    <section className="section bg-paper">
+      <div className="wrap">{children}</div>
+    </section>
 
-            {hasMeta && (
-              <motion.dl
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.42, delay: 0.12, ease: EASE }}
-                className="border border-rule rounded-[4px] bg-paper divide-y divide-rule"
-              >
-                {meta!.map((m) => (
-                  <div key={m.label} className="flex items-center justify-between gap-4 px-5 py-3.5">
-                    <dt className="font-mono text-[11px] text-ink-2 uppercase tracking-[0.08em]">{m.label}</dt>
-                    <dd className="font-mono text-sm font-medium text-ink text-right">{m.value}</dd>
-                  </div>
-                ))}
-              </motion.dl>
-            )}
+    {related && related.length > 0 && (
+      <section className="section bg-paper-2 border-t border-rule">
+        <div className="wrap">
+          <h2 className="heading-2 mb-6">Related services</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-rule border border-rule rounded-[4px] overflow-hidden">
+            {related.map((id) => {
+              const service = serviceById(id);
+              return (
+                <Link key={id} to={service.path} className="group bg-paper p-6 block">
+                  <h3 className="heading-3 group-hover:text-accent transition-colors duration-150">{service.name}</h3>
+                  <p className="body-copy mt-2">{service.menuLine}</p>
+                  <span className="text-link mt-4">
+                    Learn more
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
+    )}
 
-      {/* Body */}
-      <section className="bg-paper py-16 md:py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.36, delay: 0.08, ease: EASE }}
-          className="container mx-auto px-6 max-w-6xl"
-        >
-          {children}
-        </motion.div>
-      </section>
+    <ClosingCTA primaryLabel="Request a quote" />
+  </>
+);
 
-      {/* Closing CTA band */}
-      <section className="bg-ink">
-        <div className="container mx-auto px-6 max-w-6xl py-16 grid grid-cols-1 md:grid-cols-[1.5fr_1fr] gap-8 items-center">
-          <div>
-            <h2 className="font-display text-2xl md:text-[2rem] font-bold text-white tracking-tight leading-tight">
-              Ready to engineer your network?
-            </h2>
-            <p className="font-body text-sm text-white/50 mt-3 max-w-md leading-relaxed">
-              Talk to our engineers about your topology, capacity, and compliance requirements — we respond within 24 hours.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3 md:justify-end">
-            <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary px-6 py-3">
-              Get Started <ArrowRight size={14} />
-            </Link>
-            <Link
-              to={`/${PANEL_IDS.PRICING}`}
-              className="inline-flex items-center justify-center px-6 py-3 font-display font-semibold text-sm text-white border border-white/20 rounded-[4px] hover:bg-white/5 transition-colors"
-            >
-              View Pricing
-            </Link>
-          </div>
-        </div>
-      </section>
-    </>
-  );
-};
-
-/** Hairline-ruled card grid that fills the body width for any item count. */
+/** Two-column list of short titled paragraphs. */
 export const FeatureGrid: React.FC<{ items: { title: string; desc: string }[] }> = ({ items }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-rule border border-rule rounded-[4px] overflow-hidden">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-7">
     {items.map((item) => (
-      <div key={item.title} className="p-7 bg-paper-2">
-        <h3 className="font-display font-semibold text-ink mb-2">{item.title}</h3>
-        <p className="font-body text-sm text-ink-2 leading-relaxed">{item.desc}</p>
+      <div key={item.title} className="border-t border-rule pt-4">
+        <h3 className="heading-3">{item.title}</h3>
+        <p className="body-copy mt-1.5">{item.desc}</p>
       </div>
     ))}
   </div>
 );
 
-/** Accent-tick eyebrow label — the shared section-marker used across the site. */
+/** Small label above a heading. */
 export const Eyebrow: React.FC<{ children: React.ReactNode; className?: string; align?: 'left' | 'center' }> = ({
   children,
   className = '',
   align = 'left',
-}) => (
-  <div className={`flex items-center gap-3 ${align === 'center' ? 'justify-center' : ''} ${className}`}>
-    <span className="h-px w-8 bg-accent" />
-    <span className="font-mono text-xs text-ink-2 tracking-[0.14em] uppercase">{children}</span>
-  </div>
-);
+}) => <p className={`eyebrow ${align === 'center' ? 'text-center' : ''} ${className}`}>{children}</p>;
 
-/** In-body section header with an accent eyebrow, used to break up long pages. */
+/** In-body section header. */
 export const SectionTitle: React.FC<{ eyebrow?: string; title: string; intro?: string }> = ({ eyebrow, title, intro }) => (
-  <div className="mb-8 max-w-2xl">
-    {eyebrow && (
-      <div className="flex items-center gap-3 mb-4">
-        <span className="h-px w-8 bg-accent" />
-        <span className="font-mono text-xs text-ink-2 tracking-[0.14em] uppercase">{eyebrow}</span>
-      </div>
-    )}
-    <h2 className="font-display text-2xl md:text-[2rem] font-bold text-ink tracking-tight leading-tight">{title}</h2>
-    {intro && <p className="font-body text-[1rem] text-ink-2 leading-relaxed mt-3">{intro}</p>}
+  <div className="mb-7 max-w-3xl">
+    {eyebrow && <p className="eyebrow mb-1.5">{eyebrow}</p>}
+    <h2 className="heading-2">{title}</h2>
+    {intro && <p className="lede mt-3">{intro}</p>}
   </div>
 );
 
-/** Numbered delivery-process band with large mono numerals. */
+/** Sequence of delivery stages, joined by a line on wide screens. */
 export const ProcessSteps: React.FC<{ steps: { title: string; desc: string }[] }> = ({ steps }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-rule border border-rule rounded-[4px] overflow-hidden">
-    {steps.map((s, i) => (
-      <div key={s.title} className="bg-paper p-7">
-        <div className="font-mono text-[1.75rem] font-semibold text-accent leading-none mb-5">
-          {String(i + 1).padStart(2, '0')}
+  <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
+    {steps.map((step, index) => (
+      <li key={step.title} className="relative">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="w-8 h-8 shrink-0 rounded-full bg-navy text-white text-[0.875rem] font-semibold flex items-center justify-center">
+            {index + 1}
+          </span>
+          <span className="hidden lg:block h-px flex-1 bg-rule-strong" aria-hidden="true" />
         </div>
-        <h3 className="font-display font-semibold text-ink mb-2">{s.title}</h3>
-        <p className="font-body text-sm text-ink-2 leading-relaxed">{s.desc}</p>
-      </div>
+        <h3 className="heading-3">{step.title}</h3>
+        <p className="body-copy mt-1.5 pr-2">{step.desc}</p>
+      </li>
     ))}
-  </div>
+  </ol>
 );
 
-/** Two-column datasheet of technical specifications. */
+/** Two-column specification table. */
 export const SpecTable: React.FC<{ rows: { k: string; v: string }[] }> = ({ rows }) => (
-  <div className="border border-rule rounded-[4px] overflow-hidden">
-    {rows.map((r, i) => (
-      <div
-        key={r.k}
-        className={`grid grid-cols-1 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.6fr)] ${i < rows.length - 1 ? 'border-b border-rule' : ''}`}
-      >
-        <div className="px-5 py-3.5 bg-paper-2 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 sm:border-r border-rule">
-          {r.k}
-        </div>
-        <div className="px-5 py-3.5 font-body text-sm text-ink leading-relaxed">{r.v}</div>
-      </div>
-    ))}
+  <div className="border-t-2 border-ink">
+    <table className="data-table">
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.k}>
+            <th scope="row" className="w-[36%] md:w-[28%]">{row.k}</th>
+            <td>{row.v}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   </div>
 );
 
-/** Accessible accordion FAQ built on native <details> — no JS state needed. */
+/** General purpose table. Stacks into labelled blocks on phones so no column is hidden. */
+export const DataTable: React.FC<{ headers: string[]; rows: string[][] }> = ({ headers, rows }) => (
+  <>
+    <div className="md:hidden border-t-2 border-ink">
+      {rows.map((row) => (
+        <div key={row[0]} className="py-3.5 border-b border-rule">
+          <p className="text-[1rem] font-semibold text-ink">{row[0]}</p>
+          <dl className="mt-1.5 space-y-2">
+            {row.slice(1).map((cell, index) => (
+              <div key={index}>
+                {headers.length > 2 && <dt className="text-[0.8125rem] text-ink-3">{headers[index + 1]}</dt>}
+                <dd className="body-copy">{cell}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ))}
+    </div>
+    <div className="hidden md:block table-scroll">
+      <table className="data-table">
+        <thead>
+          <tr>
+            {headers.map((header, index) => (
+              <th key={index} scope="col">{header}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row[0]}>
+              {row.map((cell, index) =>
+                index === 0 ? (
+                  <th key={index} scope="row">{cell}</th>
+                ) : (
+                  <td key={index}>{cell}</td>
+                ),
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </>
+);
+
+/** Accordion built on native details elements, so it works without JavaScript state. */
 export const FAQ: React.FC<{ items: { q: string; a: string }[] }> = ({ items }) => (
-  <div className="border-t border-rule">
-    {items.map((it) => (
-      <details key={it.q} className="group border-b border-rule">
-        <summary className="flex items-center justify-between gap-6 cursor-pointer list-none py-5 [&::-webkit-details-marker]:hidden">
-          <span className="font-display font-semibold text-ink text-[1.0625rem] leading-snug">{it.q}</span>
-          <span className="shrink-0 text-ink-2 transition-transform duration-200 group-open:rotate-45">
-            <Plus size={18} />
+  <div className="border-t-2 border-ink">
+    {items.map((item) => (
+      <details key={item.q} className="group border-b border-rule">
+        <summary className="flex items-center justify-between gap-6 cursor-pointer list-none py-4 [&::-webkit-details-marker]:hidden">
+          <span className="text-[1.0625rem] font-semibold text-ink leading-snug group-hover:text-accent transition-colors duration-150">{item.q}</span>
+          <span className="shrink-0 text-ink-2 transition-transform duration-150 group-open:rotate-45">
+            <Plus size={18} aria-hidden="true" />
           </span>
         </summary>
-        <p className="font-body text-sm text-ink-2 leading-relaxed pb-6 max-w-2xl">{it.a}</p>
+        <p className="body-copy pb-5 max-w-[68ch]">{item.a}</p>
       </details>
     ))}
   </div>
 );
 
-/** Techne's standard engagement methodology — reused across service pages. */
-export const DEFAULT_PROCESS = [
-  { title: 'Assess', desc: 'We audit your current topology, traffic profile, and growth targets before proposing anything.' },
-  { title: 'Design', desc: 'We architect a resilient, standards-based design with capacity headroom and clear documentation.' },
-  { title: 'Deploy', desc: 'We provision, configure, and migrate with zero-downtime cutover planning and rollback paths.' },
-  { title: 'Operate', desc: '24/7 NOC monitoring, proactive maintenance, and SLA-backed incident response after go-live.' },
-];
+/** Techne's standard engagement stages, reused across service pages. */
+export const DEFAULT_PROCESS = ENGAGEMENT_STEPS;
 
-/** Bordered highlights panel with a two-column checklist. */
+/** Checklist of what a service includes. */
 export const HighlightsPanel: React.FC<{ heading: string; sub?: string; items: string[] }> = ({ heading, sub, items }) => (
-  <div className="p-8 bg-paper border border-rule rounded-[4px]">
-    <h3 className="font-display text-lg font-semibold text-ink">{heading}</h3>
-    {sub && <p className="font-body text-sm text-ink-2 mt-1.5">{sub}</p>}
-    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-3.5 mt-6">
+  <div>
+    <h2 className="heading-2">{heading}</h2>
+    {sub && <p className="lede mt-3">{sub}</p>}
+    <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-3 mt-6">
       {items.map((item) => (
-        <li key={item} className="flex items-start gap-3 text-ink-2">
-          <span className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5">
-            <Check size={10} strokeWidth={3} />
-          </span>
-          <span className="font-body text-sm leading-relaxed">{item}</span>
+        <li key={item} className="flex items-start gap-2.5">
+          <Check size={18} className="text-accent shrink-0 mt-0.5" aria-hidden="true" />
+          <span className="body-copy">{item}</span>
         </li>
       ))}
     </ul>

@@ -1,114 +1,87 @@
 
-# Design — Techne
+# Design: Techne
 
 A locked design system for this app. Every component redesign reads this file before
-emitting code. Do not regenerate per page — extend or amend this file when the system needs to grow.
+emitting code. Do not regenerate per page. Extend or amend this file when the system needs to grow.
+
+Amended 2026-11-04: site-wide corporate redesign, referencing rise.ph, mcbroad.com and getafix.ph for
+structure and information density. Replaces the earlier monospaced, ruled look.
+
+## Position
+A carrier-neutral network operator explaining what it sells, plainly, to network engineers and IT buyers.
+Facts, tables and specifications carry the page. Decoration has to explain something or it goes.
 
 ## Genre
 modern-minimal
 
-## Macrostructure family
-- Marketing sections (Hero, Services, WhyTechne): Feature Stack — horizontal ruled sections, left-weight display headings
-- Tool pages (Pricing): Workbench — config left, output right
-- Detail/content pages (About, Contact, Blog, service pages): Long Document — clean ruled, editorial rhythm
+## Page structure
+- Home: hero with a facts panel in its left column, service explorer, service finder, virtual comparison, locations, logos, reasons, process, FAQ, closing band
+- Service pages: `ServiceLayout` header with the 3D hall, facts band, body sections, related services, closing band
+- Index and company pages: pale title band, then ruled content
+- Pricing: calculator, config left and quote right
 
-## Theme
-Custom — anchored on brand teal #63b4b5 (oklch 71% 0.07 199), deepened for contrast.
+## Color
+Anchored on the logo teal `#63b4b5` and logo grey, on deep navy. Tokens live in `tokens.css` and `src/index.css`.
 
-- `--color-paper`         oklch(98.5% 0.005 199)
-- `--color-paper-2`       oklch(96%   0.010 199)
-- `--color-paper-3`       oklch(93%   0.015 199)
-- `--color-ink`           oklch(9%    0.020 200)
-- `--color-ink-2`         oklch(38%   0.040 199)
-- `--color-rule`          oklch(88%   0.015 199)
-- `--color-accent`        oklch(55%   0.130 199)
-- `--color-accent-hover`  oklch(48%   0.140 199)
-- `--color-accent-ink`    oklch(98.5% 0.005 199)
-- `--color-focus`         oklch(55%   0.170 220)
+| Token | Value | Use |
+| --- | --- | --- |
+| `paper` | `#ffffff` | Main surface |
+| `paper-2` | `#f3f6f8` | Alternate bands, page title bands |
+| `paper-3` | `#e6ecf0` | Hover on white buttons |
+| `ink` / `navy` | `#0b2536` | Headings, navy bands, footer |
+| `ink-2` | `#455a68` | Body text |
+| `ink-3` | `#5f717d` | Small labels. Passes AA on `paper` and `paper-2` |
+| `rule` / `rule-strong` | `#d8e0e6` / `#b4c1ca` | Dividers, control borders |
+| `accent` | `#0e6b70` | Buttons, links, closing band |
+| `accent-hover` | `#0a5559` | Hover |
+| `teal-bright` | `#63b4b5` | Accents on navy only. Fails contrast on white |
+| `focus` | `#1579a8` | Focus ring |
 
 ## Typography
-- Display: IBM Plex Sans 600/700, style normal (never italic) — humanist grotesque, engineered for technical/infrastructure contexts
-- Body: IBM Plex Sans 400/500 — one superfamily for cohesion and a more corporate, professional read than Space Grotesk
-- Mono: IBM Plex Mono 400/500/600 — for port specs, latency values, pricing numbers, timestamps
-- Display tracking: -0.02em; headings enable `ss02`/`cv05` stylistic sets
-- Technical values (`.font-mono`) use tabular figures (`tnum`, slashed `zero`) so numeric columns align across the page
-- No italic headers — ever
-- Amended 2026-06-26: migrated Space Grotesk + Inter → IBM Plex Sans/Mono for a modern, professional infrastructure identity. The accent, layout, radius, and motion stance below are unchanged.
+- Libre Franklin 400, 500, 600, 700 for everything. One family, no monospace.
+- Use `.heading-1`, `.heading-2`, `.heading-3`, `.lede`, `.body-copy`, `.eyebrow`.
+- Numbers in facts and tables use tabular figures.
+- Headings are never italic and never use a colored span for emphasis.
 
-## Spacing
-4-point named scale. See `tokens.css` for values. Use named tokens (`var(--space-md)`), never raw px.
+## 3D model
+`src/three/FabricStage.ts` draws one axonometric scale model of an interconnection hall, shown through `FabricView`.
+
+- It is the only 3D object on the site. Selecting a service highlights the part of the hall that service uses, so the model explains the product line.
+- On the desktop home page one shared model (`FabricJourney`) starts in the hero, travels down with the scroll, and lands in the services panel. Dropdowns then animate that same model. The stage is a native sticky element, so script never positions it during scrolling. It stays in the right column, and the facts live in the left column of the hero, so it never covers text or figures.
+- Phones and tablets get a separate model in the hero and in the panel, because a pinned model would cover the text on a small screen.
+- `focus` picks the highlighted service. `framing="focus"` moves the camera to it. `framing="full"` keeps the whole hall in frame, for page headers.
+- Physical things are solid. Virtual services are translucent layers. Consulting is the whole hall drawn as a blueprint.
+- No bloom, glow, particles or globes. Matte materials and soft shadows only.
+- three.js loads on demand and pauses when off screen.
+- Reduced motion: no intro, sway, parallax, moving traffic or lifted layers. Scrolling and selecting are the visitor's own actions, so the trip and camera moves remain, with the swing cut to 30%.
+- No WebGL: `FabricView` shows `src/assets/fabric-still.webp`.
+- Regenerate the still images if the model changes.
 
 ## Motion
-- Easings: `--ease-out: cubic-bezier(0.16, 1, 0.3, 1)` — framer-motion `ease: [0.16, 1, 0.3, 1]`
-- Reveal: `opacity: 0 → 1`, `y: 24 → 0`, duration 0.32s
-- Max 2 animated elements per section — pick the heading and one supporting element
-- Reduced-motion: collapses to opacity-only, ≤150ms (see index.css @layer base)
-- No bounce, no overshoot, no spring on UI state changes
+- No scroll reveals. Content is simply there.
+- UI transitions change color only, at 160ms.
+- The 3D model carries all the motion on the page.
+- To preview the full motion on a PC, Windows "Show animations" must be on. When it is off, browsers report reduced motion.
 
-## Nav: N11 mega-menu
-- Clean white header `bg-paper border-b border-rule`, no glass/blur
-- IBM Plex Sans links, `text-ink-2 hover:text-ink`
-- Dropdown: 2-col ruled grid, hairline shadow, 4px radius — NOT rounded-2xl shadow-2xl
-- CTA: `btn-primary` (4px radius, no shadow-md)
+## Components
+- Nav: utility bar, sticky main bar, full-width mega menu grouped by service type
+- Footer: navy, four columns
+- Buttons: `btn-primary`, `btn-secondary` on light, `btn-on-navy`, `btn-outline-on-navy` on dark
+- Tables: `.data-table`. Wide tables stack into labelled blocks on phones. Never hide a column behind sideways scrolling.
+- Service data: `src/content/site.ts` is the single source for names, descriptions, facts and locations
 
-## Footer: Ft5 Statement
-- Dark background `bg-ink`
-- Large company statement in display type
-- Horizontal link row below
-- CDN marquee strip above footer (inverted colors on dark)
+## Copy
+- Plain, specific sentences. Name the feature and who it is for.
+- No em dashes. No "unmatched", "seamless", "future-proof", "world-class" or "next-gen".
+- Never invent metrics, testimonials, client names or people. Use only figures the business has supplied.
 
-## Microinteractions stance
-- Silent success on form submit (no toast — show inline confirmation)
-- Hover delay 800ms on tooltips, 0ms on focus tooltips
-- Buttons: `transition-colors` only, no transform on hover
-- Active: `active:scale-95` on CTAs only
+## Banned on this project
+- Monospaced uppercase labels and tick-mark eyebrows
+- Decorative numbering such as 01, 02, 03. Numbers appear only for real sequences.
+- Fake status widgets such as a pulsing "Live" dot
+- Marquees and auto-rotating content
+- Glowing stock-style imagery
+- Gradient text, pill badges, `rounded-2xl` cards, drop-shadow hover effects
 
-## CTA voice
-- Primary: `btn-primary` — filled accent, 4px radius, IBM Plex Sans semibold
-- Secondary: `btn-secondary` — 1px accent border, transparent fill
-
-## Anti-patterns BANNED on this project
-- Blue `<span>` inside headings: **never**. Use weight/size/color contrast instead
-- Rounded pill badges on every section eyebrow: **never** 
-- `rounded-3xl` or `rounded-2xl` on cards: use `rounded-[4px]` (--radius-card)
-- Centered headings on marketing sections: left-align all headings
-- `shadow-xl shadow-brand-blue/5` hover effects: use `border-rule` transitions instead
-- `uppercase tracking-widest text-brand-blue` small-cap section labels on every section
-- Fade-in on every single element — pick 1-2 key moments per section
-
-## What pages MUST share
-- The accent colour and placement (≤5% per viewport)
-- IBM Plex Sans for all headings
-- IBM Plex Mono for all technical values (specs, numbers, latency, prices)
-- The 4px border radius on all interactive elements
-- CTA voice (btn-primary / btn-secondary)
-- Horizontal rules (`border-rule`) as section dividers — not drop shadows
-
-## What pages MAY differ on
-- Section background alternation (paper / paper-2)
-- Whether motion reveals are used (marketing: yes; detail pages: minimal)
-- Number of stats visible in the hero strip
-
-## Exports
-
-### tokens.css
-See `tokens.css` at project root — imported by `src/index.css`.
-
-### Tailwind v4 @theme
-```css
-@theme {
-  --color-paper:         oklch(98.5% 0.005 199);
-  --color-paper-2:       oklch(96%   0.010 199);
-  --color-paper-3:       oklch(93%   0.015 199);
-  --color-ink:           oklch(9%    0.020 200);
-  --color-ink-2:         oklch(38%   0.040 199);
-  --color-rule:          oklch(88%   0.015 199);
-  --color-accent:        oklch(55%   0.130 199);
-  --color-accent-hover:  oklch(48%   0.140 199);
-  --color-accent-ink:    oklch(98.5% 0.005 199);
-  --color-focus:         oklch(55%   0.170 220);
-  --font-display: "IBM Plex Sans", "Inter", system-ui, sans-serif;
-  --font-body:    "IBM Plex Sans", "Inter", system-ui, sans-serif;
-  --font-mono:    "IBM Plex Mono", "JetBrains Mono", monospace;
-}
-```
+## Shape
+4px cards, 3px buttons and inputs. Sections are separated by background bands and hairlines.

@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Check, ChevronRight, MapPin, Activity, Cpu, Wifi, Server, Shield, Locate, HelpCircle } from 'lucide-react';
 import { PANEL_IDS } from '../constants';
-import { Eyebrow } from './ServiceLayout';
 
 declare global {
   interface Window {
@@ -150,8 +149,12 @@ export const Pricing: React.FC = () => {
     if (!leafletLoaded || !mapContainerRef.current) return;
     if (mapRef.current) return;
     const L = window.L;
-    const map = L.map(mapContainerRef.current, { center: [12.0, 115.0], zoom: 4, zoomControl: false, attributionControl: false, scrollWheelZoom: true });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
+    const map = L.map(mapContainerRef.current, { center: [12.0, 115.0], zoom: 4, zoomControl: false, scrollWheelZoom: true });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      className: 'pricing-map-tiles',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     mapRef.current = map;
     return () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; } };
@@ -269,27 +272,24 @@ export const Pricing: React.FC = () => {
   const costResult = calculateCost();
 
   return (
-    <section className="py-20 bg-paper-2 min-h-[90vh]">
-      <div className="container mx-auto px-6 max-w-7xl">
+    <section className="section bg-paper-2">
+      <div className="wrap">
 
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-3xl mx-auto text-center mb-14"
+          className="max-w-3xl mb-10"
         >
-          <Eyebrow align="center" className="mb-6">Pricing</Eyebrow>
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-ink tracking-tight">
-            Tailored Interconnection Pricing
-          </h1>
-          <p className="font-body text-[1.125rem] text-ink-2 mt-4 leading-relaxed">
-            Choose a service line, customize hardware and bandwidth commitments, and calculate your SLA-backed rates.
+          <h1 className="heading-1">Pricing</h1>
+          <p className="lede mt-4">
+            Choose a service, set your bandwidth or cabinet options and contract term, and see the monthly rate.
           </p>
         </motion.div>
 
         {/* Service tabs */}
-        <div className="bg-paper border border-rule p-1 rounded-[4px] mb-10 flex flex-wrap justify-between items-center gap-1 max-w-3xl mx-auto">
+        <div className="bg-paper border border-rule p-1 rounded-[4px] mb-8 flex flex-wrap justify-between items-center gap-1 max-w-3xl">
           {(['internet', 'colocation', 'virtual'] as TabType[]).map((tab) => (
             <button
               key={tab}
@@ -322,7 +322,7 @@ export const Pricing: React.FC = () => {
             {/* Map selector */}
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest">Select Interconnection Node</h3>
+                <h3 className="text-sm font-semibold text-ink">Select Interconnection Node</h3>
                 <div className="flex items-center gap-3 self-start sm:self-auto">
                   <button
                     onClick={findMyLocation}
@@ -336,7 +336,7 @@ export const Pricing: React.FC = () => {
                     )}
                     <span>Find My Location</span>
                   </button>
-                  <span className="font-mono text-xs text-accent flex items-center gap-1 bg-accent/8 px-3 py-1.5 rounded-[4px] border border-accent/20">
+                  <span className="tabular-nums text-xs text-accent flex items-center gap-1 bg-accent/8 px-3 py-1.5 rounded-[4px] border border-accent/20">
                     <MapPin size={11} />
                     <span>{activeLoc}</span>
                   </span>
@@ -360,7 +360,7 @@ export const Pricing: React.FC = () => {
             {activeTab === 'internet' && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                 <div>
-                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Port Size</h3>
+                  <h3 className="text-sm font-semibold text-ink mb-4">Port Size</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {(['1 Gbps', '10 Gbps', '100 Gbps'] as PortSizeType[]).map((size) => (
                       <button
@@ -369,17 +369,17 @@ export const Pricing: React.FC = () => {
                         className={`p-5 rounded-[4px] border text-left transition-colors duration-[180ms] ${portSize === size ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
                         <div className="flex justify-between items-center mb-1">
-                          <span className="font-mono text-xl font-bold text-ink">{size}</span>
+                          <span className="tabular-nums text-xl font-bold text-ink">{size}</span>
                           {portSize === size && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white"><Check size={11} strokeWidth={3} /></div>}
                         </div>
-                        <span className="font-mono text-[10px] text-ink-2 uppercase tracking-widest">Peering Interface</span>
+                        <span className="text-sm font-semibold text-ink">Peering Interface</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Number of Ports</h3>
+                  <h3 className="text-sm font-semibold text-ink mb-4">Number of Ports</h3>
                   <div className="grid grid-cols-4 gap-3 max-w-xs">
                     {[1, 2, 3, 4].map((num) => (
                       <button
@@ -396,7 +396,7 @@ export const Pricing: React.FC = () => {
                 <div className="pt-6 border-t border-rule">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
                     <div>
-                      <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest">Techne Reach Plan</h3>
+                      <h3 className="text-sm font-semibold text-ink">Techne Reach Plan</h3>
                       <p className="font-body text-xs text-ink-2 mt-1">Global upstream & exchange cache paths</p>
                     </div>
                     <div className="bg-paper-2 border border-rule p-1 rounded-[4px] flex gap-1">
@@ -430,7 +430,7 @@ export const Pricing: React.FC = () => {
                   </div>
 
                   <div className="mt-5" ref={dcDropdownRef}>
-                    <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-3">Select Interface Datacenter</h3>
+                    <h3 className="text-sm font-semibold text-ink mb-3">Select Interface Datacenter</h3>
                     <div className="relative">
                       <button
                         type="button"
@@ -467,7 +467,7 @@ export const Pricing: React.FC = () => {
             {activeTab === 'colocation' && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                 <div>
-                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Cabinet Space Size</h3>
+                  <h3 className="text-sm font-semibold text-ink mb-4">Cabinet Space Size</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {([
                       { id: '1U Server', label: '1U Server Slot', desc: 'Best for standard rack servers' },
@@ -491,13 +491,13 @@ export const Pricing: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Redundant Power Limit</h3>
+                  <h3 className="text-sm font-semibold text-ink mb-4">Redundant Power Limit</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {(['1 kW', '2 kW', '3 kW', '5 kW'] as ColoPowerType[]).map((power) => (
                       <button
                         key={power}
                         onClick={() => setPowerAlloc(power)}
-                        className={`py-3 rounded-[4px] border font-mono font-semibold text-sm transition-colors duration-[180ms] ${powerAlloc === power ? 'border-brand-blue bg-brand-blue/10 text-brand-blue' : 'border-rule text-ink-2 hover:border-ink-2 bg-paper-2'}`}
+                        className={`py-3 rounded-[4px] border tabular-nums font-semibold text-sm transition-colors duration-[180ms] ${powerAlloc === power ? 'border-brand-blue bg-brand-blue/10 text-brand-blue' : 'border-rule text-ink-2 hover:border-ink-2 bg-paper-2'}`}
                       >
                         {power}
                       </button>
@@ -511,7 +511,7 @@ export const Pricing: React.FC = () => {
             {activeTab === 'virtual' && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                 <div>
-                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Service Type</h3>
+                  <h3 className="text-sm font-semibold text-ink mb-4">Service Type</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {([
                       { id: 'Virtual Router', label: 'Virtual Router (vRouter)', desc: 'Enterprise routing engine with BGP supports' },
@@ -535,7 +535,7 @@ export const Pricing: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Resource Capacity Tier</h3>
+                  <h3 className="text-sm font-semibold text-ink mb-4">Resource Capacity Tier</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {([
                       { id: 'Starter', specs: '1 vCPU / 2GB' },
@@ -549,14 +549,14 @@ export const Pricing: React.FC = () => {
                         className={`p-4 rounded-[4px] border text-center transition-colors duration-[180ms] flex flex-col items-center ${vTier === tier.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
                         <span className="font-display font-semibold text-ink text-sm">{tier.id}</span>
-                        <span className="font-mono text-[10px] text-ink-2 mt-1">{tier.specs}</span>
+                        <span className="text-xs text-ink-2 mt-1">{tier.specs}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Managed Engineering Support</h3>
+                  <h3 className="text-sm font-semibold text-ink mb-4">Managed Engineering Support</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {([
                       { id: 'Self-Managed', label: 'Self-Managed', desc: 'No engineer support' },
@@ -582,7 +582,7 @@ export const Pricing: React.FC = () => {
 
             {/* Contract term */}
             <div className="pt-6 border-t border-rule">
-              <h3 className="font-mono text-[10px] text-ink-2 uppercase tracking-widest mb-4">Contract Term</h3>
+              <h3 className="text-sm font-semibold text-ink mb-4">Contract Term</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {terms.map((t) => (
                   <button
@@ -592,7 +592,7 @@ export const Pricing: React.FC = () => {
                   >
                     <span className="font-display font-semibold text-ink text-sm">{t.name}</span>
                     {t.note && (
-                      <span className="font-mono text-[10px] text-accent mt-1 bg-accent/10 px-2 py-0.5 rounded-[2px]">
+                      <span className="text-xs text-accent mt-1 bg-accent/10 px-2 py-0.5 rounded-[2px]">
                         {t.note}
                       </span>
                     )}
@@ -607,82 +607,82 @@ export const Pricing: React.FC = () => {
           <div className="lg:col-span-4 lg:sticky lg:top-24">
             <div className="bg-ink text-white rounded-[4px] p-8 flex flex-col justify-between min-h-[440px]">
               <div>
-                <h3 className="font-mono text-[10px] text-white/40 uppercase tracking-widest mb-6">Your Subscription</h3>
+                <h3 className="text-sm font-semibold text-white/75 mb-6">Your Subscription</h3>
 
                 <div className="mb-8 border-b border-white/10 pb-6">
                   <div className="flex items-baseline gap-2">
-                    <span className="font-mono font-bold text-white" style={{ fontSize: 'var(--text-4xl)', lineHeight: 1 }}>
+                    <span className="tabular-nums font-bold text-white" style={{ fontSize: 'var(--text-4xl)', lineHeight: 1 }}>
                       ${costResult.monthlyUSD.toLocaleString()}
                     </span>
-                    <span className="font-body text-white/40 text-sm">/ mo</span>
+                    <span className="font-body text-white/70 text-sm">/ mo</span>
                   </div>
-                  <div className="font-mono text-accent text-xs mt-2">
+                  <div className="text-teal-bright text-sm tabular-nums mt-2">
                     ~ ₱{costResult.monthlyPHP.toLocaleString()} PHP / month
                   </div>
                 </div>
 
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between items-center text-white/40">
+                  <div className="flex justify-between items-center text-white/70">
                     <span className="font-body">Category:</span>
                     <span className="font-display font-semibold text-white capitalize">{activeTab}</span>
                   </div>
 
                   {activeTab === 'internet' && (<>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Location:</span>
-                      <span className="font-display font-semibold text-white flex items-center gap-1"><MapPin size={11} className="text-accent" />{internetLoc}</span>
+                      <span className="font-display font-semibold text-white flex items-center gap-1"><MapPin size={11} className="text-teal-bright" />{internetLoc}</span>
                     </div>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Datacenter:</span>
                       <span className="font-display font-semibold text-white text-right max-w-[10rem] truncate">{internetDC}</span>
                     </div>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Ports:</span>
-                      <span className="font-mono font-semibold text-white">{numPorts} × {portSize}</span>
+                      <span className="tabular-nums font-semibold text-white">{numPorts} × {portSize}</span>
                     </div>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Reach Plan:</span>
                       <span className="font-display font-semibold text-white text-right">{speedCommit === 'None' ? 'Peering Only' : `${reachPlanType} (${speedCommit})`}</span>
                     </div>
                   </>)}
 
                   {activeTab === 'colocation' && (<>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Location:</span>
-                      <span className="font-display font-semibold text-white flex items-center gap-1"><MapPin size={11} className="text-accent" />{coloLoc}</span>
+                      <span className="font-display font-semibold text-white flex items-center gap-1"><MapPin size={11} className="text-teal-bright" />{coloLoc}</span>
                     </div>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Space:</span>
                       <span className="font-display font-semibold text-white">{cabinetSize}</span>
                     </div>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Power:</span>
-                      <span className="font-mono font-semibold text-white">{powerAlloc}</span>
+                      <span className="tabular-nums font-semibold text-white">{powerAlloc}</span>
                     </div>
                   </>)}
 
                   {activeTab === 'virtual' && (<>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Edge Node:</span>
-                      <span className="font-display font-semibold text-white flex items-center gap-1"><MapPin size={11} className="text-accent" />{virtualLoc}</span>
+                      <span className="font-display font-semibold text-white flex items-center gap-1"><MapPin size={11} className="text-teal-bright" />{virtualLoc}</span>
                     </div>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Service:</span>
                       <span className="font-display font-semibold text-white">{vService}</span>
                     </div>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Tier:</span>
                       <span className="font-display font-semibold text-white">{vTier}</span>
                     </div>
-                    <div className="flex justify-between items-center text-white/40">
+                    <div className="flex justify-between items-center text-white/70">
                       <span className="font-body">Managed:</span>
                       <span className="font-display font-semibold text-white">{vSupport}</span>
                     </div>
                   </>)}
 
-                  <div className="flex justify-between items-center text-white/40">
+                  <div className="flex justify-between items-center text-white/70">
                     <span className="font-body">Term:</span>
-                    <span className="font-mono font-semibold text-white">{contractTerm}</span>
+                    <span className="tabular-nums font-semibold text-white">{contractTerm}</span>
                   </div>
                 </div>
               </div>
@@ -690,7 +690,7 @@ export const Pricing: React.FC = () => {
               <div className="mt-8 pt-6 border-t border-white/10">
                 <Link
                   to={`/${PANEL_IDS.CONTACT}?${costResult.query}`}
-                  className="w-full py-3.5 bg-accent hover:bg-accent-hover text-accent-ink rounded-[4px] text-center font-display font-semibold text-sm flex items-center justify-center gap-1.5 transition-colors duration-[180ms]"
+                  className="btn-on-navy w-full"
                 >
                   Apply Now
                   <ChevronRight size={15} />

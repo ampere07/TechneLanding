@@ -69,6 +69,50 @@
         "All SVG orbital ring paths, pin rendering, and animation in NetworkMap.tsx",
         "brand-blue token for Pricing tab/selected states and NetworkMap SVG colors"
       ]
+    },
+    {
+      "date": "2026-11-04",
+      "verb": "redesign",
+      "scope": "all",
+      "operator": "raven@mynetteam.com",
+      "genre": "modern-minimal",
+      "references": [
+        "rise.ph",
+        "mcbroad.com",
+        "getafix.ph"
+      ],
+      "macrostructures": {
+        "home": "Feature Stack with annotated data sections",
+        "service": "Long Document with 3D header",
+        "pricing": "Workbench"
+      },
+      "archetypes": {
+        "nav": "Utility bar and mega menu",
+        "footer": "Four-column navy"
+      },
+      "tokens": {
+        "anchorHue": "logo teal #63b4b5 on navy #0b2536",
+        "fontDisplay": "Libre Franklin",
+        "fontBody": "Libre Franklin",
+        "radius": "4px"
+      },
+      "preserved": [
+        "Pricing state and cost calculation",
+        "All routes"
+      ],
+      "notRendered": [
+        "src/components/WhyTechne.tsx",
+        "src/remotion/NetworkScene.tsx",
+        "src/assets/blog_infra.png",
+        "src/assets/blog_net.png",
+        "src/assets/blog_sec.png"
+      ],
+      "amendments": [
+        {
+          "date": "2026-11-04",
+          "change": "Shared 3D model travels from hero to services panel on desktop scroll"
+        }
+      ]
     }
   ]
 }

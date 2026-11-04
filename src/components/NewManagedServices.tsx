@@ -22,23 +22,20 @@ const ServiceTemplate: React.FC<{
   </ServiceLayout>
 );
 
-const SectionHeading: React.FC<{ number: string; title: string }> = ({ number, title }) => (
-  <div className="flex items-baseline gap-4 mb-5">
-    <span className="font-mono text-sm text-ink-2/50 shrink-0">{number}</span>
-    <h2 className="font-display text-2xl font-bold text-ink tracking-tight">{title}</h2>
-  </div>
+const SectionHeading: React.FC<{ number: string; title: string }> = ({ title }) => (
+  <h2 className="heading-2 mb-4">{title}</h2>
 );
 
 const CapabilityBox: React.FC<{ icon: React.ReactNode; heading: string; items: string[] }> = ({ icon, heading, items }) => (
   <div className="bg-ink rounded-[4px] p-8 text-white">
     <h3 className="font-display text-lg font-semibold text-white mb-5 flex items-center gap-2">
-      <span className="text-accent">{icon}</span>
+      <span className="text-teal-bright">{icon}</span>
       {heading}
     </h3>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {items.map((item, i) => (
-        <div key={i} className="flex items-center gap-2.5 text-white/60 text-sm font-body">
-          <div className="w-1 h-1 rounded-full bg-accent shrink-0" />
+        <div key={i} className="flex items-center gap-2.5 text-white/80 text-sm font-body">
+          <div className="w-1 h-1 rounded-full bg-teal-bright shrink-0" />
           {item}
         </div>
       ))}
@@ -114,7 +111,7 @@ export const CoreConfig = () => (
           items={[
             {
               q: 'Which routers and platforms do you support?',
-              a: 'We configure across major vendors — Cisco, Juniper, MikroTik, and Arista — and document everything to your operational standards.',
+              a: 'We configure across major vendors, including Cisco, Juniper, MikroTik and Arista, and document everything to your operational standards.',
             },
             {
               q: 'Can you migrate our core without downtime?',
@@ -122,7 +119,7 @@ export const CoreConfig = () => (
             },
             {
               q: 'Do you implement RPKI and route security?',
-              a: 'Yes — RPKI ROA validation, prefix filtering, and control-plane protections are part of a standard core build.',
+              a: 'Yes. RPKI ROA validation, prefix filtering and control-plane protections are part of a standard core build.',
             },
           ]}
         />
@@ -207,7 +204,7 @@ export const DistConfig = () => (
             },
             {
               q: 'Do you support PPPoE and IPoE?',
-              a: 'Yes — both subscriber models, with BNG / access-concentrator configuration tuned for stability at scale.',
+              a: 'Yes. Both subscriber models, with BNG / access-concentrator configuration tuned for stability at scale.',
             },
             {
               q: 'Can you mix fiber and wireless backhaul?',
@@ -282,7 +279,7 @@ export const SystemIntegration = () => (
             },
             {
               q: 'Can you integrate with our ticketing system?',
-              a: 'Yes — alerts can route directly into your existing escalation and ticketing workflows.',
+              a: 'Yes. Alerts can route directly into your existing escalation and ticketing workflows.',
             },
           ]}
         />
@@ -350,8 +347,8 @@ export const ProtectiveDNS = () => (
         </p>
         <ul className="mt-6 flex flex-wrap justify-center gap-4">
           {['NTC Compliant', 'Subscriber Protection', 'Real-Time Filtering', 'Easy Deployment'].map((tag, i) => (
-            <li key={i} className="flex items-center gap-1.5 font-mono text-xs text-white/60">
-              <Check size={11} className="text-accent" />
+            <li key={i} className="flex items-center gap-1.5 text-xs text-white/80">
+              <Check size={11} className="text-teal-bright" />
               {tag}
             </li>
           ))}
@@ -364,7 +361,7 @@ export const ProtectiveDNS = () => (
           items={[
             {
               q: 'Is this compliant with NTC requirements?',
-              a: 'Yes — our Protective DNS integration is built to meet NTC Memorandum No. 001-01-2025 for Value-Added Service providers.',
+              a: 'Yes. Our Protective DNS integration is built to meet NTC Memorandum No. 001-01-2025 for Value-Added Service providers.',
             },
             {
               q: 'Will it slow down DNS resolution?',

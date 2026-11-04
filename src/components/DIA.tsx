@@ -28,7 +28,7 @@ export const DIA: React.FC = () => {
           <SectionTitle
             eyebrow="Overview"
             title="Bandwidth that is always yours"
-            intro="A dedicated, non-contended circuit with identical upload and download speeds and a hard SLA — the connectivity production workloads and cloud operations depend on."
+            intro="A dedicated, non-contended circuit with identical upload and download speeds and a hard SLA, which is the connectivity production workloads and cloud operations depend on."
           />
           <FeatureGrid
             items={[
@@ -82,7 +82,7 @@ export const DIA: React.FC = () => {
             items={[
               {
                 q: 'How is DIA different from broadband?',
-                a: 'DIA is dedicated and symmetrical — you get your full committed bandwidth at all times with no contention, backed by an SLA. Broadband is shared and best-effort with no guarantees.',
+                a: 'DIA is dedicated and symmetrical. You get your full committed bandwidth at all times with no contention, backed by an SLA. Broadband is shared and best-effort with no guarantees.',
               },
               {
                 q: 'Can I get static IP addresses?',
@@ -90,7 +90,7 @@ export const DIA: React.FC = () => {
               },
               {
                 q: 'Is there a service level agreement?',
-                a: 'Yes — 99.9% availability with a 4-hour mean-time-to-repair target and 24/7 support.',
+                a: 'Yes. We commit to 99.9% availability with a 4-hour mean-time-to-repair target and 24/7 support.',
               },
               {
                 q: 'Can I scale bandwidth later?',

@@ -1,87 +1,54 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Eyebrow } from './ServiceLayout';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+import { SERVICES, SERVICE_GROUPS } from '../content/site';
+import { ClosingCTA } from './ClosingCTA';
+import { ServiceFinder, VirtualCompare } from './HomeSections';
 
-const services = [
-  {
-    number: '01',
-    title: 'Internet Services',
-    desc: 'Reliable, high-speed fiber internet for businesses. IP Transit, Dedicated Internet Access (DIA), and burstable bandwidth options with 99.9% SLA.',
-  },
-  {
-    number: '02',
-    title: 'Network Consulting',
-    desc: 'Expert guidance on infrastructure design, BGP routing architecture, peering strategy, and complex core network optimization for ISPs and enterprises.',
-  },
-  {
-    number: '03',
-    title: 'SD-WAN Solutions',
-    desc: 'Software-defined wide area network management with centralized policy control, traffic prioritization, and zero-touch provisioning.',
-  },
-  {
-    number: '04',
-    title: 'Cloud Connectivity',
-    desc: 'Secure, low-latency direct paths to AWS, Azure, and Google Cloud. Eliminate public internet dependency for production workloads.',
-  },
-  {
-    number: '05',
-    title: 'Managed Services',
-    desc: 'Proactive 24/7 monitoring, configuration management, and incident response for your entire network environment.',
-  },
-  {
-    number: '06',
-    title: 'Security Audits',
-    desc: 'Comprehensive vulnerability assessments, Protective DNS integration, and security infrastructure planning aligned with NTC mandates.',
-  },
-];
-
-export const Services: React.FC = () => {
-  return (
-    <section id="services" className="py-24 bg-paper-2">
-      <div className="container mx-auto px-6 max-w-7xl">
-
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-4 border-b border-rule pb-10"
-        >
-          <div>
-            <Eyebrow className="mb-5">Services</Eyebrow>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-ink tracking-tight leading-tight max-w-lg">
-              Comprehensive IT Infrastructure
-            </h2>
-          </div>
-          <p className="font-body text-[1rem] text-ink-2 leading-relaxed max-w-sm">
-            A full suite of networking and internet services designed to keep your business running in the digital age.
-          </p>
-        </motion.div>
-
-        <div className="divide-y divide-rule">
-          {services.map((service, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.28, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
-              className="grid grid-cols-1 md:grid-cols-[5rem_1fr_2fr] gap-4 md:gap-8 py-7 group"
-            >
-              <span className="font-mono text-sm text-ink-2/60 self-start pt-0.5">
-                {service.number}
-              </span>
-              <h3 className="font-display text-lg font-semibold text-ink self-start">
-                {service.title}
-              </h3>
-              <p className="font-body text-sm text-ink-2 leading-relaxed">
-                {service.desc}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-
+/** Index of all services, grouped the same way as the main menu. */
+export const Services: React.FC = () => (
+  <>
+    <section className="bg-paper-2 border-b border-rule">
+      <div className="wrap py-12 md:py-16">
+        <h1 className="heading-1">Services</h1>
+        <p className="lede mt-4">
+          Colocation, connectivity, virtual services and network consulting for ISPs and enterprises in the Philippines, all on one carrier-neutral network.
+        </p>
       </div>
     </section>
-  );
-};
+
+    <section className="section bg-paper">
+      <div className="wrap space-y-12">
+        {SERVICE_GROUPS.map((group) => (
+          <div key={group}>
+            <h2 className="heading-2 mb-5">{group}</h2>
+            <div className="border-t-2 border-ink">
+              {SERVICES.filter((service) => service.group === group).map((service) => (
+                <div key={service.id} className="grid grid-cols-1 md:grid-cols-[minmax(0,3fr)_minmax(0,6fr)_auto] gap-x-8 gap-y-2 py-5 border-b border-rule">
+                  <h3 className="heading-3">
+                    <Link to={service.path} className="hover:text-accent transition-colors duration-150">{service.name}</Link>
+                  </h3>
+                  <div>
+                    <p className="body-copy">{service.summary}</p>
+                    <p className="text-[0.875rem] text-ink-2 mt-2">
+                      <span className="font-semibold text-ink">Built for: </span>
+                      {service.builtFor}
+                    </p>
+                  </div>
+                  <Link to={service.path} className="text-link self-start">
+                    Details
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <ServiceFinder />
+    <VirtualCompare />
+    <ClosingCTA />
+  </>
+);

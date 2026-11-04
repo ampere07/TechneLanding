@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useParams, Navigate, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
-import { Hero } from './components/Hero';
+import { HomeJourney } from './components/HomeJourney';
 import { Services } from './components/Services';
 import { ContactForm } from './components/ContactForm';
 import { Footer } from './components/Footer';
@@ -14,24 +14,34 @@ import { DIA } from './components/DIA';
 import { Colocation } from './components/Colocation';
 import { NetworkConsulting } from './components/NetworkConsulting';
 import { CoreConfig, DistConfig, SystemIntegration, ProtectiveDNS } from './components/NewManagedServices';
-import { WhyTechne } from './components/WhyTechne';
+import { Content } from './components/Content';
+import { VirtualCrossConnect, VirtualRouter, VirtualSwitch } from './components/VirtualServices';
 import { NetworkMap, TrustedBrands } from './components/NetworkMap';
-import { Methodology, HomeFAQ } from './components/HomeSections';
+import { ClosingCTA } from './components/ClosingCTA';
+import {
+  HomeFAQ,
+  Methodology,
+  ServiceFinder,
+  VirtualCompare,
+  WhyChooseTechne,
+} from './components/HomeSections';
 import { PANEL_IDS } from './constants';
 
-import blogInfra from './assets/blog_infra.png';
-import blogSec from './assets/blog_sec.png';
-import blogNet from './assets/blog_net.png';
+import blogInfra from './assets/insight-infrastructure.webp';
+import blogSec from './assets/insight-security.webp';
+import blogNet from './assets/insight-connectivity.webp';
 
 const HomePanel = () => (
   <>
-    <Hero />
-    <WhyTechne />
-    <Methodology />
+    <HomeJourney />
+    <ServiceFinder />
+    <VirtualCompare />
     <NetworkMap />
     <TrustedBrands />
-    <Services />
+    <WhyChooseTechne />
+    <Methodology />
     <HomeFAQ />
+    <ClosingCTA />
   </>
 );
 
@@ -67,6 +77,14 @@ const PanelRenderer = () => {
       return <SystemIntegration />;
     case PANEL_IDS.PROTECTIVE_DNS:
       return <ProtectiveDNS />;
+    case PANEL_IDS.CONTENT:
+      return <Content />;
+    case PANEL_IDS.VIRTUAL_CROSS_CONNECT:
+      return <VirtualCrossConnect />;
+    case PANEL_IDS.VIRTUAL_SWITCH:
+      return <VirtualSwitch />;
+    case PANEL_IDS.VIRTUAL_ROUTER:
+      return <VirtualRouter />;
 
     // Blog Details
     case PANEL_IDS.BLOG_INFRA:
@@ -141,11 +159,18 @@ const PanelRenderer = () => {
 };
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
+    if (hash) {
+      // Wait a frame so a section on a newly opened page exists before scrolling to it.
+      const frame = requestAnimationFrame(() => {
+        document.getElementById(hash.slice(1))?.scrollIntoView();
+      });
+      return () => cancelAnimationFrame(frame);
+    }
     window.scrollTo(0, 0);
-  }, [pathname]);
+  }, [pathname, hash]);
 
   return null;
 };
@@ -154,9 +179,9 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-paper flex flex-col">
         <Header />
-        <main className="flex-grow pt-20">
+        <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Navigate to={`/${PANEL_IDS.HOME}`} replace />} />
             <Route path="/:id" element={<PanelRenderer />} />

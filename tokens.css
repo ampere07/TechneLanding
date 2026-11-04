@@ -1,29 +1,42 @@
-/* Hallmark · macrostructure: Feature Stack · tone: technical · anchor hue: teal 199
- * genre: modern-minimal · theme: custom (vibe: "carrier-neutral ISP infrastructure Philippines")
- * paper-band: light · display-style: humanist-grotesque (IBM Plex) · accent-hue: cool
- * pre-emit critique: P5 H4 E5 S4 R5 V4 */
+/* Hallmark · macrostructure: Feature Stack + annotated data sections · tone: corporate, informational
+ * genre: modern-minimal · theme: custom (vibe: "Philippine carrier-neutral network operator")
+ * anchor: Techne logo teal #63b4b5 and logo grey, on deep navy · display: Libre Franklin
+ * pre-emit critique: P5 H5 E4 S5 R4 V5 */
 
 :root {
-  /* === Colors === */
-  --color-paper:         oklch(98.5% 0.005 199);
-  --color-paper-2:       oklch(96%   0.010 199);
-  --color-paper-3:       oklch(93%   0.015 199);
-  --color-ink:           oklch(9%    0.020 200);
-  --color-ink-2:         oklch(38%   0.040 199);
-  --color-rule:          oklch(88%   0.015 199);
-  --color-accent:        oklch(55%   0.130 199);
-  --color-accent-hover:  oklch(48%   0.140 199);
-  --color-accent-ink:    oklch(98.5% 0.005 199);
-  --color-focus:         oklch(55%   0.170 220);
+  /* === Surfaces === */
+  --color-paper:        #ffffff;
+  --color-paper-2:      #f3f6f8;
+  --color-paper-3:      #e6ecf0;
+
+  /* === Text === */
+  --color-ink:          #0b2536;
+  --color-ink-2:        #455a68;
+  --color-ink-3:        #5f717d;
+
+  /* === Lines === */
+  --color-rule:         #d8e0e6;
+  --color-rule-strong:  #b4c1ca;
+
+  /* === Brand === */
+  --color-navy:         #0b2536;
+  --color-navy-2:       #123448;
+  --color-navy-3:       #1d465c;
+  --color-accent:       #0e6b70;
+  --color-accent-hover: #0a5559;
+  --color-accent-ink:   #ffffff;
+  --color-accent-soft:  #e3f1f1;
+  --color-teal-bright:  #63b4b5;
+  --color-teal-brighter:#7cc5c6;
+  --color-focus:        #1579a8;
 
   /* === Typography === */
-  --font-display: "IBM Plex Sans", "Inter", system-ui, sans-serif;
-  --font-body:    "IBM Plex Sans", "Inter", system-ui, sans-serif;
-  --font-mono:    "IBM Plex Mono", "JetBrains Mono", monospace;
+  --font-display: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+  --font-body:    "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
 
   /* === Type scale === */
-  --text-xs:        0.75rem;
-  --text-sm:        0.875rem;
+  --text-xs:        0.8125rem;
+  --text-sm:        0.9375rem;
   --text-base:      1rem;
   --text-md:        1.125rem;
   --text-lg:        1.375rem;
@@ -31,8 +44,8 @@
   --text-2xl:       2.25rem;
   --text-3xl:       3rem;
   --text-4xl:       3.75rem;
-  --text-display-s: clamp(3rem, 4.5vw, 4.5rem);
-  --text-display:   clamp(3.25rem, 5.5vw, 5.25rem);
+  --text-display-s: clamp(2.125rem, 3.6vw, 3rem);
+  --text-display:   clamp(2.125rem, 3.5vw, 3.125rem);
 
   /* === Spacing (4-pt scale) === */
   --space-3xs: 0.25rem;
@@ -49,12 +62,11 @@
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in:     cubic-bezier(0.4, 0, 1, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-short:   180ms;
-  --dur-med:     320ms;
+  --dur-short:   160ms;
+  --dur-med:     280ms;
 
   /* === Shape === */
   --radius-card:  4px;
-  --radius-btn:   4px;
-  --radius-input: 4px;
-  --radius-pill:  100px;
+  --radius-btn:   3px;
+  --radius-input: 3px;
 }
