@@ -68,7 +68,7 @@ export const Header: React.FC = () => {
         <div className="wrap flex items-center justify-between h-16 lg:h-[72px]">
           <Link to={`/${PANEL_IDS.HOME}`} className="flex items-center gap-2.5 shrink-0" onClick={closeAll}>
             <img src={logo} alt="" className="h-9 w-auto object-contain" draggable="false" />
-            <span className="text-[1.25rem] font-bold tracking-tight text-ink">Techne</span>
+            <span className="font-display text-[1.25rem] font-bold tracking-tight text-ink">Techne</span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-8" aria-label="Primary">

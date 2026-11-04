@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ArrowRight, Check, Plus } from 'lucide-react';
 import { PANEL_IDS } from '../constants';
+import { isDataValue } from '../content/format';
 import { serviceQuoteLink } from '../content/quote';
 import { ENGAGEMENT_STEPS, serviceById, type ServiceSummary } from '../content/site';
 import type { FabricFocus } from '../three/FabricStage';
@@ -56,7 +58,7 @@ export const ServiceLayout: React.FC<ServiceLayoutProps> = ({ eyebrow, title, le
           {meta.map((item) => (
             <div key={item.label}>
               <dt className="text-[0.8125rem] text-ink-3">{item.label}</dt>
-              <dd className="text-[1.0625rem] font-semibold text-ink mt-0.5 tabular-nums">{item.value}</dd>
+              <dd className="font-data text-[1rem] font-medium text-ink mt-0.5">{item.value}</dd>
             </div>
           ))}
         </dl>
@@ -122,21 +124,44 @@ export const SectionTitle: React.FC<{ eyebrow?: string; title: string; intro?: s
   </div>
 );
 
-/** Sequence of delivery stages, joined by a line on wide screens. */
-export const ProcessSteps: React.FC<{ steps: { title: string; desc: string }[] }> = ({ steps }) => (
+const STEP_EASE = [0.16, 1, 0.3, 1] as const;
+const STEP_VIEW = { once: true, margin: '0px 0px -10% 0px' } as const;
+
+/**
+ * Sequence of delivery stages, joined by a line on wide screens.
+ * With `animate`, the stages appear in order and the line draws from each one to the next.
+ */
+export const ProcessSteps: React.FC<{ steps: { title: string; desc: string }[]; animate?: boolean }> = ({ steps, animate = false }) => (
   <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
-    {steps.map((step, index) => (
-      <li key={step.title} className="relative">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="w-8 h-8 shrink-0 rounded-full bg-navy text-white text-[0.875rem] font-semibold flex items-center justify-center">
-            {index + 1}
-          </span>
-          <span className="hidden lg:block h-px flex-1 bg-rule-strong" aria-hidden="true" />
-        </div>
-        <h3 className="heading-3">{step.title}</h3>
-        <p className="body-copy mt-1.5 pr-2">{step.desc}</p>
-      </li>
-    ))}
+    {steps.map((step, index) => {
+      const delay = index * 0.18;
+      return (
+        <motion.li
+          key={step.title}
+          className="relative"
+          initial={animate ? { opacity: 0, y: 14 } : false}
+          whileInView={animate ? { opacity: 1, y: 0 } : undefined}
+          viewport={STEP_VIEW}
+          transition={{ duration: 0.5, delay, ease: STEP_EASE }}
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <span className="font-data w-8 h-8 shrink-0 rounded-full bg-navy text-white text-[0.875rem] font-medium flex items-center justify-center">
+              {index + 1}
+            </span>
+            <motion.span
+              className="hidden lg:block h-px flex-1 bg-rule-strong origin-left"
+              aria-hidden="true"
+              initial={animate ? { scaleX: 0 } : false}
+              whileInView={animate ? { scaleX: 1 } : undefined}
+              viewport={STEP_VIEW}
+              transition={{ duration: 0.6, delay: delay + 0.25, ease: STEP_EASE }}
+            />
+          </div>
+          <h3 className="heading-3">{step.title}</h3>
+          <p className="body-copy mt-1.5 pr-2">{step.desc}</p>
+        </motion.li>
+      );
+    })}
   </ol>
 );
 
@@ -148,7 +173,7 @@ export const SpecTable: React.FC<{ rows: { k: string; v: string }[] }> = ({ rows
         {rows.map((row) => (
           <tr key={row.k}>
             <th scope="row" className="w-[36%] md:w-[28%]">{row.k}</th>
-            <td>{row.v}</td>
+            <td className={isDataValue(row.v) ? 'font-data' : undefined}>{row.v}</td>
           </tr>
         ))}
       </tbody>
@@ -167,7 +192,7 @@ export const DataTable: React.FC<{ headers: string[]; rows: string[][] }> = ({ h
             {row.slice(1).map((cell, index) => (
               <div key={index}>
                 {headers.length > 2 && <dt className="text-[0.8125rem] text-ink-3">{headers[index + 1]}</dt>}
-                <dd className="body-copy">{cell}</dd>
+                <dd className={`body-copy ${isDataValue(cell) ? 'font-data' : ''}`}>{cell}</dd>
               </div>
             ))}
           </dl>
@@ -190,7 +215,7 @@ export const DataTable: React.FC<{ headers: string[]; rows: string[][] }> = ({ h
                 index === 0 ? (
                   <th key={index} scope="row">{cell}</th>
                 ) : (
-                  <td key={index}>{cell}</td>
+                  <td key={index} className={isDataValue(cell) ? 'font-data' : undefined}>{cell}</td>
                 ),
               )}
             </tr>

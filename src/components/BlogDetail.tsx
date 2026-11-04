@@ -45,7 +45,7 @@ export const BlogDetail: React.FC<BlogDetailProps> = ({ title, content, date, au
           <img src={image} alt="" className="w-full h-auto object-cover max-h-[440px]" draggable="false" />
         </div>
 
-        <div className="text-[1.0625rem] text-ink-2 leading-[1.75] whitespace-pre-line">{content}</div>
+        <div className="font-reading text-[1.1875rem] text-ink-2 leading-[1.7] max-w-[66ch] whitespace-pre-line">{content}</div>
 
         <div className="border-t border-rule mt-12 pt-6 flex flex-wrap items-center justify-between gap-4">
           <button type="button" onClick={handleShare} className="text-link cursor-pointer" aria-live="polite">

@@ -87,9 +87,40 @@ const RISER_TOP = 5.25;
 const MODEL_W = 15.2;
 const MODEL_H = 9.9;
 
+/**
+ * How the hall builds itself, in seconds. The core cabinets go up first and the build
+ * spreads outward. Each cabinet's shell rises, then its equipment slides in from the
+ * bottom to the top and its lights come on. Cable trays, fiber and the virtual layers follow.
+ * Reduced motion plays the same order faster, with parts appearing in place.
+ */
+const BUILD = {
+  lead: 0.45, // waits for the canvas to fade in
+  sweep: 1.35, // time for the build to reach the outermost cabinet
+  rise: 0.55, // a cabinet shell rising from the floor
+  slotDelay: 0.3, // when the first unit starts sliding in, after its cabinet starts
+  slotGap: 0.05, // gap between one unit and the next
+  slide: 0.34, // one unit sliding in
+  slideDistance: 0.75,
+  traysAt: 2.0,
+  traysGrow: 0.7,
+  fibresAt: 2.4,
+  fibresDraw: 1.1,
+  layersAt: 3.0,
+  layersFade: 0.8,
+  layersDrop: 0.7,
+  end: 3.95,
+  reducedSpeed: 1.7,
+};
+
 interface Cabinet {
   id: string;
   group: THREE.Group;
+  /** Body, door and outline, scaled together so the cabinet can rise from the floor. */
+  shell: THREE.Group;
+  units: THREE.InstancedMesh;
+  slots: { y: number; h: number }[];
+  /** When this cabinet starts building, in seconds into the sequence. */
+  start: number;
   x: number;
   z: number;
   body: THREE.MeshStandardMaterial;
@@ -118,6 +149,8 @@ interface Slab {
   edge: THREE.LineBasicMaterial;
   ports: THREE.MeshBasicMaterial;
   tone: Tone;
+  faceLevel: number;
+  lineLevel: number;
 }
 
 interface LabelDef {
@@ -294,6 +327,9 @@ export class FabricStage {
   private fibres: Fibre[] = [];
   private slabs: Slab[] = [];
   private trayMaterial = new THREE.MeshStandardMaterial({ color: COLORS.tray, roughness: 0.7 });
+  /** Everything built from the tray material, with how each part grows during the build. */
+  private trayParts: { mesh: THREE.Mesh; kind: 'x' | 'z' | 'hanger' | 'cap' }[] = [];
+  private riserMaterial = new THREE.LineBasicMaterial({ color: COLORS.slab, transparent: true, opacity: 0.55 });
   private blueprintLine = new THREE.LineBasicMaterial({
     color: COLORS.ghostLine,
     transparent: true,
@@ -326,8 +362,11 @@ export class FabricStage {
   private blueprint = 0;
   private reduced: boolean;
   private time = 0;
-  private introStart = -1;
-  private readonly introLength = 2.1;
+  private buildTime = 0;
+  private introDone = false;
+  private building = true;
+  private layerFade = 0;
+  private layerDrop = 0;
   private lastFrame = 0;
   private raf = 0;
   private running = false;
@@ -412,7 +451,7 @@ export class FabricStage {
     this.pointerSource.addEventListener('pointermove', this.handlePointer as EventListener);
     this.pointerSource.addEventListener('pointerleave', this.handlePointerLeave);
 
-    if (this.reduced) this.finishIntro();
+    this.applyBuild(0);
     this.settleUntil = performance.now() + 2500;
     this.syncLoop();
   }
@@ -557,6 +596,8 @@ export class FabricStage {
       const palette = STYLE_COLORS[style];
       const group = new THREE.Group();
       group.position.set(x, 0, z);
+      const shell = new THREE.Group();
+      group.add(shell);
 
       const body = new THREE.MeshStandardMaterial({ color: palette.body, roughness: 0.62, metalness: 0.08 });
       const door = new THREE.MeshStandardMaterial({ color: palette.door, roughness: 0.58, metalness: 0.08 });
@@ -566,15 +607,15 @@ export class FabricStage {
       bodyMesh.position.y = CAB_H / 2;
       bodyMesh.castShadow = true;
       bodyMesh.receiveShadow = true;
-      group.add(bodyMesh);
+      shell.add(bodyMesh);
 
       const doorMesh = new THREE.Mesh(doorGeometry, door);
       doorMesh.position.set(0, CAB_H / 2, CAB_D / 2 + 0.006);
-      group.add(doorMesh);
+      shell.add(doorMesh);
 
       const edgeLines = new THREE.LineSegments(edgeGeometry, this.blueprintLine);
       edgeLines.position.y = CAB_H / 2;
-      group.add(edgeLines);
+      shell.add(edgeLines);
 
       // Rack-mounted equipment on the cabinet face.
       const slots: { y: number; h: number }[] = [];
@@ -609,10 +650,12 @@ export class FabricStage {
       units.instanceMatrix.needsUpdate = true;
       leds.instanceMatrix.needsUpdate = true;
       if (leds.instanceColor) leds.instanceColor.needsUpdate = true;
+      units.frustumCulled = false;
+      leds.frustumCulled = false;
       group.add(units, leds);
 
       this.model.add(group);
-      this.cabinets.push({ id, group, x, z, body, door, unit, leds, style, tone: 'normal' });
+      this.cabinets.push({ id, group, shell, units, slots, start: 0, x, z, body, door, unit, leds, style, tone: 'normal' });
     };
 
     // Back row, seen across the hall: CDN caches, partner networks, edge routers.
@@ -629,6 +672,12 @@ export class FabricStage {
 
     this.buildTrays();
     this.buildFibres();
+
+    // The build spreads outward from the core, so each cabinet starts a little after the last.
+    const radius = Math.max(...this.cabinets.map((cabinet) => Math.hypot(cabinet.x, cabinet.z)));
+    for (const cabinet of this.cabinets) {
+      cabinet.start = BUILD.lead + (Math.hypot(cabinet.x, cabinet.z) / radius) * BUILD.sweep;
+    }
   }
 
   private pickLed(random: () => number) {
@@ -647,6 +696,7 @@ export class FabricStage {
       tray.position.set((x1 + x2) / 2, TRAY_Y - 0.04, (z1 + z2) / 2);
       tray.castShadow = true;
       this.cablingGroup.add(tray);
+      this.trayParts.push({ mesh: tray, kind: alongX ? 'x' : 'z' });
     };
     addTray(-5.5, BACK_Z, 5.75, BACK_Z);
     addTray(-4.8, FRONT_Z, 4.5, FRONT_Z);
@@ -668,6 +718,7 @@ export class FabricStage {
       mesh.position.set(x, TRAY_Y / 2 - 0.02, z);
       mesh.castShadow = true;
       this.cablingGroup.add(mesh);
+      this.trayParts.push({ mesh, kind: 'hanger' });
     });
   }
 
@@ -738,6 +789,7 @@ export class FabricStage {
       cap.position.set(riserX, RISER_TOP + 0.04, BACK_Z);
       cap.castShadow = true;
       this.cablingGroup.add(cap);
+      this.trayParts.push({ mesh: cap, kind: 'cap' });
     });
   }
 
@@ -779,7 +831,7 @@ export class FabricStage {
       portMesh.renderOrder = 3;
       this.virtualGroup.add(portMesh);
 
-      this.slabs.push({ id, face, edge, ports, tone: 'normal' });
+      this.slabs.push({ id, face, edge, ports, tone: 'normal', faceLevel: 0.3, lineLevel: 0.85 });
     };
 
     add('vswitch', SWITCH_Y);
@@ -800,7 +852,7 @@ export class FabricStage {
     this.virtualGroup.add(
       new THREE.LineSegments(
         riserGeometry,
-        new THREE.LineBasicMaterial({ color: COLORS.slab, transparent: true, opacity: 0.55 }),
+        this.riserMaterial,
       ),
     );
   }
@@ -872,7 +924,7 @@ export class FabricStage {
     const fits = !wholeHall || this.viewRect.w >= 560;
     this.labelsTravelling = this.isTravelling();
     for (const [id, el] of this.labelEls) {
-      const show = this.showLabels && fits && !this.labelsTravelling && spec.labels.includes(id);
+      const show = this.showLabels && fits && !this.building && !this.labelsTravelling && spec.labels.includes(id);
       el.style.opacity = show ? '1' : '0';
     }
   }
@@ -907,47 +959,123 @@ export class FabricStage {
     for (const slab of this.slabs) {
       const faceOpacity = slab.tone === 'lit' ? 0.62 : slab.tone === 'dim' ? 0.08 : 0.3;
       const lineOpacity = slab.tone === 'dim' ? 0.2 : 0.9;
-      slab.face.opacity += (faceOpacity - slab.face.opacity) * k;
-      slab.edge.opacity += (lineOpacity - slab.edge.opacity) * k;
-      slab.ports.opacity += (lineOpacity - slab.ports.opacity) * k;
+      slab.faceLevel += (faceOpacity - slab.faceLevel) * k;
+      slab.lineLevel += (lineOpacity - slab.lineLevel) * k;
+      slab.face.opacity = slab.faceLevel * this.layerFade;
+      slab.edge.opacity = slab.lineLevel * this.layerFade;
+      slab.ports.opacity = slab.lineLevel * this.layerFade;
     }
+    this.riserMaterial.opacity = 0.55 * this.layerFade;
 
     const trayGoal = spec.cabinets === 'all' ? COLORS.tray : COLORS.trayDim;
     this.trayMaterial.color.lerp(this.color.set(trayGoal), k);
   }
 
-  private finishIntro() {
-    this.introStart = -2;
-    for (const cabinet of this.cabinets) cabinet.group.scale.y = 1;
-    for (const fibre of this.fibres) {
-      (fibre.mesh.geometry as THREE.BufferGeometry).setDrawRange(0, fibre.indexCount);
-    }
-    this.renderer.shadowMap.autoUpdate = false;
-    this.renderer.shadowMap.needsUpdate = true;
-  }
-
-  private updateIntro(now: number) {
-    if (this.introStart === -2) return;
-    if (this.introStart < 0) this.introStart = now;
-    const elapsed = (now - this.introStart) / 1000;
-
+  /** Lays the whole hall out as it looks `e` seconds into the build. A large `e` gives the finished hall. */
+  private applyBuild(e: number) {
     for (const cabinet of this.cabinets) {
-      const distance = Math.hypot(cabinet.x, cabinet.z) / 7;
-      const p = clamp01((elapsed - distance * 0.45) / 0.75);
-      cabinet.group.scale.y = Math.max(0.001, easeOut(p));
+      const rise = clamp01((e - cabinet.start) / BUILD.rise);
+      cabinet.shell.visible = rise > 0;
+      cabinet.shell.scale.y = this.reduced ? 1 : Math.max(0.001, easeOut(rise));
+      this.mountUnits(cabinet, e);
     }
+
+    // Cable trays fade in, then the fiber draws itself along them.
+    const trayProgress = clamp01((e - BUILD.traysAt) / BUILD.traysGrow);
+    this.growTrays(this.reduced ? (trayProgress > 0 ? 1 : 0) : easeOut(trayProgress));
     for (const fibre of this.fibres) {
-      const p = easeOut(clamp01((elapsed - 0.75) / 1.1));
+      const p = easeOut(clamp01((e - BUILD.fibresAt) / BUILD.fibresDraw));
       const count = Math.floor((fibre.indexCount * p) / 6) * 6;
       (fibre.mesh.geometry as THREE.BufferGeometry).setDrawRange(0, count);
     }
-    if (elapsed > this.introLength) this.finishIntro();
+
+    // The virtual switch and router come in last and lower onto the fabric.
+    const layers = clamp01((e - BUILD.layersAt) / BUILD.layersFade);
+    this.layerFade = layers;
+    this.layerDrop = this.reduced ? 0 : (1 - easeOut(layers)) * BUILD.layersDrop;
+    this.applyLayerOffsets();
+  }
+
+  /** Trays extend along their length, hangers lower from the tray and riser caps swell. At 1 they are as modelled. */
+  private growTrays(amount: number) {
+    const k = Math.max(0.001, amount);
+    for (const { mesh, kind } of this.trayParts) {
+      mesh.visible = amount > 0.001;
+      if (kind === 'x') mesh.scale.set(k, 1, 1);
+      else if (kind === 'z') mesh.scale.set(1, 1, k);
+      else if (kind === 'cap') mesh.scale.setScalar(k);
+      else {
+        // A hanger lowers from the tray, so its top stays put while it lengthens.
+        mesh.scale.set(1, k, 1);
+        mesh.position.y = TRAY_Y - 0.02 - (TRAY_Y * k) / 2;
+      }
+    }
+  }
+
+  /** Slides each piece of equipment onto the cabinet face, bottom to top, and lights it as it seats. */
+  private mountUnits(cabinet: Cabinet, e: number) {
+    const { slots, units, leds } = cabinet;
+    const first = cabinet.start + BUILD.slotDelay;
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+      const p = clamp01((e - first - i * BUILD.slotGap) / BUILD.slide);
+      const shown = this.reduced ? (p > 0 ? 1 : 0) : easeOut(clamp01(p * 5));
+      const slide = this.reduced ? 0 : (1 - easeOut(p)) * BUILD.slideDistance;
+      this.matrix.compose(
+        this.scratch.set(0, slot.y, CAB_D / 2 + 0.018 + slide),
+        this.quaternion.identity(),
+        this.scale.set((CAB_W - 0.12) * shown, slot.h * shown, 0.02 * shown),
+      );
+      units.setMatrixAt(i, this.matrix);
+
+      const lit = this.reduced ? (p > 0.7 ? 1 : 0) : clamp01((p - 0.7) / 0.3);
+      for (let k = 0; k < 3; k++) {
+        this.matrix.compose(
+          this.scratch.set(-CAB_W / 2 + 0.11 + k * 0.05, slot.y, CAB_D / 2 + 0.031 + slide),
+          this.quaternion.identity(),
+          this.scale.set(lit, lit, lit),
+        );
+        leds.setMatrixAt(i * 3 + k, this.matrix);
+      }
+    }
+    units.instanceMatrix.needsUpdate = true;
+    leds.instanceMatrix.needsUpdate = true;
+  }
+
+  /** Vertical offsets for the layers, from the scroll journey and from the build. */
+  private applyLayerOffsets() {
+    const swing = this.reduced ? 0 : this.journeySwing;
+    this.virtualGroup.position.y = swing * 0.7 + this.layerDrop;
+    this.cablingGroup.position.y = swing * 0.25;
+  }
+
+  private finishIntro() {
+    this.introDone = true;
+    this.building = false;
+    this.applyBuild(BUILD.end + 10);
+    this.renderer.shadowMap.autoUpdate = false;
+    this.renderer.shadowMap.needsUpdate = true;
+    this.settleUntil = performance.now() + 500;
+    this.applyLabelVisibility();
+  }
+
+  /**
+   * Advances the build by the time since the last frame. A long stall, such as the first frame
+   * compiling its shaders, is capped, so the opening of the build is never skipped.
+   */
+  private updateIntro(elapsed: number, now: number) {
+    if (this.introDone) return;
+    this.buildTime += elapsed * (this.reduced ? BUILD.reducedSpeed : 1);
+    this.applyBuild(this.buildTime);
+    // Keep drawing while the build plays, even when reduced motion would otherwise hold the frame.
+    this.settleUntil = now + 400;
+    if (this.buildTime >= BUILD.end) this.finishIntro();
   }
 
   private updatePulses() {
     let index = 0;
     const speed = 0.95;
-    const introDone = this.introStart === -2;
+    const introDone = this.introDone;
     for (const fibre of this.fibres) {
       const seedPhase = (fibre.id.charCodeAt(0) + fibre.id.charCodeAt(2)) * 0.137;
       for (let k = 0; k < this.pulsesPerFibre; k++) {
@@ -1057,8 +1185,7 @@ export class FabricStage {
 
     if (!this.reduced && Math.abs(this.journeySwing - this.appliedSwing) > 1e-3) {
       this.appliedSwing = this.journeySwing;
-      this.virtualGroup.position.y = this.journeySwing * 0.7;
-      this.cablingGroup.position.y = this.journeySwing * 0.25;
+      this.applyLayerOffsets();
       const settled = this.journeySwing < 1e-3;
       if (settled || Math.abs(this.journeySwing - this.shadowSwing) > 0.05) {
         this.shadowSwing = this.journeySwing;
@@ -1071,6 +1198,13 @@ export class FabricStage {
     if (!this.showLabels) return;
     const { w, h } = this.size;
     const spec = FOCUS[this.focus];
+
+    // Tags stay inside both the model's frame and the visible window. The frame can run past the window edge.
+    const box = this.container.getBoundingClientRect();
+    const limits = {
+      left: Math.max(this.viewRect.x, -box.left),
+      right: Math.min(this.viewRect.x + this.viewRect.w, window.innerWidth - box.left),
+    };
     for (const def of LABELS) {
       if (!spec.labels.includes(def.id)) continue;
       const el = this.labelEls.get(def.id);
@@ -1079,19 +1213,19 @@ export class FabricStage {
       const x = (this.scratch.x * 0.5 + 0.5) * w;
       const y = (-this.scratch.y * 0.5 + 0.5) * h;
       el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
-      this.keepTagInFrame(def, el, x);
+      this.keepTagInFrame(def, el, x, limits);
     }
   }
 
-  /** Slides a label's tag sideways when it would otherwise run past the frame edge. */
-  private keepTagInFrame(def: LabelDef, el: HTMLDivElement, x: number) {
+  /** Slides a label's tag sideways when it would otherwise run past an edge. */
+  private keepTagInFrame(def: LabelDef, el: HTMLDivElement, x: number, limits: { left: number; right: number }) {
     if (def.side) return;
     const tag = el.firstElementChild as HTMLElement | null;
     if (!tag) return;
     const half = tag.offsetWidth / 2;
-    const margin = 6;
-    const overRight = x + half + margin - (this.viewRect.x + this.viewRect.w);
-    const overLeft = this.viewRect.x + margin - (x - half);
+    const margin = 8;
+    const overRight = x + half + margin - limits.right;
+    const overLeft = limits.left + margin - (x - half);
     const shift = overRight > 0 ? -overRight : overLeft > 0 ? overLeft : 0;
     tag.style.transform = `translateX(calc(-50% + ${shift.toFixed(1)}px))`;
   }
@@ -1148,18 +1282,19 @@ export class FabricStage {
     if (!this.running) return;
     this.raf = requestAnimationFrame(this.frame);
 
-    const dt = Math.min(0.05, (now - this.lastFrame) / 1000);
+    const sinceLast = (now - this.lastFrame) / 1000;
+    const dt = Math.min(0.05, sinceLast);
     this.lastFrame = now;
 
     // With reduced motion the model holds still and only redraws after a change.
-    if (this.reduced && now > this.settleUntil) return;
+    if (this.reduced && this.introDone && now > this.settleUntil) return;
     if (!this.reduced) {
       this.time += dt;
       this.updateLeds(dt);
     }
 
     this.updateJourney(dt);
-    this.updateIntro(now);
+    this.updateIntro(Math.min(0.12, sinceLast), now);
     this.updateTones(1 - Math.exp(-dt * 5));
     this.updatePulses();
     this.updateCamera(dt);

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { MotionConfig } from 'framer-motion';
 import { BrowserRouter as Router, Routes, Route, useParams, Navigate, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
 import { HomeJourney } from './components/HomeJourney';
@@ -41,7 +42,7 @@ const HomePanel = () => (
     <WhyChooseTechne />
     <Methodology />
     <HomeFAQ />
-    <ClosingCTA />
+    <ClosingCTA reveal />
   </>
 );
 
@@ -177,6 +178,7 @@ const ScrollToTop = () => {
 
 function App() {
   return (
+    <MotionConfig reducedMotion="user">
     <Router>
       <ScrollToTop />
       <div className="min-h-screen bg-paper flex flex-col">
@@ -190,6 +192,7 @@ function App() {
         <Footer />
       </div>
     </Router>
+    </MotionConfig>
   );
 }
 

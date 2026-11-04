@@ -62,7 +62,7 @@ export const About: React.FC = () => (
       <dl className="wrap grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-6 py-8">
         {stats.map((stat) => (
           <div key={stat.label}>
-            <dd className="text-[1.625rem] font-semibold tracking-tight leading-tight tabular-nums">{stat.value}</dd>
+            <dd className="font-display text-[1.625rem] font-semibold tracking-tight leading-tight tabular-nums">{stat.value}</dd>
             <dt className="text-[0.875rem] text-white/70 mt-1">{stat.label}</dt>
           </div>
         ))}
@@ -89,7 +89,7 @@ export const About: React.FC = () => (
         <div className="border-t-2 border-ink">
           {milestones.map((milestone) => (
             <div key={milestone.year} className="grid grid-cols-[4rem_minmax(0,1fr)] gap-x-6 py-5 border-b border-rule">
-              <span className="text-[1.0625rem] font-semibold text-accent tabular-nums">{milestone.year}</span>
+              <span className="font-data text-[1.0625rem] font-medium text-accent">{milestone.year}</span>
               <div>
                 <h3 className="heading-3">{milestone.title}</h3>
                 <p className="body-copy mt-1">{milestone.desc}</p>

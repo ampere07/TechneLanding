@@ -38,10 +38,22 @@ Anchored on the logo teal `#63b4b5` and logo grey, on deep navy. Tokens live in 
 | `focus` | `#1579a8` | Focus ring |
 
 ## Typography
-- Libre Franklin 400, 500, 600, 700 for everything. One family, no monospace.
+Each kind of content has its own face. A page uses at most three, and every face has one job.
+
+| Role | Face | Used for |
+| --- | --- | --- |
+| Display | Archivo 500 to 800 | Headings, the wordmark, headline figures such as the hero facts and About stats |
+| Body | IBM Plex Sans 400 to 600 | Paragraphs, menus, buttons, forms, table text |
+| Data | IBM Plex Mono 400 to 600 | Short technical values: key-fact bands, port speeds, capacities, spec and table values that start with a number, step numbers, years, 3D diagram labels |
+| Reading | Newsreader 400 to 600 | Blog article text only |
+
+- Use `font-display`, `font-body`, `font-data` and `font-reading`. `font-data` runs at 0.92em because Plex Mono is wide.
+- Article pages swap the data face for the reading face, so they stay at three families. Do not use `font-data` on a blog article.
+- `isDataValue()` in `src/content/format.ts` picks table values for the data face: they start with a digit, are 28 characters or fewer, and contain no long word.
+- Sentences and names never use the data face. Eyebrows, labels and dates stay in the body face.
 - Use `.heading-1`, `.heading-2`, `.heading-3`, `.lede`, `.body-copy`, `.eyebrow`.
-- Numbers in facts and tables use tabular figures.
-- Headings are never italic and never use a colored span for emphasis.
+- Numbers use tabular figures. Headings are never italic and never use a colored span for emphasis.
+- Archivo is not on the Hallmark allowlist and is not a banned default. It was chosen for its industrial grotesque voice, the same family mcbroad.com uses for headings.
 
 ## 3D model
 `src/three/FabricStage.ts` draws one axonometric scale model of an interconnection hall, shown through `FabricView`.
@@ -53,15 +65,23 @@ Anchored on the logo teal `#63b4b5` and logo grey, on deep navy. Tokens live in 
 - Physical things are solid. Virtual services are translucent layers. Consulting is the whole hall drawn as a blueprint.
 - No bloom, glow, particles or globes. Matte materials and soft shadows only.
 - three.js loads on demand and pauses when off screen.
-- Reduced motion: no intro, sway, parallax, moving traffic or lifted layers. Scrolling and selecting are the visitor's own actions, so the trip and camera moves remain, with the swing cut to 30%.
+- Build sequence: on load the hall builds itself in about four seconds. The core cabinets go up first and the build spreads outward. Each shell rises, equipment slides in from bottom to top and its lights come on, then cable trays, fiber and the two virtual layers follow. Labels appear once it is built. It plays once per visit to a page.
+- Reduced motion: the build plays in about two seconds with parts appearing in place and nothing moving. No sway, parallax, moving traffic or lifted layers. Scrolling and selecting are the visitor's own actions, so the trip and camera moves remain, with the swing cut to 30%.
 - No WebGL: `FabricView` shows `src/assets/fabric-still.webp`.
 - Regenerate the still images if the model changes.
 
 ## Motion
-- No scroll reveals. Content is simply there.
-- UI transitions change color only, at 160ms.
-- The 3D model carries all the motion on the page.
-- To preview the full motion on a PC, Windows "Show animations" must be on. When it is off, browsers report reduced motion.
+Motion explains order and arrival. It is not decoration.
+
+- The 3D hall carries the main motion on the home page, see above.
+- Home page: the hero text eases in as the hall builds. Each content block fades up once, 18px, when it first scrolls into view. Use `<Reveal>`, never hand-written variants.
+- Sequences that mean something may stagger: finder rows, the four process steps with their connecting line, the reasons. One stagger per section, in steps of 0.06 to 0.18 seconds.
+- Dropdowns open by height, and FAQ items open with `::details-content` where supported. The location pin pulses three times after it first appears, then rests.
+- Not used: counting-up figures, parallax, looping or scroll-linked effects on content, bounce or overshoot.
+- Reveals play once. Nothing is hidden by default for longer than its own fade.
+- UI transitions change color only, at 160ms. Link arrows nudge 3px on hover.
+- Reduced motion: `MotionConfig reducedMotion="user"` removes every lift and the line draw, leaving gentle fades. The pin pulse and the dropdown height tween are switched off.
+- Never reveal the sticky 3D panel or its column, because the scroll journey measures their position.
 
 ## Components
 - Nav: utility bar, sticky main bar, full-width mega menu grouped by service type

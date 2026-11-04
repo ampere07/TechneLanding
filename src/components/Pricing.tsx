@@ -184,7 +184,7 @@ export const Pricing: React.FC = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="flex-1 min-w-[120px] text-center py-3 px-4 rounded-[4px] font-display text-sm font-semibold transition-colors duration-[180ms] relative flex items-center justify-center gap-2"
+              className="flex-1 min-w-[120px] text-center py-3 px-4 rounded-[4px] font-body text-sm font-semibold transition-colors duration-[180ms] relative flex items-center justify-center gap-2"
             >
               {activeTab === tab && (
                 <motion.div
@@ -247,7 +247,7 @@ export const Pricing: React.FC = () => {
                         className={`p-5 rounded-[4px] border text-left transition-colors duration-[180ms] ${portSize === size ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
                         <div className="flex justify-between items-center mb-1">
-                          <span className="tabular-nums text-xl font-bold text-ink">{size}</span>
+                          <span className="font-data text-xl font-semibold text-ink">{size}</span>
                           {portSize === size && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white"><Check size={11} strokeWidth={3} /></div>}
                         </div>
                         <span className="text-sm font-semibold text-ink">Peering Interface</span>
@@ -267,7 +267,7 @@ export const Pricing: React.FC = () => {
                         <button
                           key={type}
                           onClick={() => setReachPlanType(type)}
-                          className={`px-3 py-1.5 rounded-[4px] font-display text-xs font-semibold transition-colors duration-[180ms] ${reachPlanType === type ? 'bg-paper text-ink shadow-sm border border-rule' : 'text-ink-2 hover:text-ink'}`}
+                          className={`px-3 py-1.5 rounded-[4px] font-body text-xs font-semibold transition-colors duration-[180ms] ${reachPlanType === type ? 'bg-paper text-ink shadow-sm border border-rule' : 'text-ink-2 hover:text-ink'}`}
                         >
                           {type}
                         </button>
@@ -344,7 +344,7 @@ export const Pricing: React.FC = () => {
                         className={`p-4 rounded-[4px] border text-left transition-colors duration-[180ms] flex justify-between items-start ${cabinetSize === size.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
                         <div>
-                          <span className="font-display font-semibold text-ink block mb-1 text-sm">{size.label}</span>
+                          <span className="font-body font-semibold text-ink block mb-1 text-sm">{size.label}</span>
                           <span className="font-body text-xs text-ink-2">{size.desc}</span>
                         </div>
                         {cabinetSize === size.id && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white shrink-0 ml-3"><Check size={11} strokeWidth={3} /></div>}
@@ -360,7 +360,7 @@ export const Pricing: React.FC = () => {
                       <button
                         key={power}
                         onClick={() => setPowerAlloc(power)}
-                        className={`py-3 rounded-[4px] border tabular-nums font-semibold text-sm transition-colors duration-[180ms] ${powerAlloc === power ? 'border-brand-blue bg-brand-blue/10 text-brand-blue' : 'border-rule text-ink-2 hover:border-ink-2 bg-paper-2'}`}
+                        className={`py-3 rounded-[4px] border font-data font-medium text-sm transition-colors duration-[180ms] ${powerAlloc === power ? 'border-brand-blue bg-brand-blue/10 text-brand-blue' : 'border-rule text-ink-2 hover:border-ink-2 bg-paper-2'}`}
                       >
                         {power}
                       </button>
@@ -387,7 +387,7 @@ export const Pricing: React.FC = () => {
                         className={`p-4 rounded-[4px] border text-left transition-colors duration-[180ms] flex justify-between items-start ${vService === serv.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
                         <div>
-                          <span className="font-display font-semibold text-ink block mb-1 text-sm">{serv.label}</span>
+                          <span className="font-body font-semibold text-ink block mb-1 text-sm">{serv.label}</span>
                           <span className="font-body text-xs text-ink-2">{serv.desc}</span>
                         </div>
                         {vService === serv.id && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white shrink-0 ml-3"><Check size={11} strokeWidth={3} /></div>}
@@ -406,8 +406,8 @@ export const Pricing: React.FC = () => {
                         onClick={() => setVTier(tier.id)}
                         className={`p-4 rounded-[4px] border text-center transition-colors duration-[180ms] flex flex-col items-center ${vTier === tier.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
-                        <span className="font-display font-semibold text-ink text-sm">{tier.id}</span>
-                        <span className="text-xs text-ink-2 mt-1">{tier.specs}</span>
+                        <span className="font-body font-semibold text-ink text-sm">{tier.id}</span>
+                        <span className="font-data text-xs text-ink-2 mt-1">{tier.specs}</span>
                       </button>
                     ))}
                   </div>
@@ -427,7 +427,7 @@ export const Pricing: React.FC = () => {
                         className={`p-4 rounded-[4px] border text-left transition-colors duration-[180ms] flex justify-between items-start ${vSupport === supp.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                       >
                         <div>
-                          <span className="font-display font-semibold text-ink text-sm block mb-1">{supp.label}</span>
+                          <span className="font-body font-semibold text-ink text-sm block mb-1">{supp.label}</span>
                           <span className="font-body text-xs text-ink-2">{supp.desc}</span>
                         </div>
                         {vSupport === supp.id && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white shrink-0 ml-2"><Check size={11} strokeWidth={3} /></div>}
@@ -449,7 +449,7 @@ export const Pricing: React.FC = () => {
                     onClick={() => setContractTerm(term)}
                     className={`p-4 rounded-[4px] border text-center transition-colors duration-[180ms] flex flex-col items-center ${contractTerm === term ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
                   >
-                    <span className="font-display font-semibold text-ink text-sm">{term}</span>
+                    <span className="font-data font-medium text-ink text-sm">{term}</span>
                   </button>
                 ))}
               </div>
@@ -463,9 +463,9 @@ export const Pricing: React.FC = () => {
               <h3 className="text-[1.125rem] font-semibold text-white mb-5">Your selection</h3>
               <dl className="space-y-3 text-sm">
                 {selection.map((row) => (
-                  <div key={row.label} className="flex justify-between gap-4">
+                  <div key={row.label} className="flex items-baseline justify-between gap-4">
                     <dt className="text-white/70">{row.label}</dt>
-                    <dd className="font-semibold text-white text-right">{row.value}</dd>
+                    <dd className="font-data text-[0.8125rem] font-medium text-white text-right">{row.value}</dd>
                   </div>
                 ))}
               </dl>

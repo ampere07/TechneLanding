@@ -13,7 +13,7 @@ export const Footer: React.FC = () => (
         <div>
           <Link to={`/${PANEL_IDS.HOME}`} className="inline-flex items-center gap-2.5">
             <img src={logo} alt="" className="h-9 w-auto object-contain" draggable="false" />
-            <span className="text-[1.25rem] font-bold tracking-tight">Techne</span>
+            <span className="font-display text-[1.25rem] font-bold tracking-tight">Techne</span>
           </Link>
           <p className="text-[0.9375rem] leading-relaxed text-white/75 mt-4 max-w-sm">
             Carrier-neutral colocation, IP transit, content access and virtual interconnection for networks in the Philippines.

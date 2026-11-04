@@ -1,10 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { PANEL_IDS } from '../constants';
 import { FACTS, SERVICES, SERVICE_GROUPS, serviceById, type ServiceSummary } from '../content/site';
 import { FabricView } from './FabricView';
+import { Reveal } from './Reveal';
 import { FAQ, ProcessSteps, DEFAULT_PROCESS } from './ServiceLayout';
+
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 interface ServiceExplorerProps {
   active: ServiceSummary['id'];
@@ -17,17 +21,18 @@ interface ServiceExplorerProps {
 
 /** The seven services, each one highlighting its place in the 3D hall. */
 export const ServiceExplorer: React.FC<ServiceExplorerProps> = ({ active, onSelect, columnRef, panelRef, sharedModel = false }) => {
+  const calm = useReducedMotion();
   return (
     <section id="services" className="section bg-paper">
       <div className="wrap">
         <div className="lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-x-12">
-          <div className="mb-8 lg:col-start-1 lg:row-start-1">
+          <Reveal className="mb-8 lg:col-start-1 lg:row-start-1">
             <h2 className="heading-2">Seven services on one network</h2>
             <p className="lede mt-3">
               Every Techne service runs on the same fabric, so you can start with one and add others without changing
               providers. Select a service to see where it sits in a typical data hall.
             </p>
-          </div>
+          </Reveal>
 
           <div ref={columnRef} className="contents lg:block lg:col-start-2 lg:row-start-1 lg:row-span-2">
             <div
@@ -39,8 +44,8 @@ export const ServiceExplorer: React.FC<ServiceExplorerProps> = ({ active, onSele
           </div>
 
           <div className="lg:col-start-1 lg:row-start-2">
-            {SERVICE_GROUPS.map((group) => (
-              <div key={group} className="mb-6 last:mb-0">
+            {SERVICE_GROUPS.map((group, groupIndex) => (
+              <Reveal key={group} className="mb-6 last:mb-0" delay={groupIndex * 0.07}>
                 <h3 className="text-[0.8125rem] font-semibold text-ink-3 pb-2 border-b border-rule">{group}</h3>
                 <ul>
                   {SERVICES.filter((service) => service.group === group).map((service) => {
@@ -56,24 +61,35 @@ export const ServiceExplorer: React.FC<ServiceExplorerProps> = ({ active, onSele
                           <span className="text-[1.0625rem] font-semibold">{service.name}</span>
                           <ChevronDown size={18} aria-hidden="true" className={`shrink-0 transition-transform duration-150 ${isActive ? 'rotate-180' : ''}`} />
                         </button>
-                        {isActive && (
-                          <div className="pb-5">
-                            <p className="body-copy">{service.summary}</p>
-                            <p className="text-[0.875rem] text-ink-2 mt-3">
-                              <span className="font-semibold text-ink">Built for: </span>
-                              {service.builtFor}
-                            </p>
-                            <Link to={service.path} className="text-link mt-3">
-                              {service.name} details
-                              <ArrowRight size={15} aria-hidden="true" />
-                            </Link>
-                          </div>
-                        )}
+                        <AnimatePresence initial={false}>
+                          {isActive && (
+                            <motion.div
+                              key="details"
+                              className="overflow-hidden -mx-1 px-1"
+                              initial={{ height: calm ? 'auto' : 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: calm ? 'auto' : 0, opacity: 0 }}
+                              transition={{ duration: calm ? 0.2 : 0.35, ease: EASE }}
+                            >
+                              <div className="pb-5">
+                                <p className="body-copy">{service.summary}</p>
+                                <p className="text-[0.875rem] text-ink-2 mt-3">
+                                  <span className="font-semibold text-ink">Built for: </span>
+                                  {service.builtFor}
+                                </p>
+                                <Link to={service.path} className="text-link mt-3">
+                                  {service.name} details
+                                  <ArrowRight size={15} aria-hidden="true" />
+                                </Link>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </li>
                     );
                   })}
                 </ul>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -96,7 +112,7 @@ const needs: { need: string; service: ServiceSummary['id'] }[] = [
 export const ServiceFinder: React.FC = () => (
   <section className="section bg-paper-2 border-y border-rule">
     <div className="wrap grid grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] gap-8 lg:gap-14">
-      <div>
+      <Reveal>
         <h2 className="heading-2">Which service do you need?</h2>
         <p className="body-copy mt-3 max-w-sm">
           Start from what you are trying to do. If your requirement spans several of these, our engineers can scope it with you.
@@ -105,7 +121,7 @@ export const ServiceFinder: React.FC = () => (
           Ask an engineer
           <ArrowRight size={15} aria-hidden="true" />
         </Link>
-      </div>
+      </Reveal>
       <div className="table-scroll">
         <table className="data-table">
           <thead>
@@ -115,15 +131,15 @@ export const ServiceFinder: React.FC = () => (
             </tr>
           </thead>
           <tbody>
-            {needs.map((row) => {
+            {needs.map((row, rowIndex) => {
               const service = serviceById(row.service);
               return (
-                <tr key={row.need}>
+                <Reveal as="tr" key={row.need} distance={0} delay={Math.min(rowIndex * 0.06, 0.36)}>
                   <td className="!text-ink">{row.need}</td>
                   <td className="sm:whitespace-nowrap">
                     <Link to={service.path} className="font-semibold text-accent hover:underline underline-offset-2">{service.name}</Link>
                   </td>
-                </tr>
+                </Reveal>
               );
             })}
           </tbody>
@@ -145,12 +161,13 @@ const compareRows = [
 export const VirtualCompare: React.FC = () => (
   <section className="section bg-paper">
     <div className="wrap">
-      <div className="max-w-3xl mb-8">
+      <Reveal className="max-w-3xl mb-8">
         <h2 className="heading-2">Virtual services compared</h2>
         <p className="lede mt-3">
           All three run on the Techne fabric and need no new physical cabling. The difference is what they connect and who handles routing.
         </p>
-      </div>
+      </Reveal>
+      <Reveal delay={0.1}>
       <div className="md:hidden space-y-8">
         {(['vxc', 'vswitch', 'vrouter'] as const).map((id, serviceIndex) => {
           const service = serviceById(id);
@@ -198,6 +215,7 @@ export const VirtualCompare: React.FC = () => (
           </tbody>
         </table>
       </div>
+      </Reveal>
     </div>
   </section>
 );
@@ -224,21 +242,21 @@ const reasons = [
 export const WhyChooseTechne: React.FC = () => (
   <section className="section bg-navy text-white">
     <div className="wrap grid grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] gap-10 lg:gap-14">
-      <div>
+      <Reveal>
         <h2 className="heading-2 !text-white">Why networks work with Techne</h2>
         <div className="mt-8 border-t border-white/20 pt-6">
-          <p className="text-[3rem] font-semibold tracking-tight leading-none tabular-nums">{FACTS.networks}</p>
+          <p className="font-display text-[3rem] font-semibold tracking-tight leading-none tabular-nums">{FACTS.networks}</p>
           <p className="text-[0.9375rem] text-white/75 mt-3 max-w-xs">
             Networks served across Luzon, Visayas and Mindanao, including past and present engagements.
           </p>
         </div>
-      </div>
+      </Reveal>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-        {reasons.map((reason) => (
-          <div key={reason.title} className="border-t border-white/20 pt-5">
+        {reasons.map((reason, reasonIndex) => (
+          <Reveal key={reason.title} className="border-t border-white/20 pt-5" delay={reasonIndex * 0.08}>
             <h3 className="text-[1.125rem] font-semibold">{reason.title}</h3>
             <p className="text-[0.9375rem] leading-relaxed text-white/75 mt-2">{reason.desc}</p>
-          </div>
+          </Reveal>
         ))}
       </div>
     </div>
@@ -248,11 +266,11 @@ export const WhyChooseTechne: React.FC = () => (
 export const Methodology: React.FC = () => (
   <section className="section bg-paper-2 border-y border-rule">
     <div className="wrap">
-      <div className="max-w-3xl mb-10">
+      <Reveal className="max-w-3xl mb-10">
         <h2 className="heading-2">How an engagement works</h2>
         <p className="lede mt-3">The same four stages apply whether you are ordering one port or rebuilding a core network.</p>
-      </div>
-      <ProcessSteps steps={DEFAULT_PROCESS} />
+      </Reveal>
+      <ProcessSteps steps={DEFAULT_PROCESS} animate />
     </div>
   </section>
 );
@@ -260,10 +278,11 @@ export const Methodology: React.FC = () => (
 export const HomeFAQ: React.FC = () => (
   <section className="section bg-paper">
     <div className="wrap grid grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] gap-8 lg:gap-14">
-      <div>
+      <Reveal>
         <h2 className="heading-2">Common questions</h2>
         <p className="body-copy mt-3 max-w-sm">Coverage, requirements and how we work. For anything specific to your network, ask our engineers.</p>
-      </div>
+      </Reveal>
+      <Reveal delay={0.1}>
       <FAQ
         items={[
           {
@@ -296,6 +315,7 @@ export const HomeFAQ: React.FC = () => (
           },
         ]}
       />
+      </Reveal>
     </div>
   </section>
 );
