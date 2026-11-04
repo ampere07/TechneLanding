@@ -20,6 +20,7 @@ modern-minimal
 - Index and company pages: pale title band, then ruled content
 - Blog: a "Coming soon" band with two links, until there are articles
 - Request a quote: service options left, selection summary right. No prices are shown. The button opens the contact form pre-filled from the selection.
+- Contact us: details left, form right. The form sends through `api/contact.ts` and Resend. Setup is in `docs/contact-form-resend-setup.md`.
 
 ## Color
 Anchored on the logo teal `#63b4b5` and logo grey, on deep navy. Tokens live in `tokens.css` and `src/index.css`.
@@ -89,6 +90,15 @@ Motion explains order and arrival. It is not decoration.
 - Buttons: `btn-primary`, `btn-secondary` on light, `btn-on-navy`, `btn-outline-on-navy` on dark
 - Tables: `.data-table`. Wide tables stack into labelled blocks on phones. Never hide a column behind sideways scrolling.
 - Service data: `src/content/site.ts` is the single source for names, descriptions, facts and locations
+
+## Contact form
+- Six fields, all required: name, work email, company name, contact number, subject, message. Labels sit above inputs.
+- The server validates every field and returns a message per field. The form shows each under its field, sets `aria-invalid`, and moves focus to the first one.
+- Errors use `--color-danger` with a bordered box and an icon. Never a side stripe, and never colour alone.
+- Success replaces the form with a status panel and moves focus to its heading. The form does not reset until the person chooses to send another message.
+- Errors that are not about a field (rate limit, server, network) show a banner that points to the email address and phone number.
+- A hidden trap field named `hp_check` catches bots. Never rename it to something browsers autofill, such as `website` or `url`.
+- Mail settings are server-only. Nothing in `api/` may be imported by `src/`, and no setting may start with `VITE_`.
 
 ## Copy
 - Plain, specific sentences. Name the feature and who it is for.

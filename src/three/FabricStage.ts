@@ -13,6 +13,7 @@ export type FabricFocus =
   | 'colocation'
   | 'ip-transit'
   | 'content'
+  | 'metro-e'
   | 'vxc'
   | 'vswitch'
   | 'vrouter'
@@ -176,6 +177,8 @@ const LABELS: LabelDef[] = [
   { id: 'customers', text: 'Customer cabinets', at: [-3.2, TRAY_Y + 0.02, FRONT_Z] },
   { id: 'your-rack', text: 'Your equipment', at: [-3.2, TRAY_Y + 0.02, FRONT_Z] },
   { id: 'your-port', text: 'Your port', at: [-2.12, TRAY_Y + 0.02, FRONT_Z] },
+  { id: 'point-a', text: 'Point A', at: [-2.12, TRAY_Y + 0.02, FRONT_Z] },
+  { id: 'point-b', text: 'Point B', at: [1.82, TRAY_Y + 0.02, BACK_Z] },
   { id: 'partners', text: 'Partner networks', at: [1.82, TRAY_Y + 0.02, BACK_Z] },
   { id: 'partner-port', text: 'Partner port', at: [1.82, TRAY_Y + 0.02, BACK_Z] },
   { id: 'cdn', text: 'CDN caches', at: [-4.28, TRAY_Y + 0.02, BACK_Z] },
@@ -229,6 +232,16 @@ const FOCUS: Record<FabricFocus, FocusSpec> = {
     labels: ['cdn', 'your-rack'],
     target: [-2, 1.1, 0],
     zoom: 1.24,
+  },
+  'metro-e': {
+    azimuth: 24,
+    elevation: 30,
+    cabinets: ['cu3', 'pa1'],
+    fibres: { cu3: 1, pa1: -1 },
+    slabs: [],
+    labels: ['point-a', 'point-b'],
+    target: [-0.3, 1.1, 0.1],
+    zoom: 1.12,
   },
   vxc: {
     azimuth: 33,

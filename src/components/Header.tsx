@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { ChevronDown, Mail, Menu, Phone, X } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 import logo from '../assets/logo.png';
-import { PANEL_IDS } from '../constants';
+import { HOME_PATH, PANEL_IDS } from '../constants';
 import { CONTACT, SERVICES, SERVICE_GROUPS } from '../content/site';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -66,7 +66,7 @@ export const Header: React.FC = () => {
       {/* Main bar */}
       <header className="sticky top-0 z-50 bg-paper border-b border-rule">
         <div className="wrap flex items-center justify-between h-16 lg:h-[72px]">
-          <Link to={`/${PANEL_IDS.HOME}`} className="flex items-center gap-2.5 shrink-0" onClick={closeAll}>
+          <Link to={HOME_PATH} className="flex items-center gap-2.5 shrink-0" onClick={closeAll}>
             <img src={logo} alt="" className="h-9 w-auto object-contain" draggable="false" />
             <span className="font-display text-[1.25rem] font-bold tracking-tight text-ink">Techne</span>
           </Link>
@@ -117,7 +117,7 @@ export const Header: React.FC = () => {
               )}
             </div>
 
-            <Link to={`/${PANEL_IDS.HOME}#locations`} className="text-[0.9375rem] font-medium text-ink hover:text-accent transition-colors duration-150">
+            <Link to={`${HOME_PATH}#locations`} className="text-[0.9375rem] font-medium text-ink hover:text-accent transition-colors duration-150">
               Location
             </Link>
             <NavLink to={`/${PANEL_IDS.PRICING}`} className={navLinkClass}>Request a quote</NavLink>
@@ -156,7 +156,7 @@ export const Header: React.FC = () => {
                   ))}
                 </div>
               ))}
-              <Link to={`/${PANEL_IDS.HOME}#locations`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Location</Link>
+              <Link to={`${HOME_PATH}#locations`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Location</Link>
               <Link to={`/${PANEL_IDS.PRICING}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Request a quote</Link>
               <Link to={`/${PANEL_IDS.BLOG}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Blog</Link>
               <Link to={`/${PANEL_IDS.ABOUT}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">About</Link>

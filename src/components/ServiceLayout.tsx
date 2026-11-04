@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, Plus } from 'lucide-react';
-import { PANEL_IDS } from '../constants';
+import { HOME_PATH, PANEL_IDS } from '../constants';
 import { isDataValue } from '../content/format';
 import { serviceQuoteLink } from '../content/quote';
 import { ENGAGEMENT_STEPS, serviceById, type ServiceSummary } from '../content/site';
@@ -35,7 +35,7 @@ export const ServiceLayout: React.FC<ServiceLayoutProps> = ({ eyebrow, title, le
       <div className={`wrap grid grid-cols-1 gap-6 items-center ${focus ? 'lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]' : ''}`}>
         <div className={`pt-8 ${focus ? 'lg:py-12' : 'pb-12'}`}>
           <nav aria-label="Breadcrumb" className="text-[0.8125rem] text-ink-2 mb-6 flex flex-wrap items-center gap-1.5">
-            <Link to={`/${PANEL_IDS.HOME}`} className="hover:text-accent transition-colors duration-150">Home</Link>
+            <Link to={HOME_PATH} className="hover:text-accent transition-colors duration-150">Home</Link>
             <span aria-hidden="true">/</span>
             <Link to={`/${PANEL_IDS.SERVICES}`} className="hover:text-accent transition-colors duration-150">Services</Link>
             <span aria-hidden="true">/</span>

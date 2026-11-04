@@ -49,6 +49,16 @@ export const SERVICES: ServiceSummary[] = [
     path: `/${PANEL_IDS.CONTENT}`,
   },
   {
+    id: 'metro-e',
+    name: 'Metro-E',
+    group: 'Connectivity',
+    summary:
+      'A Layer 2 Ethernet transport service that carries your traffic from point A to point B. Link two of your sites, or a site and Vitro Makati 2, over one private circuit.',
+    builtFor: 'ISPs, enterprises and carriers linking sites or reaching the data center',
+    menuLine: 'Layer 2 transport from point A to point B',
+    path: `/${PANEL_IDS.METRO_E}`,
+  },
+  {
     id: 'vxc',
     name: 'Virtual Cross Connect',
     group: 'Virtual services',

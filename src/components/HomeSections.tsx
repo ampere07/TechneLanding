@@ -102,6 +102,7 @@ const needs: { need: string; service: ServiceSummary['id'] }[] = [
   { need: 'Host routers, switches or servers in a secured data center', service: 'colocation' },
   { need: 'Buy upstream capacity using my own ASN and BGP', service: 'ip-transit' },
   { need: 'Reach CDNs and content networks without using my upstream links', service: 'content' },
+  { need: 'Carry traffic between two sites, or from my site to the data center', service: 'metro-e' },
   { need: 'Connect privately to one carrier or partner', service: 'vxc' },
   { need: 'Join several networks or partners on one private LAN', service: 'vswitch' },
   { need: 'Run BGP or a gateway without buying hardware', service: 'vrouter' },

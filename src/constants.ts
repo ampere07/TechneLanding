@@ -1,4 +1,7 @@
-// Navigation IDs (Unique 9-digit numbers)
+/** The home page lives at the site root, with no id in the address. */
+export const HOME_PATH = '/';
+
+// Navigation IDs (Unique 9-digit numbers). HOME is the old home address and now redirects to HOME_PATH.
 export const PANEL_IDS = {
   HOME: '184920573',
   SERVICES: '273645189',
@@ -14,6 +17,7 @@ export const PANEL_IDS = {
   DIST_CONFIG: '223344556',
   SYSTEM_INTEGRATION: '334455667',
   PROTECTIVE_DNS: '445566778',
+  METRO_E: '990011223',
   VIRTUAL_CROSS_CONNECT: '556677889',
   VIRTUAL_SWITCH: '667788990',
   VIRTUAL_ROUTER: '778899001',

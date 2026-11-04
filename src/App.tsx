@@ -15,6 +15,7 @@ import { Colocation } from './components/Colocation';
 import { NetworkConsulting } from './components/NetworkConsulting';
 import { CoreConfig, DistConfig, SystemIntegration, ProtectiveDNS } from './components/NewManagedServices';
 import { Content } from './components/Content';
+import { MetroE } from './components/MetroE';
 import { VirtualCrossConnect, VirtualRouter, VirtualSwitch } from './components/VirtualServices';
 import { NetworkMap, TrustedBrands } from './components/NetworkMap';
 import { ClosingCTA } from './components/ClosingCTA';
@@ -25,7 +26,7 @@ import {
   VirtualCompare,
   WhyChooseTechne,
 } from './components/HomeSections';
-import { PANEL_IDS, RETIRED_BLOG_IDS } from './constants';
+import { HOME_PATH, PANEL_IDS, RETIRED_BLOG_IDS } from './constants';
 
 const HomePanel = () => (
   <>
@@ -43,10 +44,12 @@ const HomePanel = () => (
 
 const PanelRenderer = () => {
   const { id } = useParams();
+  const location = useLocation();
 
   switch (id) {
     case PANEL_IDS.HOME:
-      return <HomePanel />;
+      // The old numeric home address goes to the root, keeping any #section.
+      return <Navigate to={{ pathname: HOME_PATH, hash: location.hash }} replace />;
     case PANEL_IDS.SERVICES:
       return <Services />;
     case PANEL_IDS.BLOG:
@@ -75,6 +78,8 @@ const PanelRenderer = () => {
       return <ProtectiveDNS />;
     case PANEL_IDS.CONTENT:
       return <Content />;
+    case PANEL_IDS.METRO_E:
+      return <MetroE />;
     case PANEL_IDS.VIRTUAL_CROSS_CONNECT:
       return <VirtualCrossConnect />;
     case PANEL_IDS.VIRTUAL_SWITCH:
@@ -85,7 +90,7 @@ const PanelRenderer = () => {
     default:
       // Links to the removed articles go to the blog page. Anything else unknown goes home.
       if (id && RETIRED_BLOG_IDS.includes(id)) return <Navigate to={`/${PANEL_IDS.BLOG}`} replace />;
-      return <Navigate to={`/${PANEL_IDS.HOME}`} replace />;
+      return <Navigate to={HOME_PATH} replace />;
   }
 };
 
@@ -115,7 +120,7 @@ function App() {
         <Header />
         <main className="flex-grow">
           <Routes>
-            <Route path="/" element={<Navigate to={`/${PANEL_IDS.HOME}`} replace />} />
+            <Route path={HOME_PATH} element={<HomePanel />} />
             <Route path="/:id" element={<PanelRenderer />} />
           </Routes>
         </main>

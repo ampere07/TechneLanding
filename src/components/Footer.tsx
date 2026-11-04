@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
-import { PANEL_IDS } from '../constants';
+import { HOME_PATH, PANEL_IDS } from '../constants';
 import { CONTACT, SERVICES } from '../content/site';
 
 const linkClass = 'text-[0.9375rem] text-white/75 hover:text-white transition-colors duration-150';
@@ -11,7 +11,7 @@ export const Footer: React.FC = () => (
     <div className="wrap pt-14 pb-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)] gap-10 lg:gap-14 pb-12">
         <div>
-          <Link to={`/${PANEL_IDS.HOME}`} className="inline-flex items-center gap-2.5">
+          <Link to={HOME_PATH} className="inline-flex items-center gap-2.5">
             <img src={logo} alt="" className="h-9 w-auto object-contain" draggable="false" />
             <span className="font-display text-[1.25rem] font-bold tracking-tight">Techne</span>
           </Link>
@@ -35,7 +35,7 @@ export const Footer: React.FC = () => (
           <h2 className="text-[0.9375rem] font-semibold mb-4">Company</h2>
           <ul className="space-y-2.5">
             <li><Link to={`/${PANEL_IDS.ABOUT}`} className={linkClass}>About Techne</Link></li>
-            <li><Link to={`/${PANEL_IDS.HOME}#locations`} className={linkClass}>Location</Link></li>
+            <li><Link to={`${HOME_PATH}#locations`} className={linkClass}>Location</Link></li>
             <li><Link to={`/${PANEL_IDS.PRICING}`} className={linkClass}>Request a quote</Link></li>
             <li><Link to={`/${PANEL_IDS.BLOG}`} className={linkClass}>Blog</Link></li>
             <li><Link to={`/${PANEL_IDS.CONTACT}`} className={linkClass}>Contact</Link></li>

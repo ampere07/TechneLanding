@@ -7,6 +7,7 @@ export const FABRIC_DESCRIPTIONS: Record<FabricFocus, string> = {
   colocation: 'Scale model of a data hall with the customer cabinets highlighted.',
   'ip-transit': 'Scale model of a data hall showing traffic from upstream carriers through edge routers to a customer cabinet.',
   content: 'Scale model of a data hall showing traffic from CDN cache cabinets through the fabric to a customer cabinet.',
+  'metro-e': 'Scale model of a data hall showing one transport path from a point A cabinet to a point B cabinet.',
   vxc: 'Scale model of a data hall showing one private path between a customer port and a partner port.',
   vswitch: 'Scale model of a data hall showing a virtual switch above the fabric joining several customer and partner cabinets.',
   vrouter: 'Scale model of a data hall showing a virtual router above the fabric routing between a customer cabinet and upstream carriers.',
