@@ -1,95 +1,56 @@
 import React from 'react';
-import { Check, Minus } from 'lucide-react';
-import phMap from '../assets/ph_map.png';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Check } from 'lucide-react';
+import luzonMap from '../assets/luzon_map.svg';
+import { PANEL_IDS } from '../constants';
 import { CONTENT_LOGOS, PLATFORM_LOGOS, type Logo } from '../content/logos';
-import { FACILITY_COUNT, LOCATIONS } from '../content/site';
+import { LOCATION, SERVICES } from '../content/site';
 
-// Pin positions as a percentage of the Philippine map image.
-const MAP_PINS = [
-  { city: 'Manila', left: 47.5, top: 39.5, side: 'left' },
-  { city: 'Cebu City', left: 62.5, top: 64, side: 'left' },
-  { city: 'Davao City', left: 71.5, top: 83.5, side: 'right' },
-] as const;
+// Consulting is not tied to a facility, so it is not listed as available there.
+const servicesAtFacility = SERVICES.filter((service) => service.id !== 'consulting');
 
-const Available: React.FC<{ yes: boolean }> = ({ yes }) =>
-  yes ? (
-    <span className="inline-flex items-center gap-1.5 text-ink whitespace-nowrap">
-      <Check size={16} className="text-accent" aria-hidden="true" />
-      Available
-    </span>
-  ) : (
-    <span className="inline-flex items-center gap-1.5 text-ink-3 whitespace-nowrap">
-      <Minus size={16} aria-hidden="true" />
-      Not offered
-    </span>
-  );
-
-/** Service availability by metro and facility. */
+/** Where Techne's services are delivered from. */
 export const NetworkMap: React.FC = () => (
   <section id="locations" className="section bg-paper-2 border-y border-rule">
     <div className="wrap">
       <div className="max-w-3xl mb-10">
         <h2 className="heading-2">Where you can connect</h2>
         <p className="lede mt-3">
-          Techne services are available at {FACILITY_COUNT} data center facilities in {LOCATIONS.length} cities. If your site is not listed, tell us where it is and we will check what can reach it.
+          Techne services are delivered from {LOCATION.facility} in {LOCATION.city}. If your site is somewhere else, tell us where it is and we will check what can reach it.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] gap-8 lg:gap-12 items-start">
-        <figure className="max-w-[380px] mx-auto w-full lg:max-w-none">
-          <div className="relative aspect-square">
-            <img src={phMap} alt="" className="absolute inset-0 w-full h-full object-contain opacity-30 mix-blend-multiply" draggable="false" />
-            {MAP_PINS.map((pin) => (
-              <div key={pin.city} className="absolute" style={{ left: `${pin.left}%`, top: `${pin.top}%` }}>
-                <span className="absolute -left-1.5 -top-1.5 w-3 h-3 rounded-full bg-accent ring-2 ring-paper-2" />
-                <span
-                  className={`absolute -top-3 whitespace-nowrap text-[0.8125rem] font-semibold text-ink ${pin.side === 'left' ? 'right-3' : 'left-3'}`}
-                >
-                  {pin.city}
-                </span>
-              </div>
-            ))}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] gap-8 lg:gap-12 lg:items-center">
+        <figure className="relative mx-auto w-full max-w-[250px]" style={{ aspectRatio: '275 / 442' }}>
+          <img src={luzonMap} alt="Map of Luzon in the Philippines, with Manila marked" className="absolute inset-0 w-full h-full" draggable="false" />
+          <div className="absolute" style={{ left: '27.6%', top: '66.7%' }}>
+            <span className="absolute -left-1.5 -top-1.5 w-3 h-3 rounded-full bg-accent ring-2 ring-paper-2" />
+            <span className="absolute top-1/2 -translate-y-1/2 left-3 xl:left-auto xl:right-3 h-px w-3 bg-ink-3" aria-hidden="true" />
+            <span className="absolute -top-[19px] left-6 xl:left-auto xl:right-6 whitespace-nowrap leading-tight bg-paper border border-rule-strong rounded-[2px] px-2 py-1">
+              <span className="block text-[0.8125rem] font-semibold text-ink">{LOCATION.city}</span>
+              <span className="block text-[0.75rem] text-ink-2">{LOCATION.facility}</span>
+            </span>
           </div>
-          <figcaption className="text-[0.8125rem] text-ink-3 mt-2">Philippine locations shown. Hong Kong and Singapore are listed in the table.</figcaption>
         </figure>
 
-        <div className="md:hidden border-t-2 border-ink">
-          {LOCATIONS.map((location) => (
-            <div key={location.city} className="py-4 border-b border-rule">
-              <h3 className="heading-3">{location.city}</h3>
-              <p className="body-copy mt-1">{location.facilities.join(', ')}</p>
-              <dl className="mt-3 space-y-1.5 text-[0.875rem]">
-                <div className="flex items-center justify-between gap-4"><dt className="text-ink-2">Colocation</dt><dd><Available yes={location.colocation} /></dd></div>
-                <div className="flex items-center justify-between gap-4"><dt className="text-ink-2">Transit and Content</dt><dd><Available yes /></dd></div>
-                <div className="flex items-center justify-between gap-4"><dt className="text-ink-2">Virtual services</dt><dd><Available yes /></dd></div>
-              </dl>
-            </div>
-          ))}
-        </div>
+        <div className="bg-paper border border-rule rounded-[4px] p-6 md:p-8">
+          <h3 className="text-[1.375rem] font-semibold text-ink leading-tight">{LOCATION.facility}</h3>
+          <p className="body-copy mt-1">{LOCATION.city}, {LOCATION.country}</p>
 
-        <div className="hidden md:block table-scroll bg-paper border border-rule rounded-[4px]">
-          <table className="data-table min-w-[680px]">
-            <thead>
-              <tr>
-                <th scope="col">City</th>
-                <th scope="col">Facilities</th>
-                <th scope="col">Colocation</th>
-                <th scope="col">Transit and Content</th>
-                <th scope="col">Virtual services</th>
-              </tr>
-            </thead>
-            <tbody>
-              {LOCATIONS.map((location) => (
-                <tr key={location.city}>
-                  <th scope="row" className="whitespace-nowrap">{location.city}</th>
-                  <td>{location.facilities.join(', ')}</td>
-                  <td><Available yes={location.colocation} /></td>
-                  <td><Available yes /></td>
-                  <td><Available yes /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <h4 className="text-[0.9375rem] font-semibold text-ink mt-6 pb-2 border-b border-rule">Services available here</h4>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 mt-4">
+            {servicesAtFacility.map((service) => (
+              <li key={service.id} className="flex items-center gap-2">
+                <Check size={16} className="text-accent shrink-0" aria-hidden="true" />
+                <Link to={service.path} className="text-[0.9375rem] text-ink hover:text-accent transition-colors duration-150">{service.name}</Link>
+              </li>
+            ))}
+          </ul>
+
+          <Link to={`/${PANEL_IDS.CONTACT}`} className="text-link mt-6">
+            Ask about another location
+            <ArrowRight size={15} aria-hidden="true" />
+          </Link>
         </div>
       </div>
     </div>

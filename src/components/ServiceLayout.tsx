@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Plus } from 'lucide-react';
 import { PANEL_IDS } from '../constants';
+import { serviceQuoteLink } from '../content/quote';
 import { ENGAGEMENT_STEPS, serviceById, type ServiceSummary } from '../content/site';
 import type { FabricFocus } from '../three/FabricStage';
 import { ClosingCTA } from './ClosingCTA';
@@ -42,8 +43,7 @@ export const ServiceLayout: React.FC<ServiceLayoutProps> = ({ eyebrow, title, le
           <h1 className="heading-1">{title}</h1>
           <p className="lede mt-5">{lead}</p>
           <div className="flex flex-wrap gap-3 mt-7">
-            <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary">Request a quote</Link>
-            <Link to={`/${PANEL_IDS.PRICING}`} className="btn-secondary">View pricing</Link>
+            <Link to={serviceQuoteLink(title)} className="btn-primary">Request a quote</Link>
           </div>
         </div>
         {focus && <FabricView focus={focus} framing="full" className="h-[280px] sm:h-[400px] lg:h-[480px] lg:-mr-20" />}
@@ -90,7 +90,7 @@ export const ServiceLayout: React.FC<ServiceLayoutProps> = ({ eyebrow, title, le
       </section>
     )}
 
-    <ClosingCTA primaryLabel="Request a quote" />
+    <ClosingCTA service={title} />
   </>
 );
 

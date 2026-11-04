@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { PANEL_IDS } from '../constants';
-import { FACILITY_COUNT, FACTS, LOCATIONS } from '../content/site';
+import { FACTS, LOCATION } from '../content/site';
 import { FabricView } from './FabricView';
 
 // Three facts share the top row and two share the bottom, so both rows fill the panel.
@@ -10,7 +10,7 @@ const facts = [
   { value: FACTS.ports, label: 'Port speeds', span: 'sm:col-span-2 pl-4 lg:pl-3 xl:pl-4' },
   { value: FACTS.sla, label: 'Availability SLA', span: 'sm:col-span-2 pl-0 sm:pl-4 lg:pl-3 xl:pl-4' },
   { value: FACTS.noc, label: 'Network operations center', span: 'sm:col-span-3 pl-4 sm:pl-0' },
-  { value: `${LOCATIONS.length} cities`, label: `${FACILITY_COUNT} data center facilities`, span: 'col-span-2 sm:col-span-3 pl-0 sm:pl-4 lg:pl-3 xl:pl-4' },
+  { value: LOCATION.facility, label: `Data center in ${LOCATION.city}`, span: 'col-span-2 sm:col-span-3 pl-0 sm:pl-4 lg:pl-3 xl:pl-4' },
 ];
 
 interface HeroProps {
@@ -26,7 +26,7 @@ export const Hero: React.FC<HeroProps> = ({ slotRef, sharedModel = false }) => (
         <h1 className="heading-1">Colocation, transit and virtual interconnection for Philippine networks</h1>
         <p className="lede mt-5">
           Techne is a carrier-neutral network provider and engineering firm. We host your equipment, deliver your
-          upstream, and connect your sites and partners over one fabric, backed by a 24/7 operations team.
+          upstream, and connect you to carriers and partners over one fabric, backed by a 24/7 operations team.
         </p>
         <div className="flex flex-wrap gap-3 mt-6">
           <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary">Contact us</Link>

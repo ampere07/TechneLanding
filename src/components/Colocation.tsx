@@ -1,5 +1,5 @@
 import React from 'react';
-import { LOCATIONS } from '../content/site';
+import { LOCATION } from '../content/site';
 import {
   ServiceLayout,
   HighlightsPanel,
@@ -15,7 +15,7 @@ export const Colocation: React.FC = () => (
   <ServiceLayout
     eyebrow="Data center"
     title="Colocation"
-    lead="Rack space with redundant power and controlled cooling for your network equipment, in facilities where you can cross-connect to carriers and to the Techne network."
+    lead="Rack space with redundant power and controlled cooling for your network equipment at Vitro Makati 2 in Manila, where you can cross-connect to carriers and to the Techne network."
     focus="colocation"
     related={['ip-transit', 'vxc', 'content']}
     meta={[
@@ -54,13 +54,12 @@ export const Colocation: React.FC = () => (
       </section>
 
       <section>
-        <SectionTitle title="Colocation locations" />
-        <DataTable
-          headers={['City', 'Facilities']}
-          rows={LOCATIONS.filter((location) => location.colocation).map((location) => [
-            location.city,
-            location.facilities.join(', '),
-          ])}
+        <SectionTitle title="Location" />
+        <SpecTable
+          rows={[
+            { k: 'Facility', v: LOCATION.facility },
+            { k: 'City', v: `${LOCATION.city}, ${LOCATION.country}` },
+          ]}
         />
       </section>
 
@@ -102,8 +101,8 @@ export const Colocation: React.FC = () => (
               a: 'Yes. Smart-hands engineers are available 24/7 for installs, reboots, cabling and on-site troubleshooting.',
             },
             {
-              q: 'What if I need a connection to another facility?',
-              a: 'A Virtual Cross Connect links your cabinet to a port in another facility over the Techne fabric, without a new fiber run.',
+              q: 'How do I reach another network from my cabinet?',
+              a: 'You can order a cross connect, or use a Virtual Cross Connect to reach networks on the Techne fabric without a new fiber run.',
             },
           ]}
         />

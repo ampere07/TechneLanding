@@ -1,6 +1,6 @@
 import React from 'react';
 import { CONTENT_LOGOS } from '../content/logos';
-import { CACHED_CONTENT, PEERED_NETWORKS } from '../content/site';
+import { CACHED_CONTENT, LOCATION_LABEL, PEERED_NETWORKS } from '../content/site';
 import { LogoGrid } from './NetworkMap';
 import {
   ServiceLayout,
@@ -54,7 +54,7 @@ export const Content: React.FC = () => (
           'Private VLAN support for isolated traffic exchange',
           'Access to open-source mirror servers',
           'Fixed-bandwidth and burstable plans',
-          'Availability in the Philippines, Hong Kong and Singapore',
+          `Available at ${LOCATION_LABEL}`,
         ]}
       />
 
@@ -62,11 +62,11 @@ export const Content: React.FC = () => (
         <SectionTitle title="Plan details" />
         <SpecTable
           rows={[
-            { k: 'Port speeds', v: '1 Gbps, 10 Gbps or 100 Gbps, up to four ports' },
+            { k: 'Port speeds', v: '1 Gbps, 10 Gbps or 100 Gbps' },
             { k: 'Commitment', v: '100 Mbps, 200 Mbps, 500 Mbps, 1 Gbps, 2 Gbps, 5 Gbps or 10 Gbps' },
             { k: 'Billing', v: 'Fixed bandwidth or burstable, usage-based' },
-            { k: 'Contract terms', v: '12 months, 24 months (save 10%) or 36 months (save 15%)' },
-            { k: 'Locations', v: 'Manila, Cebu City, Davao City, Hong Kong and Singapore' },
+            { k: 'Contract terms', v: '12, 24 or 36 months' },
+            { k: 'Location', v: LOCATION_LABEL },
           ]}
         />
       </section>

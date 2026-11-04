@@ -18,7 +18,7 @@ modern-minimal
 - Home: hero with a facts panel in its left column, service explorer, service finder, virtual comparison, locations, logos, reasons, process, FAQ, closing band
 - Service pages: `ServiceLayout` header with the 3D hall, facts band, body sections, related services, closing band
 - Index and company pages: pale title band, then ruled content
-- Pricing: calculator, config left and quote right
+- Request a quote: service options left, selection summary right. No prices are shown. The button opens the contact form pre-filled from the selection.
 
 ## Color
 Anchored on the logo teal `#63b4b5` and logo grey, on deep navy. Tokens live in `tokens.css` and `src/index.css`.

@@ -1,12 +1,12 @@
 import React from 'react';
-import { FACTS, LOCATIONS } from '../content/site';
+import { FACTS, LOCATION } from '../content/site';
 import { ClosingCTA } from './ClosingCTA';
 
 const stats = [
   { value: FACTS.backbone, label: 'Backbone capacity' },
   { value: FACTS.sla, label: 'Availability SLA' },
   { value: FACTS.networks, label: 'Networks served, past and present' },
-  { value: `${LOCATIONS.length} cities`, label: 'Service locations' },
+  { value: LOCATION.facility, label: `Data center in ${LOCATION.city}` },
 ];
 
 const values = [
@@ -38,7 +38,7 @@ const milestones = [
   {
     year: '2025',
     title: 'Backbone expansion',
-    desc: 'Backbone capacity expanded to more than 200 Gbps, with regional edge nodes in Cebu and Davao.',
+    desc: 'Backbone capacity expanded to more than 200 Gbps.',
   },
   {
     year: '2026',

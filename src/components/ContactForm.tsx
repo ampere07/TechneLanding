@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { CONTACT } from '../content/site';
 
-export const ContactForm: React.FC = () => {
+interface ContactFormBodyProps {
+  initialSubject: string;
+  initialMessage: string;
+}
+
+const ContactFormBody: React.FC<ContactFormBodyProps> = ({ initialSubject, initialMessage }) => {
+  const prefilled = initialSubject !== '' || initialMessage !== '';
   const [formState, setFormState] = useState({
     name: '',
     email: '',
-    subject: '',
-    message: '',
+    subject: initialSubject,
+    message: initialMessage,
   });
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
@@ -16,7 +23,7 @@ export const ContactForm: React.FC = () => {
     setStatus('sending');
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log('Sending email to: cliff@technefiber.com');
+      console.log('Sending email to: info@techne.ph');
       setStatus('success');
       setFormState({ name: '', email: '', subject: '', message: '' });
       setTimeout(() => setStatus('idle'), 5000);
@@ -50,8 +57,7 @@ export const ContactForm: React.FC = () => {
               <div className="py-4 border-b border-rule">
                 <dt className="text-[0.8125rem] text-ink-3">Email</dt>
                 <dd className="mt-0.5 space-y-0.5">
-                  <a href={`mailto:${CONTACT.generalEmail}`} className="block text-[1rem] font-semibold text-ink hover:text-accent transition-colors duration-150">{CONTACT.generalEmail}</a>
-                  <a href={`mailto:${CONTACT.salesEmail}`} className="block text-[1rem] font-semibold text-ink hover:text-accent transition-colors duration-150">{CONTACT.salesEmail}</a>
+                  <a href={`mailto:${CONTACT.email}`} className="block text-[1rem] font-semibold text-ink hover:text-accent transition-colors duration-150">{CONTACT.email}</a>
                 </dd>
               </div>
               <div className="py-4 border-b border-rule">
@@ -78,7 +84,10 @@ export const ContactForm: React.FC = () => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
-                <h2 className="heading-3">Send us a message</h2>
+                <div>
+                  <h2 className="heading-3">{prefilled ? 'Your quote request' : 'Send us a message'}</h2>
+                  {prefilled && <p className="body-copy mt-1">We filled this in from your selection. You can edit anything before sending.</p>}
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label htmlFor="contact-name" className="field-label">Your name</label>
@@ -121,7 +130,7 @@ export const ContactForm: React.FC = () => {
                   <textarea
                     id="contact-message"
                     required
-                    rows={6}
+                    rows={prefilled ? 12 : 6}
                     className="input-field resize-y"
                     value={formState.message}
                     onChange={(e) => setFormState({ ...formState, message: e.target.value })}
@@ -143,5 +152,17 @@ export const ContactForm: React.FC = () => {
         </div>
       </section>
     </>
+  );
+};
+
+/** A link can pre-fill the form. The key resets the form whenever those details change. */
+export const ContactForm: React.FC = () => {
+  const [params] = useSearchParams();
+  return (
+    <ContactFormBody
+      key={params.toString()}
+      initialSubject={params.get('subject') ?? ''}
+      initialMessage={params.get('message') ?? ''}
+    />
   );
 };

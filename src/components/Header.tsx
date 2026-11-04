@@ -52,9 +52,9 @@ export const Header: React.FC = () => {
               <Phone size={13} aria-hidden="true" />
               {CONTACT.phoneDisplay}
             </a>
-            <a href={`mailto:${CONTACT.generalEmail}`} className="inline-flex items-center gap-1.5 hover:text-white transition-colors duration-150">
+            <a href={`mailto:${CONTACT.email}`} className="inline-flex items-center gap-1.5 hover:text-white transition-colors duration-150">
               <Mail size={13} aria-hidden="true" />
-              {CONTACT.generalEmail}
+              {CONTACT.email}
             </a>
             <button type="button" onClick={() => setLoginOpen(true)} className="hover:text-white transition-colors duration-150 cursor-pointer">
               Customer login
@@ -118,10 +118,10 @@ export const Header: React.FC = () => {
             </div>
 
             <Link to={`/${PANEL_IDS.HOME}#locations`} className="text-[0.9375rem] font-medium text-ink hover:text-accent transition-colors duration-150">
-              Locations
+              Location
             </Link>
-            <NavLink to={`/${PANEL_IDS.PRICING}`} className={navLinkClass}>Pricing</NavLink>
-            <NavLink to={`/${PANEL_IDS.BLOG}`} className={navLinkClass}>Insights</NavLink>
+            <NavLink to={`/${PANEL_IDS.PRICING}`} className={navLinkClass}>Request a quote</NavLink>
+            <NavLink to={`/${PANEL_IDS.BLOG}`} className={navLinkClass}>Blog</NavLink>
             <NavLink to={`/${PANEL_IDS.ABOUT}`} className={navLinkClass}>About</NavLink>
           </nav>
 
@@ -156,9 +156,9 @@ export const Header: React.FC = () => {
                   ))}
                 </div>
               ))}
-              <Link to={`/${PANEL_IDS.HOME}#locations`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Locations</Link>
-              <Link to={`/${PANEL_IDS.PRICING}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Pricing</Link>
-              <Link to={`/${PANEL_IDS.BLOG}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Insights</Link>
+              <Link to={`/${PANEL_IDS.HOME}#locations`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Location</Link>
+              <Link to={`/${PANEL_IDS.PRICING}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Request a quote</Link>
+              <Link to={`/${PANEL_IDS.BLOG}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Blog</Link>
               <Link to={`/${PANEL_IDS.ABOUT}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">About</Link>
               <div className="pt-4 flex flex-col gap-3">
                 <Link to={`/${PANEL_IDS.CONTACT}`} onClick={closeAll} className="btn-primary w-full">Contact us</Link>

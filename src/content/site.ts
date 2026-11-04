@@ -23,7 +23,7 @@ export const SERVICES: ServiceSummary[] = [
     name: 'Colocation',
     group: 'Data center',
     summary:
-      'Rack space with redundant power and controlled cooling for your routers, switches and servers, in facilities where you can cross-connect to carriers and to the Techne network.',
+      'Rack space with redundant power and controlled cooling for your routers, switches and servers, at Vitro Makati 2, where you can cross-connect to carriers and to the Techne network.',
     builtFor: 'ISP core and edge, DNS, monitoring and security platforms',
     menuLine: 'Rack space, power and cross-connects',
     path: `/${PANEL_IDS.COLOCATION}`,
@@ -53,8 +53,8 @@ export const SERVICES: ServiceSummary[] = [
     name: 'Virtual Cross Connect',
     group: 'Virtual services',
     summary:
-      'A private Layer 2 connection between two ports on the Techne fabric. Reach a carrier, a partner or your own equipment in another facility without ordering a new fiber run.',
-    builtFor: 'Networks that need a private link to a partner or another site',
+      'A private Layer 2 connection between two ports on the Techne fabric. Reach a carrier, a partner or another network without ordering a new fiber run.',
+    builtFor: 'Networks that need a private link to a carrier or partner',
     menuLine: 'Private Layer 2 link between two ports',
     path: `/${PANEL_IDS.VIRTUAL_CROSS_CONNECT}`,
   },
@@ -63,9 +63,9 @@ export const SERVICES: ServiceSummary[] = [
     name: 'Virtual Switch',
     group: 'Virtual services',
     summary:
-      'A private Layer 2 domain hosted on the fabric. Join several ports, sites or partners as if they were patched into the same switch.',
-    builtFor: 'Multi-site networks and groups of partners sharing a private LAN',
-    menuLine: 'Private Layer 2 domain across sites',
+      'A private Layer 2 domain hosted on the fabric. Join several ports, networks or partners as if they were patched into the same switch.',
+    builtFor: 'Networks and groups of partners sharing a private LAN',
+    menuLine: 'Private Layer 2 domain on the fabric',
     path: `/${PANEL_IDS.VIRTUAL_SWITCH}`,
   },
   {
@@ -73,8 +73,8 @@ export const SERVICES: ServiceSummary[] = [
     name: 'Virtual Router',
     group: 'Virtual services',
     summary:
-      'A hosted routing instance with BGP and dual-stack IPv4 and IPv6. Add routing at a location without buying or installing router hardware.',
-    builtFor: 'Teams adding a site or gateway without new hardware',
+      'A hosted routing instance with BGP and dual-stack IPv4 and IPv6. Add routing without buying or installing router hardware.',
+    builtFor: 'Teams adding routing or a gateway without new hardware',
     menuLine: 'Hosted BGP routing, no hardware',
     path: `/${PANEL_IDS.VIRTUAL_ROUTER}`,
   },
@@ -101,8 +101,7 @@ export const serviceById = (id: ServiceSummary['id']) => {
 export const CONTACT = {
   phoneDisplay: '+63 968 702 8433',
   phoneHref: 'tel:+639687028433',
-  salesEmail: 'cliff@technefiber.com',
-  generalEmail: 'info@technefiber.com',
+  email: 'info@techne.ph',
   city: 'Cebu City, Philippines',
   facebook: 'https://www.facebook.com/techne.consulting',
 };
@@ -116,35 +115,10 @@ export const FACTS = {
   networks: '32+',
 };
 
-export interface Location {
-  city: string;
-  region: string;
-  facilities: string[];
-  colocation: boolean;
-}
+/** Techne's one service location. Every page that names a location reads it from here. */
+export const LOCATION = { facility: 'Vitro Makati 2', city: 'Manila', country: 'Philippines' };
 
-/** Service availability by metro. Colocation is offered in the Philippine metros only. */
-export const LOCATIONS: Location[] = [
-  {
-    city: 'Manila',
-    region: 'Philippines',
-    facilities: ['Vitro Makati 1', 'Vitro Makati 2', 'Vitro Pasig', 'Vitro Parañaque', 'TIM Carmona', 'Globe MK2'],
-    colocation: true,
-  },
-  { city: 'Cebu City', region: 'Philippines', facilities: ['Vitro Cebu', 'Globe Cebu'], colocation: true },
-  { city: 'Davao City', region: 'Philippines', facilities: ['Vitro Davao', 'Globe Davao'], colocation: true },
-  { city: 'Hong Kong', region: 'International', facilities: ['Equinix HK1', 'Mega-i Advantage'], colocation: false },
-  {
-    city: 'Singapore',
-    region: 'International',
-    facilities: ['Equinix SG1', 'Global Switch Singapore'],
-    colocation: false,
-  },
-];
-
-export const FACILITY_COUNT = LOCATIONS.reduce((total, location) => total + location.facilities.length, 0);
-
-export const LOCATION_NAMES = 'Manila, Cebu City, Davao City, Hong Kong and Singapore';
+export const LOCATION_LABEL = `${LOCATION.facility}, ${LOCATION.city}`;
 
 export const PEERED_NETWORKS = [
   'Alibaba',

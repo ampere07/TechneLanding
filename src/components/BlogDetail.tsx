@@ -27,7 +27,7 @@ export const BlogDetail: React.FC<BlogDetailProps> = ({ title, content, date, au
       <div className="wrap max-w-[820px] py-10 md:py-14">
         <Link to={`/${PANEL_IDS.BLOG}`} className="text-link mb-8">
           <ChevronLeft size={16} aria-hidden="true" />
-          Back to Insights
+          Back to Blog
         </Link>
 
         <p className="text-[0.875rem] text-ink-3 mt-8 mb-3">

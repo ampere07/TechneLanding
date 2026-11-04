@@ -86,9 +86,9 @@ const needs: { need: string; service: ServiceSummary['id'] }[] = [
   { need: 'Host routers, switches or servers in a secured data center', service: 'colocation' },
   { need: 'Buy upstream capacity using my own ASN and BGP', service: 'ip-transit' },
   { need: 'Reach CDNs and content networks without using my upstream links', service: 'content' },
-  { need: 'Connect privately to one carrier, partner or remote site', service: 'vxc' },
-  { need: 'Join several sites or partners on one private LAN', service: 'vswitch' },
-  { need: 'Run BGP or a gateway at a location without buying hardware', service: 'vrouter' },
+  { need: 'Connect privately to one carrier or partner', service: 'vxc' },
+  { need: 'Join several networks or partners on one private LAN', service: 'vswitch' },
+  { need: 'Run BGP or a gateway without buying hardware', service: 'vrouter' },
   { need: 'Get an independent design, audit or compliance review', service: 'consulting' },
 ];
 
@@ -136,9 +136,9 @@ export const ServiceFinder: React.FC = () => (
 const compareRows = [
   { label: 'Network layer', values: ['Layer 2', 'Layer 2', 'Layer 3'] },
   { label: 'Topology', values: ['Point to point', 'Multipoint', 'Routed'] },
-  { label: 'Connects', values: ['Two ports', 'Three or more ports or sites', 'Networks and upstreams, through routing'] },
+  { label: 'Connects', values: ['Two ports', 'Three or more ports', 'Networks and upstreams, through routing'] },
   { label: 'Who runs routing', values: ['You, on your equipment', 'You, on your equipment', 'The instance, self-managed or managed by Techne'] },
-  { label: 'Typical use', values: ['Private link to a carrier or partner', 'Shared private LAN across sites', 'BGP or a gateway without router hardware'] },
+  { label: 'Typical use', values: ['Private link to a carrier or partner', 'Shared private LAN between networks', 'BGP or a gateway without router hardware'] },
 ];
 
 /** Plain explanation of how the three virtual services differ. */
@@ -148,7 +148,7 @@ export const VirtualCompare: React.FC = () => (
       <div className="max-w-3xl mb-8">
         <h2 className="heading-2">Virtual services compared</h2>
         <p className="lede mt-3">
-          All three run on the Techne fabric and need no new physical cabling between sites. The difference is what they connect and who handles routing.
+          All three run on the Techne fabric and need no new physical cabling. The difference is what they connect and who handles routing.
         </p>
       </div>
       <div className="md:hidden space-y-8">
@@ -205,7 +205,7 @@ export const VirtualCompare: React.FC = () => (
 const reasons = [
   {
     title: 'Carrier-neutral',
-    desc: 'Choose your own carriers. In a Techne location you can cross-connect to local fiber providers as well as to our own transit and peering.',
+    desc: 'Choose your own carriers. At Vitro Makati 2 you can cross-connect to local fiber providers as well as to our own transit and peering.',
   },
   {
     title: 'Vendor-neutral engineering',
@@ -268,7 +268,7 @@ export const HomeFAQ: React.FC = () => (
         items={[
           {
             q: 'Where does Techne operate?',
-            a: 'We offer services in Manila, Cebu City, Davao City, Hong Kong and Singapore. Colocation is available in the three Philippine cities. The locations table above lists each facility.',
+            a: 'Our services are delivered from Vitro Makati 2 in Manila. If your site is somewhere else, tell us where it is and we will check what can reach it.',
           },
           {
             q: 'Who are your services for?',

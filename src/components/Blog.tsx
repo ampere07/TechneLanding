@@ -39,7 +39,7 @@ export const Blog: React.FC = () => (
   <>
     <section className="bg-paper-2 border-b border-rule">
       <div className="wrap py-12 md:py-16">
-        <h1 className="heading-1">Insights</h1>
+        <h1 className="heading-1">Blog</h1>
         <p className="lede mt-4">Articles on networking, infrastructure and enterprise IT from the Techne engineering team.</p>
       </div>
     </section>
