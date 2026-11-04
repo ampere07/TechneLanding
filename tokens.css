@@ -1,6 +1,6 @@
 /* Hallmark · macrostructure: Feature Stack + annotated data sections · tone: corporate, informational
  * genre: modern-minimal · theme: custom (vibe: "Philippine carrier-neutral network operator")
- * anchor: Techne logo teal #63b4b5 and logo grey, on deep navy · display: Archivo, body: IBM Plex Sans, data: IBM Plex Mono, reading: Newsreader
+ * anchor: Techne logo teal #63b4b5 and logo grey, on deep navy · display: Archivo, body: IBM Plex Sans, data: IBM Plex Mono
  * pre-emit critique: P5 H5 E4 S5 R4 V5 */
 
 :root {
@@ -34,7 +34,6 @@
   --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --font-body:    "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
   --font-data:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --font-reading: "Newsreader", Georgia, "Times New Roman", serif;
 
   /* === Type scale === */
   --text-xs:        0.8125rem;

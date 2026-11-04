@@ -18,6 +18,7 @@ modern-minimal
 - Home: hero with a facts panel in its left column, service explorer, service finder, virtual comparison, locations, logos, reasons, process, FAQ, closing band
 - Service pages: `ServiceLayout` header with the 3D hall, facts band, body sections, related services, closing band
 - Index and company pages: pale title band, then ruled content
+- Blog: a "Coming soon" band with two links, until there are articles
 - Request a quote: service options left, selection summary right. No prices are shown. The button opens the contact form pre-filled from the selection.
 
 ## Color
@@ -45,10 +46,9 @@ Each kind of content has its own face. A page uses at most three, and every face
 | Display | Archivo 500 to 800 | Headings, the wordmark, headline figures such as the hero facts and About stats |
 | Body | IBM Plex Sans 400 to 600 | Paragraphs, menus, buttons, forms, table text |
 | Data | IBM Plex Mono 400 to 600 | Short technical values: key-fact bands, port speeds, capacities, spec and table values that start with a number, step numbers, years, 3D diagram labels |
-| Reading | Newsreader 400 to 600 | Blog article text only |
 
-- Use `font-display`, `font-body`, `font-data` and `font-reading`. `font-data` runs at 0.92em because Plex Mono is wide.
-- Article pages swap the data face for the reading face, so they stay at three families. Do not use `font-data` on a blog article.
+- Use `font-display`, `font-body` and `font-data`. `font-data` runs at 0.92em because Plex Mono is wide.
+- The blog is a "Coming soon" page for now. When articles return, give them a reading serif in place of the data face, so article pages stay at three families.
 - `isDataValue()` in `src/content/format.ts` picks table values for the data face: they start with a digit, are 28 characters or fewer, and contain no long word.
 - Sentences and names never use the data face. Eyebrows, labels and dates stay in the body face.
 - Use `.heading-1`, `.heading-2`, `.heading-3`, `.lede`, `.body-copy`, `.eyebrow`.

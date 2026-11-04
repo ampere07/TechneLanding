@@ -7,7 +7,6 @@ import { Services } from './components/Services';
 import { ContactForm } from './components/ContactForm';
 import { Footer } from './components/Footer';
 import { Blog } from './components/Blog';
-import { BlogDetail } from './components/BlogDetail';
 import { About } from './components/About';
 import { Pricing } from './components/Pricing';
 import { IPTransit } from './components/IPTransit';
@@ -26,11 +25,7 @@ import {
   VirtualCompare,
   WhyChooseTechne,
 } from './components/HomeSections';
-import { PANEL_IDS } from './constants';
-
-import blogInfra from './assets/insight-infrastructure.webp';
-import blogSec from './assets/insight-security.webp';
-import blogNet from './assets/insight-connectivity.webp';
+import { PANEL_IDS, RETIRED_BLOG_IDS } from './constants';
 
 const HomePanel = () => (
   <>
@@ -87,74 +82,9 @@ const PanelRenderer = () => {
     case PANEL_IDS.VIRTUAL_ROUTER:
       return <VirtualRouter />;
 
-    // Blog Details
-    case PANEL_IDS.BLOG_INFRA:
-      return (
-        <BlogDetail
-          title="Optimizing Core Infrastructure for Scalability"
-          category="Infrastructure"
-          date="May 10, 2026"
-          author="Cliff Richard Perez Jr"
-          image={blogInfra}
-          content={`
-            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
-            
-            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
-
-            Key considerations for core optimization:
-            1. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
-            2. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
-            3. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
-            
-            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard.
-          `}
-        />
-      );
-    case PANEL_IDS.BLOG_SECURITY:
-      return (
-        <BlogDetail
-          title="The Future of Network Security in the Philippines"
-          category="Security"
-          date="April 28, 2026"
-          author="Cliff Richard Perez Jr"
-          image={blogSec}
-          content={`
-            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
-            
-            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
-
-            Key considerations for core optimization:
-            1. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
-            2. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
-            3. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
-            
-            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard.
-          `}
-        />
-      );
-    case PANEL_IDS.BLOG_NETWORKING:
-      return (
-        <BlogDetail
-          title="Understanding Next-Gen Global Connectivity"
-          category="Networking"
-          date="April 15, 2026"
-          author="Cliff Richard Perez Jr"
-          image={blogNet}
-          content={`
-            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
-            
-            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione
-
-            Key considerations for core optimization:
-            1. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
-            2. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
-            3. Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
-            
-            Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard.
-          `}
-        />
-      );
     default:
+      // Links to the removed articles go to the blog page. Anything else unknown goes home.
+      if (id && RETIRED_BLOG_IDS.includes(id)) return <Navigate to={`/${PANEL_IDS.BLOG}`} replace />;
       return <Navigate to={`/${PANEL_IDS.HOME}`} replace />;
   }
 };
