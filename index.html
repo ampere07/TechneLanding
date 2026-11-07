@@ -28,21 +28,8 @@
     .splash__brand img { height: 40px; width: auto; display: block; }
     .splash__brand span { font-family: 'Archivo', system-ui, sans-serif; font-weight: 700; font-size: 1.75rem; letter-spacing: -0.01em; }
 
-    /* The stage holds the 3D rack. Until that has loaded, a flat row of racks that go up one after another stands in for it. */
+    /* The stage holds the 3D rack, which is drawn into it as soon as its code has loaded. */
     .splash__stage { position: relative; width: min(340px, 84vw); height: min(290px, 72vw); margin-top: 8px; }
-    .splash__hall { position: absolute; left: 50%; bottom: 36px; transform: translateX(-50%); display: flex; align-items: flex-end; gap: 7px; height: 52px; padding-bottom: 5px; border-bottom: 1px solid #b4c1ca; }
-    .splash__stage--3d .splash__hall { display: none; }
-    .splash__rack {
-      width: 17px; height: 46px; border-radius: 2px; background: #b4c1ca; transform-origin: bottom;
-      background-image: repeating-linear-gradient(to bottom, transparent 0 5px, rgba(255,255,255,0.55) 5px 6px);
-      animation: splash-rack 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-    .splash__rack:nth-child(1) { animation-delay: 0.10s; height: 36px; }
-    .splash__rack:nth-child(2) { animation-delay: 0.22s; height: 44px; }
-    .splash__rack:nth-child(3) { animation-delay: 0.34s; height: 50px; background-color: #0e6b70; }
-    .splash__rack:nth-child(4) { animation-delay: 0.46s; height: 44px; }
-    .splash__rack:nth-child(5) { animation-delay: 0.58s; height: 36px; }
-    @keyframes splash-rack { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
 
     .splash__tag { margin: 6px 0 0; font-size: 0.875rem; line-height: 1.4; color: #455a68; max-width: 260px; opacity: 0; animation: splash-fade 0.5s ease 0.5s forwards; }
     @keyframes splash-fade { to { opacity: 1; } }
@@ -53,7 +40,7 @@
     @keyframes splash-bar { to { width: 88%; } }
 
     @media (prefers-reduced-motion: reduce) {
-      /* The racks and the bar still run, since they are the loading indicator. Only the fade is shortened. */
+      /* The rack and the bar still run, since they are the loading indicator. Only the fade is shortened. */
       #splash { transition-duration: 0.2s; }
     }
   </style>
@@ -66,15 +53,7 @@
         <img src="/src/assets/logo.png" alt="" width="40" height="40" />
         <span>Techne</span>
       </div>
-      <div class="splash__stage" id="splash-stage" aria-hidden="true">
-        <div class="splash__hall">
-          <div class="splash__rack"></div>
-          <div class="splash__rack"></div>
-          <div class="splash__rack"></div>
-          <div class="splash__rack"></div>
-          <div class="splash__rack"></div>
-        </div>
-      </div>
+      <div class="splash__stage" id="splash-stage" aria-hidden="true"></div>
       <p class="splash__tag">Carrier-neutral network services for the Philippines</p>
       <div class="splash__bar" aria-hidden="true"><i></i></div>
     </div>

@@ -115,10 +115,10 @@ const GlobeOrMap: React.FC = () => {
 export const NetworkMap: React.FC = () => (
   <section id="locations" className="section bg-paper-2 border-y border-rule">
     <div className="wrap">
-      <Reveal className="max-w-3xl mb-10">
-        <h2 className="heading-2">Where you can connect</h2>
-        <p className="lede mt-3">
-          Techne services are delivered from {LOCATION.facility} in {LOCATION.city}. If your site is somewhere else, tell us where it is and we will check what can reach it.
+      <Reveal className="max-w-4xl mx-auto text-center mb-10">
+        <h2 className="heading-2">Expanding Techne’s Global IP Transit Network</h2>
+        <p className="lede mt-3 mx-auto text-justify [text-align-last:center]">
+          Techne is building its IP Transit platform from the Philippines, with plans to expand international connectivity through additional upstream and regional network partners. The goal is to deliver better route diversity, redundancy, capacity, and scalable global connectivity for Philippine ISPs.
         </p>
       </Reveal>
 

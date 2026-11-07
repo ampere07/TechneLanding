@@ -28,7 +28,7 @@ interface Pin {
 }
 
 const PINS: Pin[] = [
-  { key: 'home', kind: 'home', asn: HOME_NETWORK.asn, country: HOME_NETWORK.country, lon: HOME_NETWORK.lon, lat: HOME_NETWORK.lat, side: 'right' },
+  { key: 'home', kind: 'home', asn: HOME_NETWORK.asn, country: HOME_NETWORK.country, lon: HOME_NETWORK.lon, lat: HOME_NETWORK.lat, side: 'left' },
   ...TRANSIT_NETWORKS.map((network) => ({
     key: network.country,
     kind: (network.unlocked ? 'open' : 'locked') as Pin['kind'],
