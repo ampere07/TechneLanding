@@ -1,16 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Check, ChevronRight, MapPin, Cpu, Wifi, Server, HelpCircle } from 'lucide-react';
+import { Check, ChevronRight, Cpu, Wifi, Server, HelpCircle } from 'lucide-react';
 import { PANEL_IDS } from '../constants';
 import { quoteLink } from '../content/quote';
 import { LOCATION } from '../content/site';
-
-declare global {
-  interface Window {
-    L: any;
-  }
-}
 
 type BandwidthType = 'Fixed Bandwidth' | 'Burstable';
 type CommitmentType = '1 Gbps' | '2 Gbps' | '5 Gbps' | '10 Gbps' | '20 Gbps' | '50 Gbps' | '100 Gbps';
@@ -31,8 +25,6 @@ const burstBilling = (commitment: string) => `${commitment} committed + 95th per
 /** How a bandwidth option reads. Fixed shows the speed alone. Burstable spells out the port and the billing. */
 const bandwidthLabel = (type: string, commitment: string) =>
   type === 'Burstable' ? `Commit ${commitment}, ${BURST_PORT} port capacity, billing model: ${burstBilling(commitment)}` : commitment;
-
-const SITE_COORDINATES: [number, number] = [14.5547, 121.0244];
 
 const DATA_CENTER_OPTIONS = [LOCATION.facility, 'My location is not listed'];
 
@@ -97,9 +89,6 @@ export const Pricing: React.FC = () => {
 
   const [contractTerm, setContractTerm] = useState<ContractTermType>('12 months');
 
-  const [leafletLoaded, setLeafletLoaded] = useState(false);
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
 
   const burstable = bandwidthType === 'Burstable';
   // A 100 Gbps port offers 10, 20, 50 and 100 Gbps. The smaller ports offer 1, 2, 5 and 10 Gbps.
@@ -121,49 +110,6 @@ export const Pricing: React.FC = () => {
       setPortSize(fixedPort);
     }
   };
-  useEffect(() => {
-    if (window.L) { setLeafletLoaded(true); return; }
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-    link.id = 'leaflet-css';
-    document.head.appendChild(link);
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.id = 'leaflet-js';
-    script.async = true;
-    script.onload = () => { setLeafletLoaded(true); };
-    document.body.appendChild(script);
-    return () => {
-      const existingLink = document.getElementById('leaflet-css');
-      const existingScript = document.getElementById('leaflet-js');
-      if (existingLink) document.head.removeChild(existingLink);
-      if (existingScript) document.body.removeChild(existingScript);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!leafletLoaded || !mapContainerRef.current) return;
-    if (mapRef.current) return;
-    const L = window.L;
-    const map = L.map(mapContainerRef.current, { center: SITE_COORDINATES, zoom: 11, zoomControl: false, scrollWheelZoom: false });
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      className: 'pricing-map-tiles',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-    const icon = L.divIcon({
-      html: `<div class="relative flex items-center justify-center w-8 h-8"><div class="absolute inset-0 rounded-full bg-brand-blue/30 animate-ping"></div><div class="w-4 h-4 rounded-full border-2 border-white shadow-lg bg-brand-blue scale-125 relative z-10"></div></div>`,
-      className: 'custom-leaflet-marker',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16],
-    });
-    L.marker(SITE_COORDINATES, { icon }).addTo(map);
-    mapRef.current = map;
-    return () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; } };
-  }, [leafletLoaded]);
-
   // What the visitor has chosen. It fills the summary panel and the contact form.
   const selection: { label: string; value: string }[] =
     activeTab === 'internet'
@@ -259,31 +205,6 @@ export const Pricing: React.FC = () => {
 
           {/* Config panel */}
           <div className="lg:col-span-8 bg-paper border border-rule rounded-[4px] p-6 md:p-8 space-y-8">
-
-            {/* Map selector */}
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                <h3 className="text-sm font-semibold text-ink">Location</h3>
-                <div className="flex items-center gap-3 self-start sm:self-auto">
-                  <span className="tabular-nums text-xs text-accent flex items-center gap-1 bg-accent/8 px-3 py-1.5 rounded-[4px] border border-accent/20">
-                    <MapPin size={11} />
-                    <span>{LOCATION.city}</span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="w-full h-[300px] rounded-[4px] overflow-hidden border border-rule relative bg-paper-2 z-0">
-                {!leafletLoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center text-ink-2 text-sm font-body bg-paper-2">
-                    <div className="w-5 h-5 border-2 border-brand-blue border-t-transparent rounded-full animate-spin mr-3" />
-                    Loading map...
-                  </div>
-                )}
-                <div ref={mapContainerRef} className="w-full h-full" />
-              </div>
-            </div>
-
-            <div className="border-t border-rule" />
 
             {/* Internet options */}
             {activeTab === 'internet' && (

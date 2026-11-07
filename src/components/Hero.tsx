@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { PANEL_IDS } from '../constants';
 import { FACTS, LOCATION } from '../content/site';
 import { FabricView } from './FabricView';
+import { Odometer } from './Odometer';
 
 // Three facts share the top row and two share the bottom, so both rows fill the panel.
 const facts = [
@@ -44,7 +45,7 @@ export const Hero: React.FC<HeroProps> = ({ slotRef, sharedModel = false }) => (
           {facts.map((fact) => (
             <div key={fact.label} className={`flex flex-col-reverse justify-end gap-0.5 bg-paper-2 pr-4 lg:pr-3 xl:pr-4 py-3 ${fact.span}`}>
               <dt className="text-[0.8125rem] leading-snug text-ink-2">{fact.label}</dt>
-              <dd className="font-display text-[1.0625rem] min-[360px]:text-[1.25rem] lg:text-[1rem] xl:text-[1.25rem] font-semibold tracking-tight leading-tight tabular-nums whitespace-nowrap text-ink">{fact.value}</dd>
+              <dd className="font-display text-[1.0625rem] min-[360px]:text-[1.25rem] lg:text-[1rem] xl:text-[1.25rem] font-semibold tracking-tight leading-tight tabular-nums whitespace-nowrap text-ink"><Odometer value={fact.value} /></dd>
             </div>
           ))}
         </motion.dl>

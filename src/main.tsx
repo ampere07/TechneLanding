@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+// Montserrat Extra Bold, for the AS number title. It is bundled with the site, so it does not depend on another server.
+import '@fontsource/montserrat/800.css'
 
 const root = createRoot(document.getElementById('root')!)
 

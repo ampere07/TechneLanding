@@ -1,8 +1,7 @@
-import React, { Suspense, lazy, useState } from 'react';
+import React, { Suspense, lazy, useLayoutEffect, useRef, useState } from 'react';
 import { Lock, LockOpen } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { CONTENT_LOGOS, PLATFORM_LOGOS, type Logo } from '../content/logos';
-import { LOCATION } from '../content/site';
 import { HOME_NETWORK, TRANSIT_NETWORKS, type TransitNetwork } from '../content/transit';
 import { PHILIPPINES_PATH, WORLD, WORLD_H, WORLD_W, worldPercent } from '../content/worldMap';
 import { Reveal } from './Reveal';
@@ -106,6 +105,41 @@ const GlobeOrMap: React.FC = () => {
   );
 };
 
+/**
+ * The two-line title. The second line is sized so that it is exactly as wide as the first, with ordinary spacing
+ * between its words. It is measured again whenever the window or the fonts change.
+ */
+const AsTitle: React.FC = () => {
+  const first = useRef<HTMLSpanElement>(null);
+  const second = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const a = first.current;
+    const b = second.current;
+    if (!a || !b) return;
+    const fit = () => {
+      b.style.fontSize = '1em';
+      const target = a.getBoundingClientRect().width;
+      const natural = b.getBoundingClientRect().width;
+      if (target > 0 && natural > 0) b.style.fontSize = `${(target / natural).toFixed(4)}em`;
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(a);
+    document.fonts?.ready.then(fit, () => undefined);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <p className="font-['Montserrat',sans-serif] text-[length:var(--t)] font-extrabold uppercase leading-[0.95] tracking-normal text-ink">
+      <span ref={first} className="block w-fit mx-auto whitespace-nowrap">AS number</span>
+      <span ref={second} className="block w-fit mx-auto whitespace-nowrap">
+        is <span className="text-accent">{HOME_NETWORK.asn}</span>
+      </span>
+    </p>
+  );
+};
+
 /** Where Techne's services are delivered from. */
 export const NetworkMap: React.FC = () => (
   <section id="locations" className="section bg-paper-2 border-y border-rule">
@@ -117,19 +151,15 @@ export const NetworkMap: React.FC = () => (
         </p>
       </Reveal>
 
-      <Reveal>
-        <GlobeOrMap />
-      </Reveal>
-
-      <div className="mt-10 max-w-3xl mx-auto">
-        <Reveal delay={0.05} className="bg-paper border border-rule rounded-[4px] p-6 md:p-8">
-          <h3 className="text-[1.375rem] font-semibold text-ink leading-tight">{LOCATION.facility}</h3>
-          <p className="body-copy mt-1">{LOCATION.city}, {LOCATION.country}</p>
-          <p className="mt-3 text-[0.9375rem] text-ink-2">
-            Our AS number is <span className="font-data font-semibold text-ink">{HOME_NETWORK.asn}</span>.
-          </p>
+      {/* Like a magazine cover: the big title sits behind the globe, and on wider screens the globe rises over the lower part of its second line. On phones the globe sits just below the title, so every letter stays readable. */}
+      <div className="[--t:clamp(min(2.5rem,calc((100vw_-_40px)/6.9)),7.4vw,6.5rem)]">
+        <Reveal className="relative z-0 text-center -translate-y-[calc(var(--t)*0.3)]">
+          <AsTitle />
         </Reveal>
 
+        <Reveal className="relative z-10 mt-[calc(var(--t)*-0.2-min(640px,100vw-40px)*0.085)] md:mt-[calc(var(--t)*-0.66-min(640px,100vw-40px)*0.085)]">
+          <GlobeOrMap />
+        </Reveal>
       </div>
     </div>
   </section>
