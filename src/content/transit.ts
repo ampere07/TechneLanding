@@ -19,8 +19,8 @@ export interface TransitNetwork {
 export const HOME_NETWORK = { asn: 'AS131171', network: 'Techne Fiber', country: 'Philippines', lon: 121, lat: 14.6 };
 
 export const TRANSIT_NETWORKS: TransitNetwork[] = [
-  { asn: 'AS3491', network: 'PCCW Global', country: 'Hong Kong', region: 'Asia Pacific', lon: 114.2, lat: 22.3, unlocked: true, side: 'top' },
-  { asn: 'AS1221', network: 'Telstra Limited', country: 'Australia', region: 'Asia Pacific', lon: 134, lat: -25, unlocked: true, side: 'top' },
+  { asn: 'AS63927', network: 'AS63927', country: 'Hong Kong', region: 'Asia Pacific', lon: 114.2, lat: 22.3, unlocked: true, side: 'top' },
+  { asn: 'AS4637', network: 'Telstra Global', country: 'Australia', region: 'Asia Pacific', lon: 134, lat: -25, unlocked: true, side: 'top' },
   { asn: 'AS2516', network: 'KDDI', country: 'Japan', region: 'Asia Pacific', lon: 138, lat: 36, unlocked: false, side: 'right' },
   { asn: 'AS7473', network: 'Singapore Telecommunications', country: 'Singapore', region: 'Asia Pacific', lon: 103.8, lat: 1.35, unlocked: false, side: 'left' },
   { asn: 'AS4755', network: 'Tata Communications', country: 'India', region: 'Asia Pacific', lon: 78, lat: 21, unlocked: false, side: 'left' },

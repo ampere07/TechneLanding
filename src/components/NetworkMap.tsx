@@ -72,7 +72,7 @@ const WorldMap: React.FC = () => {
       </div>
       <div className="absolute hidden md:block" style={{ right: 0, top: `${MANILA.top + 4}%` }}>
         <span className="block whitespace-nowrap leading-tight bg-paper border border-accent rounded-[2px] px-2 py-1 shadow-sm">
-          <span className="block text-[0.6875rem] text-ink-2">{HOME_NETWORK.country}, Vitro Makati 2</span>
+          <span className="block text-[0.6875rem] text-ink-2">{HOME_NETWORK.country}</span>
           <span className="block font-data text-[0.8125rem] font-semibold text-accent">{HOME_NETWORK.asn}</span>
         </span>
       </div>

@@ -53,7 +53,7 @@ export const Footer: React.FC = () => (
       </div>
 
       <div className="border-t border-white/15 pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-[0.8125rem] text-white/60">
-        <p>© {new Date().getFullYear()} Techne. All rights reserved.</p>
+        <p>© 2023 Techne. All rights reserved.</p>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           <Link to="/999999999" className="hover:text-white transition-colors duration-150">Privacy Policy</Link>
           <Link to="/888888888" className="hover:text-white transition-colors duration-150">Terms of Service</Link>

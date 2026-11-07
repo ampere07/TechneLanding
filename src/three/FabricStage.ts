@@ -336,6 +336,85 @@ interface IpScene {
   trafficGlow: THREE.InstancedMesh;
 }
 
+/**
+ * The Virtual Cross Connect view follows how a VXC works. It is a point-to-point Layer 2 circuit between
+ * two ports, with a VLAN ID on each end, delivered over more than one path so it can fail over. The circuit
+ * draws out from the customer port to the partner port, VLAN tags appear on both ends, and traffic runs
+ * along it. Then the main path drops, traffic moves to the backup path, and the main path comes back.
+ */
+const VXC = {
+  lead: 0.8,
+  drawSpeed: 4.2,
+  trafficSpeed: 3.6,
+  packets: 2,
+  stagger: 0.5,
+  traffic: 4.5, // running on the main path
+  fail: 0.9, // the main path drops
+  backup: 4.2, // running on the backup path
+  restore: 0.9, // the main path comes back
+  rest: 0.5,
+};
+
+/**
+ * The Virtual Router view follows how a cloud router works. It joins several VXCs into one routing
+ * domain, and BGP sessions run over those VXCs. Three VXCs attach to the router and come up, then each
+ * side advertises its route into the router, the router passes the routes on, and traffic is routed from
+ * the customer to the upstream network. Nothing here is hardware, so the router is the layer above the fabric.
+ */
+const VROUTER = {
+  lead: 0.8,
+  spokeStagger: 0.55,
+  spokeDraw: 1.7,
+  loopStart: 4.4,
+  routeTravel: 1.6,
+  routeStagger: 0.35,
+  routesIn: 0,
+  routesOut: 2.6,
+  traffic: 5.2,
+  passes: 2,
+  passTime: 2.4,
+  loop: 10.8,
+  speed: 3,
+};
+
+interface FlowRig {
+  core: THREE.InstancedMesh;
+  glow: THREE.InstancedMesh;
+  packets: number;
+  trail: number;
+}
+
+interface VxcFlow {
+  group: THREE.Group;
+  primary: LightPath;
+  backup: LightPath;
+  primaryTube: THREE.Mesh;
+  primarySegments: number;
+  primaryMaterial: THREE.MeshBasicMaterial;
+  halo: THREE.Mesh;
+  backupTube: THREE.Mesh;
+  backupMaterial: THREE.MeshBasicMaterial;
+  ports: THREE.Mesh[];
+  chips: { a: THREE.Sprite; b: THREE.Sprite; down: THREE.Sprite; reroute: THREE.Sprite };
+  rig: FlowRig;
+}
+
+interface RouterSpoke {
+  path: LightPath;
+  tube: THREE.Mesh;
+  segments: number;
+  material: THREE.MeshBasicMaterial;
+  bgp: THREE.Sprite;
+  route: THREE.Sprite;
+}
+
+interface RouterFlow {
+  group: THREE.Group;
+  spokes: RouterSpoke[];
+  rig: FlowRig;
+  ring: THREE.Mesh;
+}
+
 interface SwitchScene {
   group: THREE.Group;
   cabinet: Cabinet;
@@ -479,12 +558,12 @@ const FOCUS: Record<FabricFocus, FocusSpec> = {
   vxc: {
     azimuth: 33,
     elevation: 35,
-    cabinets: ['cu3', 'pa1'],
-    fibres: { cu3: 1, pa1: -1 },
+    cabinets: ['cu3', 'pa1', 'fa0', 'fa1'],
+    fibres: {},
     slabs: [],
     labels: ['your-port', 'partner-port', 'vxc'],
-    target: [-0.3, 1.1, -0.1],
-    zoom: 1.22,
+    target: [-0.2, 1.9, 0],
+    zoom: 1.5,
   },
   vswitch: {
     azimuth: 20,
@@ -499,12 +578,12 @@ const FOCUS: Record<FabricFocus, FocusSpec> = {
   vrouter: {
     azimuth: 41,
     elevation: 34,
-    cabinets: ['cu1', 'ed0', 'fa0', 'fa1'],
-    fibres: { cu1: 1, ed0: 1, up0: 1 },
+    cabinets: ['cu1', 'ed0', 'pa1', 'fa0', 'fa1'],
+    fibres: {},
     slabs: ['vrouter'],
     labels: ['vrouter', 'carriers', 'fabric'],
-    target: [0.3, 1.8, -0.3],
-    zoom: 1.06,
+    target: [0, 2.5, 0],
+    zoom: 1.38,
   },
   consulting: {
     azimuth: 24,
@@ -624,6 +703,13 @@ export class FabricStage {
   private metroOn = false;
   private metroTime = 0;
   private metroShown = false;
+  private flowTextures: THREE.Texture[] = [];
+  private vxcFlow: VxcFlow | null = null;
+  private vxcOn = false;
+  private vxcTime = 0;
+  private routerFlow: RouterFlow | null = null;
+  private routerOn = false;
+  private routerTime = 0;
   private floorGroup = new THREE.Group();
   private ipScene: IpScene | null = null;
   private ipOn = false;
@@ -702,6 +788,8 @@ export class FabricStage {
     this.buildContentLight();
     this.buildMetro();
     this.buildIpMap();
+    this.buildVxcFlow();
+    this.buildRouterFlow();
     this.scene.add(this.model);
 
     this.applyFocus(true);
@@ -782,6 +870,7 @@ export class FabricStage {
       else material?.dispose?.();
     });
     this.contentTextures.forEach((texture) => texture?.dispose());
+    this.flowTextures.forEach((texture) => texture.dispose());
     this.renderer.dispose();
     this.renderer.forceContextLoss();
     this.renderer.domElement.remove();
@@ -1223,7 +1312,7 @@ export class FabricStage {
     for (const cabinet of this.cabinets) {
       let palette = STYLE_COLORS[cabinet.style];
       // The fabric rack keeps its own colours, except in the consulting view, where it is the subject.
-      if (cabinet.tone === 'lit' && (cabinet.style !== 'fabric' || this.focus === 'consulting' || this.focus === 'vswitch' || this.focus === 'content' || this.focus === 'ip-transit')) palette = LIT_COLORS;
+      if (cabinet.tone === 'lit' && (cabinet.style !== 'fabric' || this.focus === 'consulting' || this.focus === 'vswitch' || this.focus === 'content' || this.focus === 'ip-transit' || this.focus === 'vrouter')) palette = LIT_COLORS;
       if (cabinet.tone === 'dim') palette = DIM_COLORS;
       if (cabinet.tone === 'ghost') palette = GHOST_COLORS;
       cabinet.body.color.lerp(this.color.set(palette.body), k);
@@ -2490,6 +2579,406 @@ export class FabricStage {
     if (!this.reduced || t < lastDone + IP.reducedTraffic) this.settleUntil = now + 400;
   }
 
+  /** A path made of points, with the running length at each point, so a light can be placed along it. */
+  private toLightPath(points: THREE.Vector3[]): LightPath {
+    const cumulative = [0];
+    for (let i = 1; i < points.length; i++) cumulative.push(cumulative[i - 1] + points[i].distanceTo(points[i - 1]));
+    return { points, cumulative, total: cumulative[cumulative.length - 1] };
+  }
+
+  /** A tube along a path, drawn a piece at a time by its draw range. */
+  private makeTube(parent: THREE.Object3D, path: LightPath, radius: number, material: THREE.Material) {
+    const step = Math.max(1, Math.floor(path.points.length / 70));
+    const kept = path.points.filter((_, i) => i % step === 0 || i === path.points.length - 1);
+    const segments = Math.max(12, Math.ceil(path.total * 14));
+    const mesh = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(kept), segments, radius, 6, false), material);
+    mesh.visible = false;
+    parent.add(mesh);
+    return { mesh, segments };
+  }
+
+  private drawTube(mesh: THREE.Mesh, segments: number, progress: number) {
+    (mesh.geometry as THREE.BufferGeometry).setDrawRange(0, Math.floor(clamp01(progress) * segments) * 36);
+    mesh.visible = progress > 0;
+  }
+
+  /** A small label that is drawn once onto a canvas and shown as a sprite, hidden until it is used. */
+  private makeChip(parent: THREE.Object3D, text: string, tone: 'teal' | 'amber' | 'ink' = 'teal') {
+    const height = 64;
+    const font = '600 32px "IBM Plex Mono", ui-monospace, Consolas, monospace';
+    const probe = document.createElement('canvas').getContext('2d');
+    if (probe) probe.font = font;
+    const width = Math.ceil((probe ? probe.measureText(text).width : text.length * 20) + 46);
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const colors = { teal: ['#12a2a6', '#0b5a5e'], amber: ['#d99a1f', '#7a4f00'], ink: ['#5f717d', '#27313c'] }[tone];
+    if (ctx) {
+      const r = 18;
+      ctx.beginPath();
+      ctx.moveTo(4 + r, 4);
+      ctx.arcTo(width - 4, 4, width - 4, height - 4, r);
+      ctx.arcTo(width - 4, height - 4, 4, height - 4, r);
+      ctx.arcTo(4, height - 4, 4, 4, r);
+      ctx.arcTo(4, 4, width - 4, 4, r);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,0.97)';
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = colors[0];
+      ctx.stroke();
+      ctx.font = font;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = colors[1];
+      ctx.fillText(text, width / 2, height / 2 + 1);
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    this.flowTextures.push(texture);
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false, depthWrite: false }));
+    sprite.userData.aspect = width / height;
+    sprite.renderOrder = 10;
+    sprite.visible = false;
+    parent.add(sprite);
+    return sprite;
+  }
+
+  private showChip(sprite: THREE.Sprite, amount: number, at?: THREE.Vector3, height = 0.2) {
+    const a = clamp01(amount);
+    sprite.visible = a > 0.01;
+    sprite.scale.set(height * (sprite.userData.aspect as number) * a, height * a, 1);
+    if (at) sprite.position.copy(at);
+  }
+
+  private makeRig(parent: THREE.Object3D, packets: number, trail = 8): FlowRig {
+    const count = packets * trail;
+    const ball = new THREE.SphereGeometry(1, 12, 10);
+    const core = new THREE.InstancedMesh(ball, new THREE.MeshBasicMaterial({ color: '#eafffc' }), count);
+    const glow = new THREE.InstancedMesh(
+      ball,
+      new THREE.MeshBasicMaterial({ color: '#35d0c4', transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending }),
+      count,
+    );
+    for (const mesh of [core, glow]) {
+      mesh.frustumCulled = false;
+      mesh.renderOrder = 6;
+      this.matrix.makeScale(0, 0, 0);
+      for (let i = 0; i < count; i++) mesh.setMatrixAt(i, this.matrix);
+      parent.add(mesh);
+    }
+    return { core, glow, packets, trail };
+  }
+
+  private hideRig(rig: FlowRig) {
+    this.matrix.makeScale(0, 0, 0);
+    for (let i = 0; i < rig.core.count; i++) {
+      rig.core.setMatrixAt(i, this.matrix);
+      rig.glow.setMatrixAt(i, this.matrix);
+    }
+    rig.core.instanceMatrix.needsUpdate = true;
+    rig.glow.instanceMatrix.needsUpdate = true;
+  }
+
+  /** Puts a light with a glowing tail at each head distance along the path. A negative head leaves that light out. */
+  private drawRig(rig: FlowRig, path: LightPath, heads: number[], backwards = false) {
+    const at = new THREE.Vector3();
+    for (let p = 0; p < rig.packets; p++) {
+      const head = heads[p] ?? -1;
+      for (let k = 0; k < rig.trail; k++) {
+        const distance = head - k * 0.12;
+        const index = p * rig.trail + k;
+        const fade = clamp01(distance / 0.4) * clamp01((path.total - distance) / 0.5);
+        if (head < 0 || distance < 0 || distance > path.total || fade <= 0) {
+          this.matrix.makeScale(0, 0, 0);
+          rig.core.setMatrixAt(index, this.matrix);
+          rig.glow.setMatrixAt(index, this.matrix);
+          continue;
+        }
+        this.pointOnPath(path, backwards ? path.total - distance : distance, at);
+        const size = Math.pow(1 - k / rig.trail, 1.4) * fade;
+        this.matrix.compose(at, this.quaternion.identity(), this.scale.set(size * 0.1, size * 0.1, size * 0.1));
+        rig.core.setMatrixAt(index, this.matrix);
+        this.matrix.compose(at, this.quaternion.identity(), this.scale.set(size * 0.3, size * 0.3, size * 0.3));
+        rig.glow.setMatrixAt(index, this.matrix);
+      }
+    }
+    rig.core.instanceMatrix.needsUpdate = true;
+    rig.glow.instanceMatrix.needsUpdate = true;
+  }
+
+  // ---------- Virtual Cross Connect ----------
+
+  private buildVxcFlow() {
+    const from = this.fibres.find((fibre) => fibre.id === 'cu3');
+    const to = this.fibres.find((fibre) => fibre.id === 'pa1');
+    if (!from || !to) return;
+    const group = new THREE.Group();
+    group.visible = false;
+    this.model.add(group);
+
+    // The main path follows the wires through the fabric. The backup path arcs over the top, a different way round.
+    const primary = this.toLightPath([...from.samples, ...[...to.samples].reverse()].map((point) => point.clone()));
+    const startPoint = from.samples[0];
+    const endPoint = to.samples[0];
+    const apex = startPoint.clone().add(endPoint).multiplyScalar(0.5);
+    apex.y = 4.7;
+    const backup = this.toLightPath(new THREE.QuadraticBezierCurve3(startPoint.clone(), apex, endPoint.clone()).getPoints(90));
+
+    const primaryMaterial = new THREE.MeshBasicMaterial({ color: '#12a2a6' });
+    const { mesh: primaryTube, segments: primarySegments } = this.makeTube(group, primary, 0.04, primaryMaterial);
+    const halo = new THREE.Mesh(
+      primaryTube.geometry,
+      new THREE.MeshBasicMaterial({ color: '#35d0c4', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }),
+    );
+    halo.scale.setScalar(1);
+    halo.visible = false;
+    group.add(halo);
+    const backupMaterial = new THREE.MeshBasicMaterial({ color: '#9fb2bf', transparent: true, opacity: 0.9 });
+    const { mesh: backupTube } = this.makeTube(group, backup, 0.022, backupMaterial);
+
+    // A glowing port on top of each cabinet.
+    const ports = [startPoint, endPoint].map((point) => {
+      const port = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 12), new THREE.MeshBasicMaterial({ color: '#eafffc' }));
+      port.position.copy(point);
+      port.visible = false;
+      group.add(port);
+      return port;
+    });
+
+    const chips = {
+      a: this.makeChip(group, 'VLAN 100'),
+      b: this.makeChip(group, 'VLAN 200'),
+      down: this.makeChip(group, 'Main path down', 'amber'),
+      reroute: this.makeChip(group, 'Traffic moves to backup path', 'teal'),
+    };
+    this.vxcFlow = { group, primary, backup, primaryTube, primarySegments, primaryMaterial, halo, backupTube, backupMaterial, ports, chips, rig: this.makeRig(group, VXC.packets) };
+  }
+
+  private updateVxcFlow(elapsed: number, now: number) {
+    const flow = this.vxcFlow;
+    if (!flow) return;
+    const on = this.focus === 'vxc' && this.introDone;
+    if (on !== this.vxcOn) {
+      this.vxcOn = on;
+      this.vxcTime = 0;
+      flow.group.visible = on;
+      this.hideRig(flow.rig);
+      flow.backupTube.visible = false;
+      this.drawTube(flow.primaryTube, flow.primarySegments, 0);
+      flow.halo.visible = false;
+      for (const port of flow.ports) port.visible = false;
+      for (const chip of Object.values(flow.chips)) chip.visible = false;
+      this.settleUntil = now + 400;
+    }
+    if (!on) return;
+
+    this.vxcTime += elapsed;
+    const { primary, backup, rig } = flow;
+    const drawTime = primary.total / VXC.drawSpeed;
+    const t = this.vxcTime - VXC.lead;
+    const drawn = clamp01(t / drawTime);
+    this.drawTube(flow.primaryTube, flow.primarySegments, easeInOut(drawn));
+    flow.ports[0].visible = t > 0;
+    flow.ports[0].scale.setScalar(1 + (this.reduced ? 0 : Math.sin(this.vxcTime * 5) * 0.12));
+
+    const cycle = VXC.traffic + VXC.fail + VXC.backup + VXC.restore + VXC.rest;
+    const u = t - drawTime;
+    const lift = new THREE.Vector3();
+    let animating = u < 0.6;
+
+    if (t < 0) {
+      this.hideRig(rig);
+    } else if (u < 0) {
+      // The circuit is being drawn, with a light at its head.
+      this.drawRig(rig, primary, [t * VXC.drawSpeed]);
+    } else {
+      flow.ports[1].visible = true;
+      flow.ports[1].scale.setScalar(1 + (this.reduced ? 0 : Math.sin(this.vxcTime * 5 + 1) * 0.12));
+      // Each end gets a VLAN tag, and a second path appears, so the circuit is protected.
+      this.showChip(flow.chips.a, easeOut(clamp01(u / 0.4)), lift.copy(flow.primary.points[0]).setY(CAB_H + 0.55));
+      this.showChip(flow.chips.b, easeOut(clamp01((u - 0.2) / 0.4)), lift.copy(primary.points[primary.points.length - 1]).setY(CAB_H + 0.55));
+      flow.backupTube.visible = true;
+      flow.halo.visible = true;
+
+      const time = this.reduced ? Math.min(u, VXC.traffic + VXC.fail + VXC.backup + VXC.restore) : u % cycle;
+      const failAt = VXC.traffic;
+      const backupAt = failAt + VXC.fail;
+      const restoreAt = backupAt + VXC.backup;
+      const endAt = restoreAt + VXC.restore;
+      const failing = time >= failAt && time < restoreAt;
+      const onBackup = time >= backupAt && time < restoreAt;
+      const mid = primary.points[Math.floor(primary.points.length * 0.5)];
+
+      // The main path: teal when it is up, amber while it is down.
+      const down = time >= failAt && time < restoreAt ? 1 : time >= restoreAt && time < endAt ? 1 - (time - restoreAt) / VXC.restore : 0;
+      flow.primaryMaterial.color.set('#12a2a6').lerp(new THREE.Color('#e3a52a'), down);
+      (flow.halo.material as THREE.MeshBasicMaterial).opacity = 0.3 * (1 - down);
+      flow.primaryMaterial.opacity = 1;
+      flow.backupMaterial.color.set('#9fb2bf').lerp(new THREE.Color('#12a2a6'), onBackup ? 1 : 0);
+      this.showChip(flow.chips.down, failing ? easeOut(clamp01((time - failAt) / 0.4)) : 0, lift.copy(mid).setY(mid.y + 0.45));
+      this.showChip(flow.chips.reroute, onBackup ? easeOut(clamp01((time - backupAt) / 0.4)) : 0, lift.copy(backup.points[45]).setY(backup.points[45].y + 0.3));
+
+      // Traffic runs both ways along whichever path is up.
+      const path = onBackup ? backup : primary;
+      const run = path.total / VXC.trafficSpeed;
+      const period = run + (VXC.packets - 1) * VXC.stagger + 0.7;
+      const since = onBackup ? time - backupAt : time < failAt ? time : time >= endAt ? time - endAt : -1;
+      if (since >= 0 && !(this.reduced && u > cycle)) {
+        const backwards = Math.floor(since / period) % 2 === 1;
+        const local = since % period;
+        this.drawRig(rig, path, Array.from({ length: VXC.packets }, (_, p) => (local - p * VXC.stagger) * VXC.trafficSpeed), backwards);
+      } else {
+        this.hideRig(rig);
+      }
+      animating = !this.reduced || u < cycle;
+      if (this.reduced && u >= cycle) {
+        this.hideRig(rig);
+        flow.chips.down.visible = false;
+        flow.chips.reroute.visible = false;
+      }
+    }
+    if (!this.reduced || animating) this.settleUntil = now + 400;
+  }
+
+  // ---------- Virtual Router ----------
+
+  private buildRouterFlow() {
+    const group = new THREE.Group();
+    group.visible = false;
+    this.model.add(group);
+    const top = CAB_H + 0.01;
+    const y = ROUTER_Y + 0.04;
+    const specs: { id: string; from: [number, number]; to: [number, number, number]; control: [number, number, number]; route: string; tone: 'teal' | 'ink' }[] = [
+      { id: 'cu1', from: [-3.56, FRONT_Z], to: [-1.2, y, 0.78], control: [-1.9, y - 0.2, 1.7], route: '10.10.0.0/24', tone: 'teal' },
+      { id: 'ed0', from: [3.5, BACK_Z], to: [1.2, y, -0.78], control: [2.2, y - 0.2, -1.6], route: '0.0.0.0/0', tone: 'teal' },
+      { id: 'pa1', from: [1.82, BACK_Z], to: [0.72, y, -0.78], control: [0.9, y - 0.2, -1.7], route: '172.16.0.0/16', tone: 'teal' },
+    ];
+    const spokes: RouterSpoke[] = specs.map((spec) => {
+      const start = new THREE.Vector3(spec.from[0], top, spec.from[1]);
+      const lift = new THREE.Vector3(spec.from[0], 3.3, spec.from[1]);
+      const end = new THREE.Vector3(...spec.to);
+      const path = this.toLightPath(new THREE.CubicBezierCurve3(start, lift, new THREE.Vector3(...spec.control), end).getPoints(70));
+      const material = new THREE.MeshBasicMaterial({ color: '#63b4b5' });
+      const { mesh, segments } = this.makeTube(group, path, 0.03, material);
+      return {
+        path,
+        tube: mesh,
+        segments,
+        material,
+        bgp: this.makeChip(group, 'BGP up'),
+        route: this.makeChip(group, spec.route, spec.id === 'ed0' ? 'ink' : 'teal'),
+      };
+    });
+
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.4, 0.45, 48),
+      new THREE.MeshBasicMaterial({ color: '#35d0c4', transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }),
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.set(0, ROUTER_Y + 0.06, 0);
+    ring.visible = false;
+    group.add(ring);
+
+    this.routerFlow = { group, spokes, rig: this.makeRig(group, 2), ring };
+  }
+
+  private updateRouterFlow(elapsed: number, now: number) {
+    const flow = this.routerFlow;
+    if (!flow) return;
+    const on = this.focus === 'vrouter' && this.introDone;
+    if (on !== this.routerOn) {
+      this.routerOn = on;
+      this.routerTime = 0;
+      flow.group.visible = on;
+      this.hideRig(flow.rig);
+      flow.ring.visible = false;
+      for (const spoke of flow.spokes) {
+        this.drawTube(spoke.tube, spoke.segments, 0);
+        spoke.material.color.set('#63b4b5');
+        spoke.bgp.visible = false;
+        spoke.route.visible = false;
+      }
+      this.settleUntil = now + 400;
+    }
+    if (!on) return;
+
+    this.routerTime += elapsed;
+    const t = this.routerTime;
+    const { spokes, rig, ring } = flow;
+    const tmp = new THREE.Vector3();
+    const point = new THREE.Vector3();
+
+    // 1. Each VXC attaches to the router, and a BGP session comes up over it.
+    spokes.forEach((spoke, i) => {
+      const start = VROUTER.lead + i * VROUTER.spokeStagger;
+      const progress = clamp01((t - start) / VROUTER.spokeDraw);
+      this.drawTube(spoke.tube, spoke.segments, easeInOut(progress));
+      const up = clamp01((t - start - VROUTER.spokeDraw - 0.1) / 0.5);
+      spoke.material.color.set('#63b4b5').lerp(new THREE.Color('#12a2a6'), up);
+      this.pointOnPath(spoke.path, spoke.path.total * 0.5, point);
+      this.showChip(spoke.bgp, easeOut(up), tmp.copy(point).setY(point.y + 0.32), 0.23);
+    });
+
+    // 2 and 3. Routes go into the router, then out to the other sides, then traffic is routed through it.
+    const local0 = t - VROUTER.loopStart;
+    let animating = t < VROUTER.loopStart + VROUTER.loop;
+    if (local0 < 0) {
+      for (const spoke of spokes) spoke.route.visible = false;
+      this.hideRig(rig);
+    } else {
+      const local = this.reduced ? Math.min(local0, VROUTER.loop - 0.01) : local0 % VROUTER.loop;
+      const travel = (since: number) => clamp01(since / VROUTER.routeTravel);
+      const chipFade = (p: number) => clamp01(p / 0.12) * clamp01((1 - p) / 0.12);
+      let flash = 0;
+      for (const spoke of spokes) spoke.route.visible = false;
+
+      // The routes each side advertises travel in to the router.
+      spokes.forEach((spoke, i) => {
+        const p = travel(local - VROUTER.routesIn - i * VROUTER.routeStagger);
+        if (p > 0 && p < 1) {
+          this.pointOnPath(spoke.path, easeInOut(p) * spoke.path.total, point);
+          this.showChip(spoke.route, chipFade(p), tmp.copy(point).setY(point.y + 0.22), 0.23);
+        }
+        if (p >= 1) flash = Math.max(flash, 1 - clamp01((local - VROUTER.routesIn - i * VROUTER.routeStagger - VROUTER.routeTravel) / 0.9));
+      });
+      // The router passes each route on to the next side.
+      spokes.forEach((spoke, i) => {
+        const owner = spokes[(i + 1) % spokes.length];
+        const p = travel(local - VROUTER.routesOut - i * VROUTER.routeStagger);
+        if (p > 0 && p < 1) {
+          this.pointOnPath(spoke.path, (1 - easeInOut(p)) * spoke.path.total, point);
+          this.showChip(owner.route, chipFade(p), tmp.copy(point).setY(point.y + 0.22), 0.23);
+        }
+      });
+
+      // The router lights up as routes arrive.
+      ring.visible = flash > 0.02;
+      if (ring.visible) {
+        ring.scale.setScalar(1 + (1 - flash) * 3);
+        (ring.material as THREE.MeshBasicMaterial).opacity = flash * 0.7;
+      }
+
+      // Traffic goes from the customer, through the router, to the upstream network.
+      const route = this.toLightPath([...spokes[0].path.points, ...[...spokes[1].path.points].reverse()]);
+      const since = local - VROUTER.traffic;
+      if (since >= 0 && since < VROUTER.passes * VROUTER.passTime) {
+        const pass = since % VROUTER.passTime;
+        this.drawRig(rig, route, [pass * VROUTER.speed, (pass - 0.45) * VROUTER.speed]);
+      } else {
+        this.hideRig(rig);
+      }
+      animating = !this.reduced || local0 < VROUTER.loop;
+      if (this.reduced && local0 >= VROUTER.loop) {
+        this.hideRig(rig);
+        ring.visible = false;
+        for (const spoke of spokes) spoke.route.visible = false;
+      }
+    }
+    if (!this.reduced || animating) this.settleUntil = now + 400;
+  }
+
   private updatePulses() {
     let index = 0;
     const speed = 0.95;
@@ -2498,7 +2987,7 @@ export class FabricStage {
       const seedPhase = (fibre.id.charCodeAt(0) + fibre.id.charCodeAt(2)) * 0.137;
       for (let k = 0; k < this.pulsesPerFibre; k++) {
         let visible = introDone ? fibre.level : 0;
-        if (this.focus === 'consulting' || this.focus === 'content') visible = 0;
+        if (this.focus === 'consulting' || this.focus === 'content' || this.focus === 'vxc' || this.focus === 'vrouter') visible = 0;
         if (visible < 0.02) {
           this.matrix.makeScale(0, 0, 0);
         } else {
@@ -2719,6 +3208,8 @@ export class FabricStage {
     this.updateContentLight(Math.min(0.12, sinceLast), now);
     this.updateMetro(Math.min(0.12, sinceLast), now);
     this.updateIp(Math.min(0.12, sinceLast), now);
+    this.updateVxcFlow(Math.min(0.12, sinceLast), now);
+    this.updateRouterFlow(Math.min(0.12, sinceLast), now);
     this.updateTones(1 - Math.exp(-dt * 5));
     this.updatePulses();
     this.updateCamera(dt);

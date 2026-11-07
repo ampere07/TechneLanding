@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { Lock, LockOpen } from 'lucide-react';
 import { HOME_NETWORK, TRANSIT_NETWORKS, type TransitNetwork } from '../content/transit';
 import { PHILIPPINES_PATH, WORLD, WORLD_H, WORLD_W } from '../content/worldMap';
 
@@ -29,7 +28,7 @@ interface Pin {
 }
 
 const PINS: Pin[] = [
-  { key: 'home', kind: 'home', asn: HOME_NETWORK.asn, country: `${HOME_NETWORK.country}, Vitro Makati 2`, lon: HOME_NETWORK.lon, lat: HOME_NETWORK.lat, side: 'right' },
+  { key: 'home', kind: 'home', asn: HOME_NETWORK.asn, country: HOME_NETWORK.country, lon: HOME_NETWORK.lon, lat: HOME_NETWORK.lat, side: 'right' },
   ...TRANSIT_NETWORKS.map((network) => ({
     key: network.country,
     kind: (network.unlocked ? 'open' : 'locked') as Pin['kind'],
@@ -144,6 +143,41 @@ const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
     const phTexture = new THREE.CanvasTexture(drawPhilippines());
     phTexture.colorSpace = THREE.SRGBColorSpace;
     spin.add(new THREE.Mesh(new THREE.SphereGeometry(1.012, 72, 54), new THREE.MeshBasicMaterial({ map: phTexture, transparent: true, depthWrite: false })));
+
+    // A line from the Philippines pin to each unlocked country. It arcs above the surface and draws out when the globe appears.
+    const arcs = TRANSIT_NETWORKS.filter((network) => network.unlocked).map((network) => {
+      const from = toVector(HOME_NETWORK.lon, HOME_NETWORK.lat, new THREE.Vector3());
+      const to = toVector(network.lon, network.lat, new THREE.Vector3());
+      const angle = from.angleTo(to);
+      // The line also bows sideways, towards the east, so it reads as a curve from any side and not only from above.
+      const middle = from.clone().add(to).normalize();
+      const east = new THREE.Vector3(0, 1, 0).cross(middle).normalize();
+      const sideways = new THREE.Vector3().crossVectors(from, to).normalize();
+      if (sideways.dot(east) < 0) sideways.negate();
+      const points: THREE.Vector3[] = [];
+      for (let i = 0; i <= 48; i++) {
+        const t = i / 48;
+        const bow = Math.sin(Math.PI * t);
+        const point = from.clone().lerp(to, t).normalize();
+        point.addScaledVector(sideways, bow * angle * 0.4);
+        point.normalize().multiplyScalar(1.006 + bow * (0.015 + 0.09 * angle));
+        points.push(point);
+      }
+      const geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 72, 0.007, 6, false);
+      const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: '#12a2a6' }));
+      spin.add(mesh);
+      return { mesh, total: geometry.index ? geometry.index.count : 0 };
+    });
+    let arcTime = calm ? 99 : 0;
+    const drawArcs = () => {
+      arcs.forEach((arc, i) => {
+        const progress = Math.max(0, Math.min(1, (arcTime - 1.2 - i * 0.35) / 1.6));
+        const eased = 1 - Math.pow(1 - progress, 3);
+        arc.mesh.geometry.setDrawRange(0, Math.floor((eased * arc.total) / 36) * 36);
+        arc.mesh.visible = progress > 0;
+      });
+    };
+    drawArcs();
 
     // Meridians and parallels every 30 degrees, so the curve of the surface can be read as it turns.
     const grid: number[] = [];
@@ -280,6 +314,10 @@ const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
         velocityLon *= decay;
         velocityLat *= decay;
       }
+      if (arcTime < 6) {
+        arcTime += dt;
+        drawArcs();
+      }
       apply();
       updateChips();
       renderer.render(scene, camera);
@@ -398,7 +436,6 @@ const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
               </>
             ) : (
               <>
-                {pin.kind === 'open' ? <LockOpen size={11} className="text-accent" aria-hidden="true" /> : <Lock size={11} aria-hidden="true" />}
                 <span className="font-data font-semibold">{pin.asn}</span>
                 <span>{pin.country}</span>
               </>
