@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { ASIA, DESTINATIONS, mapPoint } from './asiaMap';
+import { CONTENT_LOGOS } from '../content/logos';
 
 /**
  * FabricStage draws Techne's interconnection hall as an axonometric scale model:
@@ -77,6 +79,9 @@ const CAB_W = 0.64;
 const CAB_H = 2;
 const CAB_D = 0.92;
 const CAB_STEP = 0.72;
+/** How deep a piece of rack equipment is. Its front face sits on the cabinet face and the rest goes back into the cabinet. */
+const UNIT_D = 0.6;
+const UNIT_FRONT = CAB_D / 2 + 0.028;
 const TRAY_Y = 2.46;
 const BACK_Z = -2.45;
 const FRONT_Z = 2.15;
@@ -113,6 +118,32 @@ const BUILD = {
   reducedSpeed: 1.7,
 };
 
+/**
+ * The Colocation view empties the customer cabinets, then carries the equipment in. Units go in
+ * in a random order. A unit stays hidden until its turn, then appears at full size out in front
+ * of its cabinet and is pushed into its slot, so only the units being installed are on show. It
+ * runs when the visitor picks Colocation, and it is short and contained, so it plays with
+ * reduced motion too.
+ */
+const INSTALL = {
+  first: 0.4, // waits for the camera to start moving to the customer cabinets
+  stagger: 0.3, // gap between one cabinet starting and the next
+  gap: 0.14, // gap between one unit starting and the next
+  slide: 0.6, // one unit travelling into its slot
+  distance: 2.2, // how far in front of the cabinet a unit starts
+};
+
+/** When and how far each unit travels. `carried` keeps units full size and moving, whatever the motion setting. */
+interface MountTiming {
+  first: number;
+  gap: number;
+  slide: number;
+  distance: number;
+  carried?: boolean;
+  /** For carried units: the turn each slot takes, so slots can be filled in any order. */
+  order?: number[];
+}
+
 interface Cabinet {
   id: string;
   group: THREE.Group;
@@ -130,6 +161,200 @@ interface Cabinet {
   leds: THREE.InstancedMesh;
   style: CabinetStyle;
   tone: Tone;
+  /** A slot left empty, because something else is being installed in it. */
+  hole?: number;
+}
+
+const UP = new THREE.Vector3(0, 1, 0);
+const SHOULDER = new THREE.Vector3();
+const ELBOW = new THREE.Vector3();
+const HAND = new THREE.Vector3();
+const AIM = new THREE.Vector3();
+
+interface PersonLook {
+  top: string;
+  legs: string;
+  skin: string;
+  hair: string;
+}
+
+const PEOPLE: Record<'engineer' | 'analyst', PersonLook> = {
+  engineer: { top: '#e0a030', legs: '#1c2b36', skin: '#d9a98a', hair: '#2a1f1a' },
+  analyst: { top: '#1f3b52', legs: '#3d4e5c', skin: '#8d5a3b', hair: '#14181c' },
+};
+
+/**
+ * The Network Consulting view zooms to the Techne fabric rack. An engineer pushes a server into the
+ * rack while an analyst works at a table with a laptop. Times are in seconds after the view opens.
+ * It plays once and holds with reduced motion, and repeats the install without it.
+ */
+const CONSULT = {
+  engineerIn: 1.0, // when the engineer appears, after the camera has started to move
+  analystIn: 1.35,
+  appear: 0.6,
+  start: 1.9, // when the install starts
+  hold: 0.6, // the engineer holds the server out in front of the rack
+  push: 1.5, // pushing the server into the rack
+  seated: 1.4, // the server stays in the rack
+  pull: 1.3, // taking the server back out, ready to go again
+  distance: 0.95, // how far in front of the rack the server is held
+};
+
+interface Person {
+  root: THREE.Group;
+  legs: THREE.Group[];
+  head: THREE.Group;
+  arms: { upper: THREE.Mesh; lower: THREE.Mesh; hand: THREE.Mesh }[];
+  shoulderY: number;
+}
+
+/**
+ * The Virtual Switch view zooms to the Techne fabric rack. One server has two ports, and two cables
+ * hanging from the virtual switch above are plugged into them, one after the other. Times are in
+ * seconds. The plugging repeats, or plays once and holds with reduced motion.
+ */
+const SWITCH = {
+  appear: 0.8, // when the cables arrive, after the camera has started to move
+  start: [0.6, 2.1], // when each plug starts moving in, after the cables arrive
+  move: 1.2, // one plug travelling into its port
+  out: 5.1, // when both plugs are taken out again
+  back: 1.0, // taking the plugs out
+  rest: 0.7, // a pause before the next round
+  distance: 0.8, // how far in front of its port a plug waits
+};
+
+/**
+ * The Content view sends light along the wires. A packet leaves each CDN cache in turn, runs along
+ * its wire to the Techne fabric, then along the wire out to the customer's equipment. It runs on
+ * its own clock, so it plays with reduced motion too, for a few rounds before it stops.
+ */
+const CONTENT_LIGHT = {
+  speed: 3.2, // model units per second
+  lead: 0.6, // waits for the camera to start moving
+  stagger: 0.55, // gap between one cache sending and the next
+  rest: 1.1, // a pause between rounds
+  trail: 8, // pieces in the glowing tail
+  spacing: 0.13, // distance between pieces of the tail
+  reducedRounds: 4, // enough rounds for every logo to travel once
+};
+
+interface LightPath {
+  points: THREE.Vector3[];
+  cumulative: number[];
+  total: number;
+}
+
+/**
+ * The Metro-E view adds a second facility beside the hall, at first just an empty floor. A link
+ * draws out from Point A, a rack in the hall, with a light at its head. When it reaches the
+ * floor, Point B, a single rack, grows out of the ground and the servers are carried in. After
+ * that, light runs along the link between the two, one way and then the other. It runs on its
+ * own clock, so it plays with reduced motion too.
+ */
+const METRO = {
+  facilityX: 10.6, // centre of the second facility, and of its one rack
+  facilityW: 3.4,
+  facilityD: 3.2,
+  height: 3.1, // how high the link runs between the buildings
+  floorIn: 0.2, // when the floor starts to rise
+  floorTime: 0.9,
+  lineStart: 1.1, // when the link starts to draw out from Point A
+  drawSpeed: 3.0, // how fast the link draws, in model units a second
+  rackTime: 0.9, // the rack growing out of the floor
+  serverGap: 0.09, // gap between one server starting and the next
+  serverSlide: 0.6, // one server going in
+  serverDistance: 1.6, // how far in front of the rack a server starts
+  speed: 3.4, // speed of the light running along the finished link
+  packets: 3,
+  stagger: 0.45,
+  rest: 0.9,
+  trail: 8,
+  spacing: 0.13,
+  reducedRounds: 2,
+};
+
+interface MetroScene {
+  group: THREE.Group;
+  floor: THREE.Group;
+  link: THREE.Mesh;
+  linkSegments: number;
+  path: LightPath;
+  core: THREE.InstancedMesh;
+  glow: THREE.InstancedMesh;
+  rack: THREE.Group;
+  slots: { y: number; h: number }[];
+  units: THREE.InstancedMesh;
+  leds: THREE.InstancedMesh;
+  ring: THREE.Mesh;
+  order: number[];
+}
+
+/**
+ * The IP Transit view clears the hall away, leaving the Techne fabric rack standing on a map of
+ * Asia at Manila. A line draws out from the rack to a place in each country, one after another.
+ * When a line arrives, a ring spreads from the place and the line glows steadily, like a stable
+ * connection. It plays once and holds, with or without reduced motion.
+ */
+const IP = {
+  lead: 1.0, // waits for the camera to start moving
+  stagger: 0.32, // gap between one line starting and the next
+  draw: 1.5, // time to draw a line, plus a little more for each unit of distance
+  perUnit: 0.07,
+  trafficSpeed: 2.8, // how fast the traffic runs along a line, in model units a second
+  reducedTraffic: 12, // with reduced motion, the traffic runs for this long and then stops
+  segments: 64,
+  glowIn: 0.6, // time for a line to reach its steady glow
+  ripple: 1.1,
+};
+
+const IP_COLORS = {
+  land: new THREE.Color('#e9eff3'),
+  landLit: new THREE.Color('#cde8e6'),
+  line: new THREE.Color('#63b4b5'),
+  lit: new THREE.Color('#35d0c4'),
+};
+
+interface IpLine {
+  place: (typeof DESTINATIONS)[number];
+  curve: THREE.QuadraticBezierCurve3;
+  line: THREE.Mesh;
+  halo: THREE.Mesh;
+  marker: THREE.Mesh;
+  ripple: THREE.Mesh;
+  distance: number;
+  length: number;
+}
+
+interface IpScene {
+  group: THREE.Group;
+  fills: { name: string; material: THREE.MeshBasicMaterial }[];
+  outline: THREE.LineBasicMaterial;
+  lines: IpLine[];
+  core: THREE.InstancedMesh;
+  glow: THREE.InstancedMesh;
+  trafficCore: THREE.InstancedMesh;
+  trafficGlow: THREE.InstancedMesh;
+}
+
+interface SwitchScene {
+  group: THREE.Group;
+  cabinet: Cabinet;
+  slot: number;
+  portX: number[];
+  portY: number;
+  leds: THREE.MeshBasicMaterial[];
+  plugs: THREE.Group[];
+  cables: { mesh: THREE.Mesh; anchor: THREE.Vector3 }[];
+}
+
+interface ConsultScene {
+  group: THREE.Group;
+  cabinet: Cabinet;
+  slot: number;
+  slotY: number;
+  server: THREE.Group;
+  engineer: Person;
+  analyst: Person;
 }
 
 interface Fibre {
@@ -177,8 +402,10 @@ const LABELS: LabelDef[] = [
   { id: 'customers', text: 'Customer cabinets', at: [-3.2, TRAY_Y + 0.02, FRONT_Z] },
   { id: 'your-rack', text: 'Your equipment', at: [-3.2, TRAY_Y + 0.02, FRONT_Z] },
   { id: 'your-port', text: 'Your port', at: [-2.12, TRAY_Y + 0.02, FRONT_Z] },
-  { id: 'point-a', text: 'Point A', at: [-2.12, TRAY_Y + 0.02, FRONT_Z] },
-  { id: 'point-b', text: 'Point B', at: [1.82, TRAY_Y + 0.02, BACK_Z] },
+  { id: 'metro-a', text: 'Point A', at: [4.04, TRAY_Y + 0.02, FRONT_Z] },
+  { id: 'metro-b', text: 'Point B', at: [10.6, TRAY_Y + 0.02, FRONT_Z] },
+  { id: 'metro-facility-a', text: 'Vitro Makati 2', at: [3.0, 0.02, 3.9] },
+  { id: 'metro-facility-b', text: 'Client', at: [10.6, 0.02, 3.7] },
   { id: 'partners', text: 'Partner networks', at: [1.82, TRAY_Y + 0.02, BACK_Z] },
   { id: 'partner-port', text: 'Partner port', at: [1.82, TRAY_Y + 0.02, BACK_Z] },
   { id: 'cdn', text: 'CDN caches', at: [-4.28, TRAY_Y + 0.02, BACK_Z] },
@@ -189,6 +416,12 @@ const LABELS: LabelDef[] = [
   { id: 'vrouter', text: 'Virtual Router', at: [1.5, ROUTER_Y, 0.95], side: 'right' },
   { id: 'virtual', text: 'Virtual Switch and Router', at: [0.75, ROUTER_Y + 0.02, -0.92] },
   { id: 'vxc', text: 'Virtual Cross Connect', at: [0, TRAY_Y + 0.03, -1.1] },
+  { id: 'consult-rack', text: 'Techne fabric rack', at: [0, CAB_H + 0.04, CAB_D / 2 + 0.02] },
+  { id: 'switch-server', text: 'Server with two ports', at: [-0.36, 1.55, CAB_D / 2 + 0.02] },
+  ...DESTINATIONS.map((place) => {
+    const [x, z] = mapPoint(place.lon, place.lat);
+    return { id: `ip-${place.name}`, text: place.name, at: [x, 0.04, z] as [number, number, number] };
+  }),
   { id: 'design', text: 'Full network design and audit', at: [0, ROUTER_Y + 0.1, -0.9] },
 ];
 
@@ -214,34 +447,34 @@ const FOCUS: Record<FabricFocus, FocusSpec> = {
     zoom: 1.45,
   },
   'ip-transit': {
-    azimuth: 40,
-    elevation: 30,
-    cabinets: ['ed0', 'ed1', 'cu1'],
-    fibres: { up0: -1, up1: -1, ed0: 1, ed1: 1, cu1: -1 },
+    azimuth: 16,
+    elevation: 50,
+    cabinets: ['fa0', 'fa1'],
+    fibres: {},
     slabs: [],
-    labels: ['carriers', 'edge', 'your-rack'],
-    target: [0.5, 1.5, -0.3],
-    zoom: 1.04,
+    labels: ['fabric', ...DESTINATIONS.map((place) => `ip-${place.name}`)],
+    target: [-3.4, 0.2, -2.0],
+    zoom: 0.95,
   },
   content: {
     azimuth: 18,
     elevation: 31,
-    cabinets: ['cd0', 'cd1', 'cd2', 'cu1'],
+    cabinets: ['cd0', 'cd1', 'cd2', 'fa0', 'fa1', 'cu1'],
     fibres: { cd0: 1, cd1: 1, cd2: 1, cu1: -1 },
     slabs: [],
-    labels: ['cdn', 'your-rack'],
+    labels: ['cdn', 'fabric', 'your-rack'],
     target: [-2, 1.1, 0],
     zoom: 1.24,
   },
   'metro-e': {
     azimuth: 24,
     elevation: 30,
-    cabinets: ['cu3', 'pa1'],
-    fibres: { cu3: 1, pa1: -1 },
+    cabinets: ['nb2'],
+    fibres: {},
     slabs: [],
-    labels: ['point-a', 'point-b'],
-    target: [-0.3, 1.1, 0.1],
-    zoom: 1.12,
+    labels: ['metro-a', 'metro-b', 'metro-facility-a', 'metro-facility-b'],
+    target: [7.5, 1.1, 1.2],
+    zoom: 1.25,
   },
   vxc: {
     azimuth: 33,
@@ -254,14 +487,14 @@ const FOCUS: Record<FabricFocus, FocusSpec> = {
     zoom: 1.22,
   },
   vswitch: {
-    azimuth: 26,
-    elevation: 37,
-    cabinets: ['cu0', 'cu2', 'pa0', 'pa2', 'fa0', 'fa1'],
-    fibres: { cu0: 1, cu2: 1, pa0: -1, pa2: -1 },
+    azimuth: 20,
+    elevation: 20,
+    cabinets: ['fa0', 'fa1'],
+    fibres: {},
     slabs: ['vswitch'],
-    labels: ['vswitch', 'fabric'],
-    target: [-0.1, 1.5, -0.1],
-    zoom: 1.12,
+    labels: ['switch-server'],
+    target: [-0.15, 1.25, 0.6],
+    zoom: 4.8,
   },
   vrouter: {
     azimuth: 41,
@@ -274,19 +507,19 @@ const FOCUS: Record<FabricFocus, FocusSpec> = {
     zoom: 1.06,
   },
   consulting: {
-    azimuth: 45,
-    elevation: 33,
-    cabinets: 'all',
-    fibres: 'all',
-    slabs: 'all',
-    labels: ['design'],
-    target: [0, 1.15, 0],
-    zoom: 1,
-    blueprint: true,
+    azimuth: 24,
+    elevation: 26,
+    cabinets: ['fa0', 'fa1'],
+    fibres: {},
+    slabs: [],
+    labels: ['consult-rack'],
+    target: [0.5, 0.8, 1.0],
+    zoom: 2.7,
   },
 };
 
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 
 /** Small deterministic generator, so the model looks identical on every load. */
@@ -376,6 +609,31 @@ export class FabricStage {
   private reduced: boolean;
   private time = 0;
   private buildTime = 0;
+  private consultScene: ConsultScene | null = null;
+  private consultOn = false;
+  private consultTime = 0;
+  private switchScene: SwitchScene | null = null;
+  private switchOn = false;
+  private switchTime = 0;
+  private contentLight: { paths: LightPath[]; core: THREE.InstancedMesh; glow: THREE.InstancedMesh; sprites: THREE.Sprite[] } | null = null;
+  private contentTextures: (THREE.Texture | undefined)[] = [];
+  private contentOn = false;
+  private contentTime = 0;
+  private contentShown = false;
+  private metroScene: MetroScene | null = null;
+  private metroOn = false;
+  private metroTime = 0;
+  private metroShown = false;
+  private floorGroup = new THREE.Group();
+  private ipScene: IpScene | null = null;
+  private ipOn = false;
+  private ipTime = 0;
+  /** How far the hall has sunk away to show the map. 0 is the hall in place and 1 is gone. */
+  private ipHide = 0;
+  /** How far the front-row cabinets have sunk into the floor, to clear the view. 0 is in place and 1 is gone. */
+  private consultHide = 0;
+  /** The equipment-install animation, while it plays. */
+  private install: { time: number; end: number; orders: number[][] } | null = null;
   private introDone = false;
   private building = true;
   private layerFade = 0;
@@ -439,6 +697,11 @@ export class FabricStage {
     this.buildVirtualLayers();
     this.buildPulses();
     this.buildLabels();
+    this.buildConsult();
+    this.buildSwitch();
+    this.buildContentLight();
+    this.buildMetro();
+    this.buildIpMap();
     this.scene.add(this.model);
 
     this.applyFocus(true);
@@ -494,6 +757,8 @@ export class FabricStage {
     if (focus === this.focus) return;
     this.focus = focus;
     this.applyFocus(false);
+    if (focus === 'colocation') this.startInstall();
+    else this.endInstall();
   }
 
   setShowLabels(show: boolean) {
@@ -516,6 +781,7 @@ export class FabricStage {
       if (Array.isArray(material)) material.forEach((m) => m.dispose());
       else material?.dispose?.();
     });
+    this.contentTextures.forEach((texture) => texture?.dispose());
     this.renderer.dispose();
     this.renderer.forceContextLoss();
     this.renderer.domElement.remove();
@@ -562,7 +828,8 @@ export class FabricStage {
     ]);
     slab.position.y = -height / 2;
     slab.receiveShadow = true;
-    this.model.add(slab);
+    this.model.add(this.floorGroup);
+    this.floorGroup.add(slab);
 
     // Raised floor tiles.
     const points: number[] = [];
@@ -574,7 +841,7 @@ export class FabricStage {
     }
     const gridGeometry = new THREE.BufferGeometry();
     gridGeometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-    this.model.add(new THREE.LineSegments(gridGeometry, new THREE.LineBasicMaterial({ color: COLORS.grid })));
+    this.floorGroup.add(new THREE.LineSegments(gridGeometry, new THREE.LineBasicMaterial({ color: COLORS.grid })));
 
     // Soft ground shadow beneath the whole model.
     const canvas = document.createElement('canvas');
@@ -594,7 +861,7 @@ export class FabricStage {
     );
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -0.62;
-    this.model.add(ground);
+    this.floorGroup.add(ground);
   }
 
   private buildHall() {
@@ -955,7 +1222,8 @@ export class FabricStage {
 
     for (const cabinet of this.cabinets) {
       let palette = STYLE_COLORS[cabinet.style];
-      if (cabinet.tone === 'lit' && cabinet.style !== 'fabric') palette = LIT_COLORS;
+      // The fabric rack keeps its own colours, except in the consulting view, where it is the subject.
+      if (cabinet.tone === 'lit' && (cabinet.style !== 'fabric' || this.focus === 'consulting' || this.focus === 'vswitch' || this.focus === 'content' || this.focus === 'ip-transit')) palette = LIT_COLORS;
       if (cabinet.tone === 'dim') palette = DIM_COLORS;
       if (cabinet.tone === 'ghost') palette = GHOST_COLORS;
       cabinet.body.color.lerp(this.color.set(palette.body), k);
@@ -1026,22 +1294,29 @@ export class FabricStage {
   }
 
   /** Slides each piece of equipment onto the cabinet face, bottom to top, and lights it as it seats. */
-  private mountUnits(cabinet: Cabinet, e: number) {
+  private mountUnits(
+    cabinet: Cabinet,
+    e: number,
+    timing: MountTiming = { first: cabinet.start + BUILD.slotDelay, gap: BUILD.slotGap, slide: BUILD.slide, distance: BUILD.slideDistance },
+  ) {
     const { slots, units, leds } = cabinet;
-    const first = cabinet.start + BUILD.slotDelay;
     for (let i = 0; i < slots.length; i++) {
       const slot = slots[i];
-      const p = clamp01((e - first - i * BUILD.slotGap) / BUILD.slide);
-      const shown = this.reduced ? (p > 0 ? 1 : 0) : easeOut(clamp01(p * 5));
-      const slide = this.reduced ? 0 : (1 - easeOut(p)) * BUILD.slideDistance;
+      const hidden = cabinet.hole === i;
+      const turn = timing.order ? timing.order[i] : i;
+      const p = clamp01((e - timing.first - turn * timing.gap) / timing.slide);
+      const carried = !!timing.carried;
+      // A carried unit stays hidden until its turn, then appears outside the cabinet and travels in.
+      const shown = hidden ? 0 : carried ? (p > 0 ? easeOut(clamp01(p * 10)) : 0) : this.reduced ? (p > 0 ? 1 : 0) : easeOut(clamp01(p * 5));
+      const slide = carried ? (1 - easeInOut(p)) * timing.distance : this.reduced ? 0 : (1 - easeOut(p)) * timing.distance;
       this.matrix.compose(
-        this.scratch.set(0, slot.y, CAB_D / 2 + 0.018 + slide),
+        this.scratch.set(0, slot.y, UNIT_FRONT - (UNIT_D * shown) / 2 + slide),
         this.quaternion.identity(),
-        this.scale.set((CAB_W - 0.12) * shown, slot.h * shown, 0.02 * shown),
+        this.scale.set((CAB_W - 0.12) * shown, slot.h * shown, UNIT_D * shown),
       );
       units.setMatrixAt(i, this.matrix);
 
-      const lit = this.reduced ? (p > 0.7 ? 1 : 0) : clamp01((p - 0.7) / 0.3);
+      const lit = hidden ? 0 : carried ? shown : this.reduced ? (p > 0.7 ? 1 : 0) : clamp01((p - 0.7) / 0.3);
       for (let k = 0; k < 3; k++) {
         this.matrix.compose(
           this.scratch.set(-CAB_W / 2 + 0.11 + k * 0.05, slot.y, CAB_D / 2 + 0.031 + slide),
@@ -1085,6 +1360,1136 @@ export class FabricStage {
     if (this.buildTime >= BUILD.end) this.finishIntro();
   }
 
+  private installCabinets() {
+    const ids = FOCUS.colocation.cabinets;
+    return Array.isArray(ids) ? this.cabinets.filter((cabinet) => ids.includes(cabinet.id)) : [];
+  }
+
+  private installTiming(index: number): MountTiming {
+    return {
+      first: INSTALL.first + index * INSTALL.stagger,
+      gap: INSTALL.gap,
+      slide: INSTALL.slide,
+      distance: INSTALL.distance,
+      carried: true,
+      order: this.install?.orders[index],
+    };
+  }
+
+  /** Empties the customer cabinets, then lets the equipment slide back in. */
+  private startInstall() {
+    if (!this.introDone) return;
+    const cabinets = this.installCabinets();
+    // Each cabinet fills its slots in a new random order every time.
+    const orders = cabinets.map((cabinet) => {
+      const order = cabinet.slots.map((_, i) => i);
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      return order;
+    });
+    const end = Math.max(0, ...cabinets.map((cabinet, i) => INSTALL.first + i * INSTALL.stagger + cabinet.slots.length * INSTALL.gap + INSTALL.slide));
+    this.install = { time: 0, end, orders };
+    cabinets.forEach((cabinet, i) => this.mountUnits(cabinet, 0, this.installTiming(i)));
+  }
+
+  private endInstall() {
+    if (!this.install) return;
+    this.install = null;
+    for (const cabinet of this.installCabinets()) this.mountUnits(cabinet, BUILD.end + 10);
+  }
+
+  private updateInstall(elapsed: number, now: number) {
+    if (!this.install) return;
+    this.install.time += elapsed;
+    this.installCabinets().forEach((cabinet, i) => this.mountUnits(cabinet, this.install?.time ?? 0, this.installTiming(i)));
+    // Keep drawing while the equipment goes in.
+    this.settleUntil = now + 400;
+    if (this.install.time >= this.install.end) this.endInstall();
+  }
+
+  /** The people, the table and the server for the Network Consulting view. Hidden until that view opens. */
+  private buildConsult() {
+    const cabinet = this.cabinets.find((item) => item.id === 'fa0');
+    if (!cabinet || !cabinet.slots.length) return;
+
+    const group = new THREE.Group();
+    group.visible = false;
+    this.model.add(group);
+
+    const box = new THREE.BoxGeometry(1, 1, 1);
+    const ball = new THREE.SphereGeometry(1, 20, 14);
+    const disc = new THREE.CircleGeometry(1, 28);
+    const material = (color: string, roughness = 0.8) => new THREE.MeshStandardMaterial({ color, roughness });
+    const part = (
+      parent: THREE.Object3D,
+      geometry: THREE.BufferGeometry,
+      mat: THREE.Material,
+      size: [number, number, number],
+      at: [number, number, number],
+    ) => {
+      const mesh = new THREE.Mesh(geometry, mat);
+      mesh.scale.set(...size);
+      mesh.position.set(...at);
+      parent.add(mesh);
+      return mesh;
+    };
+    const shadowMaterial = new THREE.MeshBasicMaterial({ color: '#0b2536', transparent: true, opacity: 0.14, depthWrite: false });
+    const blob = (parent: THREE.Object3D, size: [number, number], at: [number, number]) => {
+      const mesh = part(parent, disc, shadowMaterial, [size[0], size[1], 1], [at[0], 0.012, at[1]]);
+      mesh.rotation.x = -Math.PI / 2;
+    };
+
+    // A chibi-style person: a round head with hair on a small boxy body. Facing +z, feet on the floor.
+    const makePerson = (look: PersonLook, seated: boolean): Person => {
+      const root = new THREE.Group();
+      group.add(root);
+      const top = material(look.top, 0.75);
+      const trousers = material(look.legs, 0.8);
+      const skin = material(look.skin, 0.6);
+      const hair = material(look.hair, 0.55);
+      const shoes = material('#16202a', 0.6);
+      const hip = seated ? 0.38 : 0.4;
+      const legs: THREE.Group[] = [];
+      for (const sx of [-0.06, 0.06]) {
+        if (seated) {
+          part(root, box, trousers, [0.12, 0.12, 0.28], [sx, hip, 0.14]);
+          part(root, box, trousers, [0.11, 0.3, 0.12], [sx, 0.2, 0.27]);
+          part(root, box, shoes, [0.12, 0.05, 0.18], [sx, 0.025, 0.31]);
+        } else {
+          // The leg swings from the hip.
+          const leg = new THREE.Group();
+          leg.position.set(sx, hip, 0);
+          part(leg, box, trousers, [0.12, 0.35, 0.14], [0, -0.175, 0]);
+          part(leg, box, shoes, [0.12, 0.05, 0.19], [0, -0.375, 0.03]);
+          root.add(leg);
+          legs.push(leg);
+        }
+      }
+      part(root, box, top, [0.34, 0.46, 0.21], [0, hip + 0.23, 0]);
+
+      // Head: round, with hair and ears, and no face, sized to suit the body.
+      const head = new THREE.Group();
+      head.position.set(0, hip + 0.64, 0);
+      part(head, ball, skin, [0.24, 0.216, 0.222], [0, 0, 0]);
+      for (const sx of [-1, 1]) part(head, ball, skin, [0.03, 0.039, 0.024], [sx * 0.24, -0.012, 0]);
+      const hairCap = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 16, 0, Math.PI * 2, 0, Math.PI * 0.56), hair);
+      hairCap.scale.set(0.249, 0.231, 0.231);
+      hairCap.rotation.x = -0.28;
+      head.add(hairCap);
+      head.scale.setScalar(0.82);
+      root.add(head);
+      blob(root, [0.3, 0.26], [0, 0]);
+
+      // Arms are boxes stretched between the shoulder, elbow and hand.
+      const arms = [0, 1].map(() => ({
+        upper: part(group, box, top, [1, 1, 1], [0, 0, 0]),
+        lower: part(group, box, top, [1, 1, 1], [0, 0, 0]),
+        hand: part(group, box, skin, [1, 1, 1], [0, 0, 0]),
+      }));
+      return { root, legs, head, arms, shoulderY: hip + 0.38 };
+    };
+
+    const engineer = makePerson(PEOPLE.engineer, false);
+    const analyst = makePerson(PEOPLE.analyst, true);
+
+    // The analyst's chair moves with the analyst.
+    const chair = material('#3d4e5c', 0.6);
+    part(analyst.root, box, chair, [0.4, 0.05, 0.4], [0, 0.295, 0.04]);
+    part(analyst.root, box, chair, [0.38, 0.4, 0.04], [0, 0.52, -0.16]);
+    part(analyst.root, box, chair, [0.05, 0.27, 0.05], [0, 0.135, 0.04]);
+    part(analyst.root, box, chair, [0.36, 0.03, 0.05], [0, 0.015, 0.04]);
+    part(analyst.root, box, chair, [0.05, 0.03, 0.36], [0, 0.015, 0.04]);
+
+    // The table and the laptop.
+    const tableTop = material('#c7d1d8', 0.6);
+    const metal = material('#2b3a45', 0.5);
+    part(group, box, tableTop, [0.62, 0.04, 1.2], [1.4, 0.6, 1.0]);
+    for (const dx of [-0.27, 0.27]) {
+      for (const dz of [-0.54, 0.54]) part(group, box, metal, [0.04, 0.58, 0.04], [1.4 + dx, 0.29, 1.0 + dz]);
+    }
+    part(group, box, metal, [0.24, 0.018, 0.34], [1.47, 0.629, 1.0]);
+    const screen = new THREE.Group();
+    screen.position.set(1.36, 0.638, 1.0);
+    screen.rotation.z = 0.28;
+    part(screen, box, metal, [0.012, 0.22, 0.34], [0, 0.11, 0]);
+    part(screen, box, new THREE.MeshBasicMaterial({ color: '#9fe6e8' }), [0.004, 0.19, 0.3], [0.007, 0.11, 0]);
+    group.add(screen);
+    blob(group, [0.55, 0.62], [1.7, 1.0]);
+
+    // The server the engineer carries. It uses the cabinet's own equipment colour.
+    let slot = 0;
+    cabinet.slots.forEach((candidate, i) => {
+      if (Math.abs(candidate.y - 0.8) < Math.abs(cabinet.slots[slot].y - 0.8)) slot = i;
+    });
+    const { y: slotY, h: slotH } = cabinet.slots[slot];
+    const server = new THREE.Group();
+    part(server, box, cabinet.unit, [CAB_W - 0.12, slotH, UNIT_D], [0, 0, 0]);
+    const ledGeometry = new THREE.BoxGeometry(0.03, 0.022, 0.006);
+    ['#35d0c4', '#7fe08a', '#f2b84b'].forEach((color, k) => {
+      part(server, ledGeometry, new THREE.MeshBasicMaterial({ color }), [1, 1, 1], [-CAB_W / 2 + 0.11 + k * 0.05, 0, UNIT_D / 2 + 0.003]);
+    });
+    group.add(server);
+
+    this.consultScene = { group, cabinet, slot, slotY, server, engineer, analyst };
+  }
+
+  /** Stretches a box between two points. */
+  private aimLimb(mesh: THREE.Mesh, from: THREE.Vector3, to: THREE.Vector3, thickness: number) {
+    AIM.subVectors(to, from);
+    const length = AIM.length();
+    mesh.visible = thickness > 0.002 && length > 0.001;
+    if (!mesh.visible) return;
+    mesh.position.copy(from).addScaledVector(AIM, 0.5);
+    mesh.scale.set(thickness, length, thickness);
+    mesh.quaternion.setFromUnitVectors(UP, AIM.normalize());
+  }
+
+  /** Bends an arm from the person's shoulder to a hand position, with the elbow dropped and pushed out. */
+  private poseArm(person: Person, index: number, hand: THREE.Vector3, pop: number) {
+    const arm = person.arms[index];
+    const side = index === 0 ? -1 : 1;
+    const yaw = person.root.rotation.y;
+    const { x, z } = person.root.position;
+    SHOULDER.set(x + side * 0.17 * Math.cos(yaw), person.shoulderY * pop, z - side * 0.17 * Math.sin(yaw));
+    ELBOW.copy(SHOULDER).add(hand).multiplyScalar(0.5);
+    ELBOW.y -= 0.07;
+    ELBOW.x += side * 0.05 * Math.cos(yaw);
+    ELBOW.z -= side * 0.05 * Math.sin(yaw);
+    this.aimLimb(arm.upper, SHOULDER, ELBOW, 0.1 * pop);
+    this.aimLimb(arm.lower, ELBOW, hand, 0.09 * pop);
+    arm.hand.visible = pop > 0.02;
+    arm.hand.position.copy(hand);
+    arm.hand.scale.setScalar(Math.max(0.001, 0.095 * pop));
+  }
+
+  /** The front-row cabinets sink into the floor while the consulting view is open, so they never block the people. */
+  private updateConsultClearing(on: boolean, elapsed: number, now: number) {
+    const goal = on ? 1 : 0;
+    if (this.consultHide === goal) return;
+    const step = elapsed * 2.2;
+    this.consultHide = goal > this.consultHide ? Math.min(goal, this.consultHide + step) : Math.max(goal, this.consultHide - step);
+    this.applyHallClearing();
+    this.settleUntil = now + 400;
+    // The shadows are drawn once, so draw them again when the cabinets have moved.
+    if (this.consultHide === goal) this.renderer.shadowMap.needsUpdate = true;
+  }
+
+  /** The whole hall sinks into the floor while the IP Transit view is open, except the fabric rack. */
+  private updateIpClearing(on: boolean, elapsed: number, now: number) {
+    const goal = on ? 1 : 0;
+    if (this.ipHide === goal) return;
+    const step = elapsed * 1.6;
+    this.ipHide = goal > this.ipHide ? Math.min(goal, this.ipHide + step) : Math.max(goal, this.ipHide - step);
+    this.applyHallClearing();
+    this.settleUntil = now + 400;
+    if (this.ipHide === goal) this.renderer.shadowMap.needsUpdate = true;
+  }
+
+  private applyHallClearing() {
+    const front = Math.max(0.001, 1 - easeInOut(this.consultHide));
+    const rest = Math.max(0.001, 1 - easeInOut(this.ipHide));
+    for (const cabinet of this.cabinets) {
+      let scale = 1;
+      if (/^(cu|nb)/.test(cabinet.id)) scale = Math.min(scale, front);
+      if (!cabinet.id.startsWith('fa')) scale = Math.min(scale, rest);
+      cabinet.group.scale.setScalar(scale);
+      cabinet.group.visible = scale > 0.02;
+    }
+    for (const part of [this.floorGroup, this.cablingGroup, this.virtualGroup]) {
+      part.scale.y = rest;
+      part.visible = rest > 0.02;
+    }
+  }
+
+  private updateConsult(elapsed: number, now: number) {
+    const scene = this.consultScene;
+    const on = !!scene && this.focus === 'consulting' && this.introDone;
+    if (on !== this.consultOn) {
+      this.consultOn = on;
+      this.consultTime = 0;
+      if (scene) {
+        scene.group.visible = on;
+        // The slot the server goes into stays empty while the engineer carries the server.
+        if (on) scene.cabinet.hole = scene.slot;
+        else if (scene.cabinet.hole === scene.slot) scene.cabinet.hole = undefined;
+        this.mountUnits(scene.cabinet, BUILD.end + 10);
+      }
+    }
+    this.updateConsultClearing(on || this.switchOn, elapsed, now);
+    if (!scene || !on) return;
+
+    this.consultTime += elapsed;
+    const t = this.consultTime;
+    const { engineer, analyst, server, cabinet } = scene;
+    const popEngineer = easeOut(clamp01((t - CONSULT.engineerIn) / CONSULT.appear));
+    const popAnalyst = easeOut(clamp01((t - CONSULT.analystIn) / CONSULT.appear));
+    const motion = this.reduced ? 0 : 1;
+
+    // How far the server is from the rack: held out, pushed in, left there, then pulled out again.
+    const cycle = CONSULT.hold + CONSULT.push + CONSULT.seated + CONSULT.pull;
+    const elapsedInstall = t - CONSULT.start;
+    const u = elapsedInstall < 0 ? 0 : this.reduced ? Math.min(elapsedInstall, CONSULT.hold + CONSULT.push + CONSULT.seated) : elapsedInstall % cycle;
+    let distance = CONSULT.distance;
+    let walking = 0;
+    if (u > CONSULT.hold && u <= CONSULT.hold + CONSULT.push) {
+      distance = CONSULT.distance * (1 - easeInOut((u - CONSULT.hold) / CONSULT.push));
+      walking = 1;
+    } else if (u > CONSULT.hold + CONSULT.push && u <= CONSULT.hold + CONSULT.push + CONSULT.seated) {
+      distance = 0;
+    } else if (u > CONSULT.hold + CONSULT.push + CONSULT.seated) {
+      distance = CONSULT.distance * easeInOut((u - CONSULT.hold - CONSULT.push - CONSULT.seated) / CONSULT.pull);
+      walking = 1;
+    }
+
+    const serverX = cabinet.x;
+    const serverZ = UNIT_FRONT - UNIT_D / 2 + distance;
+    server.position.set(serverX, scene.slotY, serverZ);
+    server.scale.setScalar(Math.max(0.001, popEngineer));
+    server.visible = popEngineer > 0.01;
+
+    // The engineer steps toward the rack as the server goes in, facing the server.
+    const bodyX = serverX - (CAB_W - 0.12) / 2 - 0.32;
+    const bodyZ = serverZ + UNIT_D / 2 + 0.4;
+    engineer.root.position.set(bodyX, 0, bodyZ);
+    const bodyYaw = Math.atan2(serverX - bodyX, serverZ - bodyZ);
+    engineer.root.rotation.y = bodyYaw;
+    // The body faces the rack, and the head turns back toward the viewer so the face shows.
+    const turn = 0.35 - bodyYaw;
+    engineer.head.rotation.y = THREE.MathUtils.clamp(Math.atan2(Math.sin(turn), Math.cos(turn)), -1.25, 1.25);
+    engineer.root.scale.setScalar(Math.max(0.001, popEngineer));
+    engineer.root.visible = popEngineer > 0.01;
+    const swing = Math.sin(t * 6) * 0.35 * walking * motion;
+    engineer.legs[0].rotation.x = swing;
+    engineer.legs[1].rotation.x = -swing;
+
+    const edge = serverX - (CAB_W - 0.12) / 2 - 0.015;
+    const front = serverZ + UNIT_D / 2;
+    this.poseArm(engineer, 0, HAND.set(edge, scene.slotY, front - 0.06), popEngineer);
+    this.poseArm(engineer, 1, HAND.set(edge, scene.slotY, front - 0.3), popEngineer);
+
+    // The analyst sits at the table and types.
+    analyst.root.position.set(1.95, 0, 1.0);
+    analyst.root.rotation.y = -Math.PI / 2;
+    analyst.root.scale.setScalar(Math.max(0.001, popAnalyst));
+    analyst.root.visible = popAnalyst > 0.01;
+    analyst.head.rotation.x = 0.2 + Math.sin(t * 0.9) * 0.03 * motion;
+    analyst.head.rotation.y = 0.85;
+    const key = (phase: number) => 0.652 + Math.sin(t * 13 + phase) * 0.008 * motion;
+    this.poseArm(analyst, 0, HAND.set(1.52, key(0), 0.93), popAnalyst);
+    this.poseArm(analyst, 1, HAND.set(1.52, key(2.4), 1.07), popAnalyst);
+
+    // With reduced motion the view still redraws until the install has played once.
+    if (!this.reduced || t < CONSULT.start + CONSULT.hold + CONSULT.push + CONSULT.seated + 0.5) this.settleUntil = now + 400;
+  }
+
+  /** The server, its two ports, and the two cables for the Virtual Switch view. Hidden until that view opens. */
+  private buildSwitch() {
+    const cabinet = this.cabinets.find((item) => item.id === 'fa0');
+    if (!cabinet || !cabinet.slots.length) return;
+
+    const group = new THREE.Group();
+    group.visible = false;
+    this.model.add(group);
+    const box = new THREE.BoxGeometry(1, 1, 1);
+    const part = (
+      parent: THREE.Object3D,
+      mat: THREE.Material,
+      size: [number, number, number],
+      at: [number, number, number],
+    ) => {
+      const mesh = new THREE.Mesh(box, mat);
+      mesh.scale.set(...size);
+      mesh.position.set(...at);
+      parent.add(mesh);
+      return mesh;
+    };
+
+    // A taller slot gives the ports room. Use the one nearest chest height.
+    let slot = 0;
+    const score = (i: number) => Math.abs(cabinet.slots[i].y - 1.3) + (cabinet.slots[i].h > 0.1 ? 0 : 0.4);
+    cabinet.slots.forEach((_, i) => {
+      if (score(i) < score(slot)) slot = i;
+    });
+    const { y: slotY, h: slotH } = cabinet.slots[slot];
+
+    const server = new THREE.Group();
+    server.position.set(cabinet.x, slotY, UNIT_FRONT - UNIT_D / 2);
+    part(server, cabinet.unit, [CAB_W - 0.12, slotH, UNIT_D], [0, 0, 0]);
+    const socket = new THREE.MeshStandardMaterial({ color: '#0a1418', roughness: 0.7 });
+    const portX = [-0.15, 0.15];
+    const leds: THREE.MeshBasicMaterial[] = [];
+    portX.forEach((x) => {
+      part(server, socket, [0.13, Math.min(slotH * 0.7, 0.09), 0.03], [x, 0, UNIT_D / 2 + 0.002]);
+      const led = new THREE.MeshBasicMaterial({ color: '#26404f' });
+      leds.push(led);
+      part(server, led, [0.024, 0.016, 0.008], [x + Math.sign(x) * 0.095, 0, UNIT_D / 2 + 0.004]);
+    });
+    group.add(server);
+
+    // Each plug has a connector, a coloured boot and a cable that hangs from the virtual switch above.
+    const metal = new THREE.MeshStandardMaterial({ color: '#2b3a45', roughness: 0.5 });
+    const gold = new THREE.MeshStandardMaterial({ color: '#d9b45a', roughness: 0.35, metalness: 0.4 });
+    const plugs: THREE.Group[] = [];
+    const cables: SwitchScene['cables'] = [];
+    ['#f2b84b', '#35d0c4'].forEach((color, i) => {
+      const boot = new THREE.MeshStandardMaterial({ color, roughness: 0.6 });
+      const plug = new THREE.Group();
+      part(plug, gold, [0.1, 0.055, 0.02], [0, 0, 0.01]);
+      part(plug, metal, [0.125, 0.075, 0.14], [0, 0, 0.09]);
+      part(plug, boot, [0.105, 0.062, 0.08], [0, 0, 0.2]);
+      group.add(plug);
+      plugs.push(plug);
+      const mesh = new THREE.Mesh(new THREE.BufferGeometry(), boot);
+      group.add(mesh);
+      cables.push({ mesh, anchor: new THREE.Vector3(cabinet.x + (i === 0 ? -0.4 : 0.25), SWITCH_Y - 0.05, 0.1) });
+    });
+
+    this.switchScene = { group, cabinet, slot, portX, portY: slotY, leds, plugs, cables };
+  }
+
+  private updateSwitch(elapsed: number, now: number) {
+    const scene = this.switchScene;
+    const on = !!scene && this.focus === 'vswitch' && this.introDone;
+    if (on !== this.switchOn) {
+      this.switchOn = on;
+      this.switchTime = 0;
+      if (scene) {
+        scene.group.visible = on;
+        // The slot the server sits in is empty in the rack, because the server is drawn here instead.
+        if (on) scene.cabinet.hole = scene.slot;
+        else if (scene.cabinet.hole === scene.slot) scene.cabinet.hole = undefined;
+        this.mountUnits(scene.cabinet, BUILD.end + 10);
+        this.growTrays(on ? 0 : 1);
+        this.renderer.shadowMap.needsUpdate = true;
+      }
+    }
+    if (!scene || !on) return;
+
+    this.switchTime += elapsed;
+    const t = this.switchTime;
+    const arrived = t > SWITCH.appear;
+
+    // The plugs wait in front of their ports, go in one after the other, stay, then come out together.
+    const period = SWITCH.out + SWITCH.back + SWITCH.rest;
+    const local = t - SWITCH.appear;
+    const u = local < 0 ? 0 : this.reduced ? Math.min(local, SWITCH.out - 0.01) : local % period;
+    scene.plugs.forEach((plug, i) => {
+      const start = SWITCH.start[i];
+      let distance = SWITCH.distance;
+      if (u >= start && u < start + SWITCH.move) distance = SWITCH.distance * (1 - easeInOut((u - start) / SWITCH.move));
+      else if (u >= start + SWITCH.move && u < SWITCH.out) distance = 0;
+      else if (u >= SWITCH.out && u < SWITCH.out + SWITCH.back) distance = SWITCH.distance * easeInOut((u - SWITCH.out) / SWITCH.back);
+
+      const x = scene.cabinet.x + scene.portX[i];
+      plug.position.set(x, scene.portY, UNIT_FRONT + distance);
+      plug.visible = arrived;
+      const cable = scene.cables[i];
+      cable.mesh.visible = arrived;
+      if (arrived) {
+        // The cable hangs in a soft curve from the switch above to the back of the plug.
+        const tail = new THREE.Vector3(x, scene.portY, UNIT_FRONT + distance + 0.25);
+        const middle = new THREE.Vector3().addVectors(cable.anchor, tail).multiplyScalar(0.5);
+        middle.y -= 0.35;
+        middle.z += 0.55;
+        const curve = new THREE.QuadraticBezierCurve3(cable.anchor, middle, tail);
+        cable.mesh.geometry.dispose();
+        cable.mesh.geometry = new THREE.TubeGeometry(curve, 28, 0.022, 6, false);
+      }
+      // The port light comes on when the plug is in.
+      scene.leds[i].color.set(distance < 0.02 && arrived ? '#35d0c4' : '#26404f');
+    });
+
+    // With reduced motion the view still redraws until the plugs have gone in once.
+    if (!this.reduced || t < SWITCH.appear + SWITCH.out + 0.4) this.settleUntil = now + 400;
+  }
+
+  /** One path for each CDN cache: along its wire into the fabric, then along the customer's wire out. */
+  private buildContentLight() {
+    const out = this.fibres.find((fibre) => fibre.id === 'cu1');
+    if (!out) return;
+    const paths: LightPath[] = [];
+    for (const id of ['cd0', 'cd1', 'cd2']) {
+      const into = this.fibres.find((fibre) => fibre.id === id);
+      if (!into) continue;
+      // Both wires are stored from the cabinet to the fabric, so the outgoing one is turned round.
+      const points = [...into.samples, ...[...out.samples].reverse()].map((point) => point.clone());
+      const cumulative = [0];
+      for (let i = 1; i < points.length; i++) cumulative.push(cumulative[i - 1] + points[i].distanceTo(points[i - 1]));
+      paths.push({ points, cumulative, total: cumulative[cumulative.length - 1] });
+    }
+    if (!paths.length) return;
+
+    const count = paths.length * CONTENT_LIGHT.trail;
+    const ball = new THREE.SphereGeometry(1, 12, 10);
+    const core = new THREE.InstancedMesh(ball, new THREE.MeshBasicMaterial({ color: '#eafffc' }), count);
+    const glow = new THREE.InstancedMesh(
+      ball,
+      new THREE.MeshBasicMaterial({ color: '#35d0c4', transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending }),
+      count,
+    );
+    for (const mesh of [core, glow]) {
+      mesh.frustumCulled = false;
+      mesh.renderOrder = 5;
+      this.matrix.makeScale(0, 0, 0);
+      for (let i = 0; i < count; i++) mesh.setMatrixAt(i, this.matrix);
+      this.cablingGroup.add(mesh);
+    }
+
+    // A logo rides each light. It is a small white chip, drawn once from the site's own logo files.
+    const sprites = paths.map(() => {
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false, depthWrite: false }));
+      sprite.visible = false;
+      sprite.renderOrder = 10;
+      this.cablingGroup.add(sprite);
+      return sprite;
+    });
+    this.contentLight = { paths, core, glow, sprites };
+    this.loadContentLogos();
+  }
+
+  /** Draws each logo onto a white chip with a teal edge, in its own colours. */
+  private loadContentLogos() {
+    const width = 320;
+    const height = 160;
+    const chip = (ctx: CanvasRenderingContext2D) => {
+      const r = 30;
+      ctx.beginPath();
+      ctx.moveTo(6 + r, 6);
+      ctx.arcTo(width - 6, 6, width - 6, height - 6, r);
+      ctx.arcTo(width - 6, height - 6, 6, height - 6, r);
+      ctx.arcTo(6, height - 6, 6, 6, r);
+      ctx.arcTo(6, 6, width - 6, 6, r);
+      ctx.closePath();
+    };
+    CONTENT_LOGOS.forEach((logo, index) => {
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        chip(ctx);
+        ctx.fillStyle = 'rgba(255,255,255,0.97)';
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#35d0c4';
+        ctx.stroke();
+        const iw = image.naturalWidth || 300;
+        const ih = image.naturalHeight || 150;
+        const fit = Math.min((width - 80) / iw, (height - 60) / ih);
+        ctx.drawImage(image, (width - iw * fit) / 2, (height - ih * fit) / 2, iw * fit, ih * fit);
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        this.contentTextures[index] = texture;
+      };
+      image.src = logo.src;
+    });
+  }
+
+  /** The point a given distance along a path. */
+  private pointOnPath(path: LightPath, distance: number, into: THREE.Vector3) {
+    const { cumulative, points } = path;
+    let low = 0;
+    let high = cumulative.length - 1;
+    while (high - low > 1) {
+      const middle = (low + high) >> 1;
+      if (cumulative[middle] <= distance) low = middle;
+      else high = middle;
+    }
+    const span = cumulative[high] - cumulative[low] || 1;
+    return into.lerpVectors(points[low], points[high], clamp01((distance - cumulative[low]) / span));
+  }
+
+  private updateContentLight(elapsed: number, now: number) {
+    const light = this.contentLight;
+    if (!light) return;
+    const on = this.focus === 'content' && this.introDone;
+    if (on !== this.contentOn) {
+      this.contentOn = on;
+      this.contentTime = 0;
+    }
+    if (!on) {
+      if (this.contentShown) this.hideContentLight();
+      return;
+    }
+
+    this.contentTime += elapsed;
+    const { paths, core, glow, sprites } = light;
+    const run = Math.max(...paths.map((path) => path.total)) / CONTENT_LIGHT.speed;
+    const round = run + (paths.length - 1) * CONTENT_LIGHT.stagger + CONTENT_LIGHT.rest;
+    const t = this.contentTime - CONTENT_LIGHT.lead;
+    if (t < 0) return;
+    if (this.reduced && t > CONTENT_LIGHT.reducedRounds * round) {
+      if (this.contentShown) this.hideContentLight();
+      return;
+    }
+    const local = t % round;
+    const roundNumber = Math.floor(t / round);
+
+    const at = new THREE.Vector3();
+    paths.forEach((path, p) => {
+      const head = (local - p * CONTENT_LIGHT.stagger) * CONTENT_LIGHT.speed;
+
+      // The logo rides just above the head of the light.
+      const sprite = sprites[p];
+      const texture = this.contentTextures[(roundNumber * paths.length + p) % CONTENT_LOGOS.length];
+      const fade = clamp01(head / 0.5) * clamp01((path.total - head) / 0.6);
+      if (texture && head >= 0 && head <= path.total && fade > 0.02) {
+        const material = sprite.material as THREE.SpriteMaterial;
+        if (material.map !== texture) {
+          material.map = texture;
+          material.needsUpdate = true;
+        }
+        this.pointOnPath(path, head, at);
+        sprite.position.set(at.x, at.y + 0.36, at.z);
+        sprite.scale.set(0.96 * fade, 0.48 * fade, 1);
+        sprite.visible = true;
+      } else {
+        sprite.visible = false;
+      }
+
+      for (let k = 0; k < CONTENT_LIGHT.trail; k++) {
+        const distance = head - k * CONTENT_LIGHT.spacing;
+        const index = p * CONTENT_LIGHT.trail + k;
+        // The light fades in as it leaves the cache and out as it reaches the equipment.
+        const edge = clamp01(distance / 0.4) * clamp01((path.total - distance) / 0.5);
+        if (head < 0 || distance < 0 || distance > path.total || edge <= 0) {
+          this.matrix.makeScale(0, 0, 0);
+          core.setMatrixAt(index, this.matrix);
+          glow.setMatrixAt(index, this.matrix);
+          continue;
+        }
+        this.pointOnPath(path, distance, at);
+        const size = Math.pow(1 - k / CONTENT_LIGHT.trail, 1.4) * edge;
+        this.matrix.compose(at, this.quaternion.identity(), this.scale.set(size * 0.1, size * 0.1, size * 0.1));
+        core.setMatrixAt(index, this.matrix);
+        this.matrix.compose(at, this.quaternion.identity(), this.scale.set(size * 0.3, size * 0.3, size * 0.3));
+        glow.setMatrixAt(index, this.matrix);
+      }
+    });
+    core.instanceMatrix.needsUpdate = true;
+    glow.instanceMatrix.needsUpdate = true;
+    this.contentShown = true;
+    // With reduced motion the view still redraws while the light plays.
+    this.settleUntil = now + 400;
+  }
+
+  private hideContentLight() {
+    const light = this.contentLight;
+    if (!light) return;
+    this.matrix.makeScale(0, 0, 0);
+    for (let i = 0; i < light.core.count; i++) {
+      light.core.setMatrixAt(i, this.matrix);
+      light.glow.setMatrixAt(i, this.matrix);
+    }
+    light.core.instanceMatrix.needsUpdate = true;
+    light.glow.instanceMatrix.needsUpdate = true;
+    for (const sprite of light.sprites) sprite.visible = false;
+    this.contentShown = false;
+    this.settleUntil = performance.now() + 200;
+  }
+
+  /** The second facility, its one rack, the link and the light on it. Hidden until the Metro-E view opens. */
+  private buildMetro() {
+    const group = new THREE.Group();
+    group.visible = false;
+    this.model.add(group);
+
+    const { facilityX: fx, facilityW: fw, facilityD: fd } = METRO;
+    const fz = FRONT_Z;
+    const floorHeight = 0.26;
+
+    // The floor and everything on it that rises with it.
+    const floor = new THREE.Group();
+    group.add(floor);
+    const edge = () => new THREE.MeshStandardMaterial({ color: COLORS.slabSide, roughness: 0.9 });
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(fw, floorHeight, fd), [
+      edge(),
+      edge(),
+      new THREE.MeshStandardMaterial({ color: COLORS.slabTop, roughness: 0.95 }),
+      edge(),
+      edge(),
+      edge(),
+    ]);
+    slab.position.set(fx, -floorHeight / 2, fz);
+    slab.receiveShadow = true;
+    floor.add(slab);
+
+    // Raised floor tiles and a teal outline, so it reads as a separate building.
+    const points: number[] = [];
+    for (let x = -fw / 2; x <= fw / 2 + 1e-3; x += 1) points.push(fx + x, 0.002, fz - fd / 2, fx + x, 0.002, fz + fd / 2);
+    for (let z = -fd / 2; z <= fd / 2 + 1e-3; z += 1) points.push(fx - fw / 2, 0.002, fz + z, fx + fw / 2, 0.002, fz + z);
+    const tiles = new THREE.BufferGeometry();
+    tiles.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+    floor.add(new THREE.LineSegments(tiles, new THREE.LineBasicMaterial({ color: COLORS.grid })));
+    const outline = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(fw, floorHeight, fd)),
+      new THREE.LineBasicMaterial({ color: COLORS.slabEdge, transparent: true, opacity: 0.55 }),
+    );
+    outline.position.copy(slab.position);
+    floor.add(outline);
+
+    // Where the rack will stand, marked on the floor.
+    const footprint = new THREE.LineLoop(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(fx - CAB_W / 2, 0.012, fz - CAB_D / 2),
+        new THREE.Vector3(fx + CAB_W / 2, 0.012, fz - CAB_D / 2),
+        new THREE.Vector3(fx + CAB_W / 2, 0.012, fz + CAB_D / 2),
+        new THREE.Vector3(fx - CAB_W / 2, 0.012, fz + CAB_D / 2),
+      ]),
+      new THREE.LineBasicMaterial({ color: COLORS.slabEdge }),
+    );
+    floor.add(footprint);
+
+    // A soft shadow on the ground beneath it.
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const gradient = ctx.createRadialGradient(64, 64, 15, 64, 64, 64);
+      gradient.addColorStop(0, 'rgba(11,37,54,0.28)');
+      gradient.addColorStop(0.65, 'rgba(11,37,54,0.1)');
+      gradient.addColorStop(1, 'rgba(11,37,54,0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 128, 128);
+    }
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(fw * 1.4, fd * 1.45),
+      new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthWrite: false }),
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.set(fx, -0.62, fz);
+    floor.add(ground);
+
+    // A ring that spreads from the footprint when the link arrives.
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.3, 0.34, 40),
+      new THREE.MeshBasicMaterial({ color: COLORS.pulse, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }),
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.set(fx, 0.03, fz);
+    ring.visible = false;
+    group.add(ring);
+
+    // The one rack. It grows out of the floor, then its servers are carried in.
+    const rack = new THREE.Group();
+    rack.position.set(fx, 0, fz);
+    rack.visible = false;
+    const rackBody = new THREE.Mesh(new THREE.BoxGeometry(CAB_W, CAB_H, CAB_D), new THREE.MeshStandardMaterial({ color: '#0e6b70', roughness: 0.62, metalness: 0.08 }));
+    rackBody.position.y = CAB_H / 2;
+    rack.add(rackBody);
+    const rackDoor = new THREE.Mesh(
+      new THREE.BoxGeometry(CAB_W - 0.05, CAB_H - 0.08, 0.012),
+      new THREE.MeshStandardMaterial({ color: '#138a8f', roughness: 0.58, metalness: 0.08 }),
+    );
+    rackDoor.position.set(0, CAB_H / 2, CAB_D / 2 + 0.006);
+    rack.add(rackDoor);
+    group.add(rack);
+
+    const random = seeded(909);
+    const slots: { y: number; h: number }[] = [];
+    let cursor = 0.12;
+    while (cursor < CAB_H - 0.2) {
+      const h = random() < 0.28 ? 0.15 : 0.075;
+      if (cursor + h > CAB_H - 0.12) break;
+      if (random() > 0.14) slots.push({ y: cursor + h / 2, h });
+      cursor += h + 0.02;
+    }
+    const units = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: '#0a5054', roughness: 0.55 }), slots.length);
+    const leds = new THREE.InstancedMesh(new THREE.BoxGeometry(0.03, 0.022, 0.006), new THREE.MeshBasicMaterial({ color: '#ffffff' }), slots.length * 3);
+    for (let i = 0; i < slots.length * 3; i++) leds.setColorAt(i, this.color.set(this.pickLed(random)));
+    units.frustumCulled = false;
+    leds.frustumCulled = false;
+    group.add(units, leds);
+
+    // The link rises from Point A, runs between the buildings on a pole, and ends above the rack's place.
+    const pointA = 4.04;
+    const linkZ = fz + 0.3;
+    const route = routedPath([
+      new THREE.Vector3(pointA, CAB_H + 0.01, linkZ),
+      new THREE.Vector3(pointA, METRO.height, linkZ),
+      new THREE.Vector3(fx, METRO.height, linkZ),
+      new THREE.Vector3(fx, CAB_H + 0.01, linkZ),
+    ]);
+    const length = route.getLength();
+    const linkSegments = Math.ceil(length * 12);
+    const link = new THREE.Mesh(new THREE.TubeGeometry(route, linkSegments, 0.03, 6, false), new THREE.MeshBasicMaterial({ color: COLORS.fibreLit }));
+    link.visible = false;
+    group.add(link);
+    const post = new THREE.MeshStandardMaterial({ color: COLORS.tray, roughness: 0.7 });
+    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.09, METRO.height + 0.3, 0.09), post);
+    pole.position.set(7.4, (METRO.height - 0.3) / 2, linkZ);
+    group.add(pole);
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.07, 0.09), post);
+    arm.position.set(7.4, METRO.height - 0.06, linkZ);
+    group.add(arm);
+
+    // The light that runs along the link.
+    const samples = route.getSpacedPoints(Math.ceil(length * 10));
+    const cumulative = [0];
+    for (let i = 1; i < samples.length; i++) cumulative.push(cumulative[i - 1] + samples[i].distanceTo(samples[i - 1]));
+    const path: LightPath = { points: samples, cumulative, total: cumulative[cumulative.length - 1] };
+    const count = METRO.packets * METRO.trail;
+    const ball = new THREE.SphereGeometry(1, 12, 10);
+    const core = new THREE.InstancedMesh(ball, new THREE.MeshBasicMaterial({ color: '#eafffc' }), count);
+    const glow = new THREE.InstancedMesh(
+      ball,
+      new THREE.MeshBasicMaterial({ color: '#35d0c4', transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending }),
+      count,
+    );
+    for (const mesh of [core, glow]) {
+      mesh.frustumCulled = false;
+      mesh.renderOrder = 5;
+      this.matrix.makeScale(0, 0, 0);
+      for (let i = 0; i < count; i++) mesh.setMatrixAt(i, this.matrix);
+      group.add(mesh);
+    }
+
+    this.metroScene = { group, floor, link, linkSegments, path, core, glow, rack, slots, units, leds, ring, order: slots.map((_, i) => i) };
+  }
+
+  private hideMetroLight() {
+    const scene = this.metroScene;
+    if (!scene) return;
+    this.matrix.makeScale(0, 0, 0);
+    for (let i = 0; i < scene.core.count; i++) {
+      scene.core.setMatrixAt(i, this.matrix);
+      scene.glow.setMatrixAt(i, this.matrix);
+    }
+    scene.core.instanceMatrix.needsUpdate = true;
+    scene.glow.instanceMatrix.needsUpdate = true;
+    this.metroShown = false;
+  }
+
+  /** Puts a light, with a glowing tail, at each given distance along the link. A negative distance leaves it out. */
+  private placeMetroLight(scene: MetroScene, heads: number[], backwards: boolean) {
+    const { path, core, glow } = scene;
+    const at = new THREE.Vector3();
+    for (let p = 0; p < METRO.packets; p++) {
+      const head = heads[p] ?? -1;
+      for (let k = 0; k < METRO.trail; k++) {
+        const distance = head - k * METRO.spacing;
+        const index = p * METRO.trail + k;
+        const fade = clamp01(distance / 0.4) * clamp01((path.total - distance) / 0.5);
+        if (head < 0 || distance < 0 || distance > path.total || fade <= 0) {
+          this.matrix.makeScale(0, 0, 0);
+          core.setMatrixAt(index, this.matrix);
+          glow.setMatrixAt(index, this.matrix);
+          continue;
+        }
+        this.pointOnPath(path, backwards ? path.total - distance : distance, at);
+        const size = Math.pow(1 - k / METRO.trail, 1.4) * fade;
+        this.matrix.compose(at, this.quaternion.identity(), this.scale.set(size * 0.1, size * 0.1, size * 0.1));
+        core.setMatrixAt(index, this.matrix);
+        this.matrix.compose(at, this.quaternion.identity(), this.scale.set(size * 0.3, size * 0.3, size * 0.3));
+        glow.setMatrixAt(index, this.matrix);
+      }
+    }
+    core.instanceMatrix.needsUpdate = true;
+    glow.instanceMatrix.needsUpdate = true;
+    this.metroShown = true;
+  }
+
+  /** Each server starts hidden, then appears in front of the rack in its turn and is pushed into its slot. */
+  private placeMetroServers(scene: MetroScene, seconds: number) {
+    const x = METRO.facilityX;
+    scene.slots.forEach((slot, i) => {
+      const p = clamp01((seconds - scene.order[i] * METRO.serverGap) / METRO.serverSlide);
+      const shown = p > 0 ? easeOut(clamp01(p * 10)) : 0;
+      const slide = (1 - easeInOut(p)) * METRO.serverDistance;
+      this.matrix.compose(
+        this.scratch.set(x, slot.y, FRONT_Z + UNIT_FRONT - (UNIT_D * shown) / 2 + slide),
+        this.quaternion.identity(),
+        this.scale.set((CAB_W - 0.12) * shown, slot.h * shown, UNIT_D * shown),
+      );
+      scene.units.setMatrixAt(i, this.matrix);
+      for (let k = 0; k < 3; k++) {
+        this.matrix.compose(
+          this.scratch.set(x - CAB_W / 2 + 0.11 + k * 0.05, slot.y, FRONT_Z + CAB_D / 2 + 0.031 + slide),
+          this.quaternion.identity(),
+          this.scale.set(shown, shown, shown),
+        );
+        scene.leds.setMatrixAt(i * 3 + k, this.matrix);
+      }
+    });
+    scene.units.instanceMatrix.needsUpdate = true;
+    scene.leds.instanceMatrix.needsUpdate = true;
+    if (scene.leds.instanceColor) scene.leds.instanceColor.needsUpdate = true;
+  }
+
+  private updateMetro(elapsed: number, now: number) {
+    const scene = this.metroScene;
+    if (!scene) return;
+    const on = this.focus === 'metro-e' && this.introDone;
+    if (on !== this.metroOn) {
+      this.metroOn = on;
+      this.metroTime = 0;
+      scene.group.visible = on;
+      // Start again from an empty floor: no link, no rack, no servers, and a new order for the servers.
+      scene.floor.scale.y = 0.001;
+      scene.link.visible = false;
+      scene.rack.visible = false;
+      scene.ring.visible = false;
+      scene.order = scene.slots.map((_, i) => i).sort(() => Math.random() - 0.5);
+      this.placeMetroServers(scene, 0);
+      this.hideMetroLight();
+      this.settleUntil = now + 400;
+    }
+    if (!on) return;
+
+    this.metroTime += elapsed;
+    const t = this.metroTime;
+    const { path } = scene;
+
+    // 1. The empty floor rises.
+    scene.floor.scale.y = Math.max(0.001, easeOut(clamp01((t - METRO.floorIn) / METRO.floorTime)));
+
+    // 2. The link draws out from Point A, with a light at its head.
+    const drawTime = path.total / METRO.drawSpeed;
+    const drawn = clamp01((t - METRO.lineStart) / drawTime);
+    scene.link.visible = drawn > 0;
+    (scene.link.geometry as THREE.BufferGeometry).setDrawRange(0, Math.floor(drawn * scene.linkSegments) * 36);
+    const arrival = METRO.lineStart + drawTime;
+    const drawing = t > METRO.lineStart && t < arrival;
+
+    // 3. The link arrives, a ring spreads, and the rack grows out of the floor.
+    const rackGrowth = clamp01((t - arrival) / METRO.rackTime);
+    scene.rack.visible = rackGrowth > 0;
+    scene.rack.scale.y = Math.max(0.001, easeOut(rackGrowth));
+    const spread = (t - arrival) / 1.1;
+    scene.ring.visible = spread >= 0 && spread <= 1;
+    if (scene.ring.visible) {
+      scene.ring.scale.setScalar(1 + spread * 4);
+      (scene.ring.material as THREE.MeshBasicMaterial).opacity = (1 - spread) * 0.6;
+    }
+
+    // 4. The servers are carried in, one after another, in a random order.
+    const serversStart = arrival + METRO.rackTime * 0.8;
+    this.placeMetroServers(scene, Math.max(0, t - serversStart));
+    const serversDone = serversStart + scene.slots.length * METRO.serverGap + METRO.serverSlide;
+
+    // 5. Then light runs along the finished link, from A to B and then from B to A.
+    const run = path.total / METRO.speed;
+    const round = run + (METRO.packets - 1) * METRO.stagger + METRO.rest;
+    const lightTime = t - (serversDone + 0.4);
+    let animating = t < serversDone + 0.4;
+    if (drawing) {
+      this.placeMetroLight(scene, [(t - METRO.lineStart) * METRO.drawSpeed], false);
+    } else if (lightTime >= 0 && !(this.reduced && lightTime > METRO.reducedRounds * round)) {
+      const backwards = Math.floor(lightTime / round) % 2 === 1;
+      const local = lightTime % round;
+      this.placeMetroLight(scene, Array.from({ length: METRO.packets }, (_, p) => (local - p * METRO.stagger) * METRO.speed), backwards);
+      animating = true;
+    } else if (this.metroShown) {
+      this.hideMetroLight();
+    }
+    if (!this.reduced || animating) this.settleUntil = now + 400;
+  }
+
+  /** The map of Asia and a line to a place in each country. Hidden until the IP Transit view opens. */
+  private buildIpMap() {
+    const group = new THREE.Group();
+    group.visible = false;
+    this.model.add(group);
+
+    // The countries, flat on the ground, with Manila at the centre.
+    const outline = new THREE.LineBasicMaterial({ color: '#a9bcc8', transparent: true, opacity: 0 });
+    const fills: IpScene['fills'] = [];
+    for (const country of ASIA) {
+      const material = new THREE.MeshBasicMaterial({ color: IP_COLORS.land.clone(), transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide });
+      fills.push({ name: country.name, material });
+      for (const ring of country.rings) {
+        const shape = new THREE.Shape();
+        const edge: number[] = [];
+        for (let i = 0; i < ring.length; i += 2) {
+          const [x, z] = mapPoint(ring[i], ring[i + 1]);
+          if (i === 0) shape.moveTo(x, -z);
+          else shape.lineTo(x, -z);
+          edge.push(x, 0.01, z);
+        }
+        const land = new THREE.Mesh(new THREE.ShapeGeometry(shape), material);
+        land.rotation.x = -Math.PI / 2;
+        land.position.y = 0.004;
+        group.add(land);
+        const border = new THREE.BufferGeometry();
+        border.setAttribute('position', new THREE.Float32BufferAttribute(edge, 3));
+        group.add(new THREE.LineLoop(border, outline));
+      }
+    }
+
+    // A soft shadow under the rack.
+    const shadow = new THREE.Mesh(
+      new THREE.CircleGeometry(1, 28),
+      new THREE.MeshBasicMaterial({ color: '#0b2536', transparent: true, opacity: 0.16, depthWrite: false }),
+    );
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.scale.set(0.9, 0.6, 1);
+    shadow.position.y = 0.012;
+    group.add(shadow);
+
+    // One line from the top of the fabric rack to a place in each country.
+    const start = new THREE.Vector3(0, CAB_H + 0.01, 0);
+    const lines: IpLine[] = DESTINATIONS.map((place) => {
+      const [x, z] = mapPoint(place.lon, place.lat);
+      const end = new THREE.Vector3(x, 0.03, z);
+      const distance = Math.hypot(x, z);
+      const control = start.clone().add(end).multiplyScalar(0.5);
+      control.y = 1.0 + distance * 0.5;
+      const curve = new THREE.QuadraticBezierCurve3(start, control, end);
+
+      const line = new THREE.Mesh(new THREE.TubeGeometry(curve, IP.segments, 0.028, 6, false), new THREE.MeshBasicMaterial({ color: IP_COLORS.line.clone() }));
+      line.visible = false;
+      group.add(line);
+      const halo = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, IP.segments, 0.1, 6, false),
+        new THREE.MeshBasicMaterial({ color: IP_COLORS.lit.clone(), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }),
+      );
+      halo.visible = false;
+      group.add(halo);
+      const marker = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.03, 16), new THREE.MeshBasicMaterial({ color: IP_COLORS.line.clone() }));
+      marker.position.set(x, 0.02, z);
+      group.add(marker);
+      const ripple = new THREE.Mesh(
+        new THREE.RingGeometry(0.09, 0.115, 32),
+        new THREE.MeshBasicMaterial({ color: IP_COLORS.lit.clone(), transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }),
+      );
+      ripple.rotation.x = -Math.PI / 2;
+      ripple.position.set(x, 0.03, z);
+      ripple.visible = false;
+      group.add(ripple);
+      return { place, curve, line, halo, marker, ripple, distance, length: curve.getLength() };
+    });
+
+    // The light at the head of each line while it is being drawn.
+    const ball = new THREE.SphereGeometry(1, 12, 10);
+    const core = new THREE.InstancedMesh(ball, new THREE.MeshBasicMaterial({ color: '#eafffc' }), lines.length);
+    const glow = new THREE.InstancedMesh(
+      ball,
+      new THREE.MeshBasicMaterial({ color: '#35d0c4', transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending }),
+      lines.length,
+    );
+    for (const mesh of [core, glow]) {
+      mesh.frustumCulled = false;
+      mesh.renderOrder = 5;
+      this.matrix.makeScale(0, 0, 0);
+      for (let i = 0; i < lines.length; i++) mesh.setMatrixAt(i, this.matrix);
+      group.add(mesh);
+    }
+
+    // Two lights on every line, running in opposite directions, once the line is up. They go back and
+    // forth between the country and the rack, like traffic on a connection that is active.
+    const trafficCore = new THREE.InstancedMesh(ball, new THREE.MeshBasicMaterial({ color: '#eafffc' }), lines.length * 2);
+    const trafficGlow = new THREE.InstancedMesh(
+      ball,
+      new THREE.MeshBasicMaterial({ color: '#35d0c4', transparent: true, opacity: 0.4, depthWrite: false, blending: THREE.AdditiveBlending }),
+      lines.length * 2,
+    );
+    for (const mesh of [trafficCore, trafficGlow]) {
+      mesh.frustumCulled = false;
+      mesh.renderOrder = 6;
+      this.matrix.makeScale(0, 0, 0);
+      for (let i = 0; i < lines.length * 2; i++) mesh.setMatrixAt(i, this.matrix);
+      group.add(mesh);
+    }
+
+    this.ipScene = { group, fills, outline, lines, core, glow, trafficCore, trafficGlow };
+  }
+
+  private updateIp(elapsed: number, now: number) {
+    const scene = this.ipScene;
+    const on = !!scene && this.focus === 'ip-transit' && this.introDone;
+    if (on !== this.ipOn) {
+      this.ipOn = on;
+      this.ipTime = 0;
+      if (scene) scene.group.visible = on;
+    }
+    this.updateIpClearing(on, elapsed, now);
+    if (!scene || !on) return;
+
+    this.ipTime += elapsed;
+    const t = this.ipTime;
+    const mapIn = clamp01((t - 0.2) / 0.8);
+    scene.outline.opacity = 0.9 * mapIn;
+    for (const fill of scene.fills) fill.material.opacity = mapIn;
+
+    let lastDone = 0;
+    const arrivals: number[] = [];
+    scene.lines.forEach((entry, i) => {
+      const start = IP.lead + i * IP.stagger;
+      const duration = IP.draw + entry.distance * IP.perUnit;
+      const arrival = start + duration;
+      arrivals[i] = arrival;
+      lastDone = Math.max(lastDone, arrival + IP.glowIn + IP.ripple);
+
+      // The line draws out from the rack, with a light at its head.
+      const progress = easeInOut(clamp01((t - start) / duration));
+      const geometry = entry.line.geometry as THREE.BufferGeometry;
+      geometry.setDrawRange(0, Math.floor(progress * IP.segments) * 36);
+      entry.line.visible = progress > 0;
+      if (t > start && t < arrival) {
+        entry.curve.getPointAt(progress, HAND);
+        this.matrix.compose(HAND, this.quaternion.identity(), this.scale.set(0.09, 0.09, 0.09));
+        scene.core.setMatrixAt(i, this.matrix);
+        this.matrix.compose(HAND, this.quaternion.identity(), this.scale.set(0.28, 0.28, 0.28));
+        scene.glow.setMatrixAt(i, this.matrix);
+      } else {
+        this.matrix.makeScale(0, 0, 0);
+        scene.core.setMatrixAt(i, this.matrix);
+        scene.glow.setMatrixAt(i, this.matrix);
+      }
+
+      // Once it arrives, the line glows steadily, like a connection that is up.
+      const glow = clamp01((t - arrival) / IP.glowIn);
+      const pulse = this.reduced ? 1 : 1 + Math.sin(t * 2.2 + i * 0.9) * 0.18;
+      (entry.line.material as THREE.MeshBasicMaterial).color.copy(IP_COLORS.line).lerp(IP_COLORS.lit, glow);
+      entry.halo.visible = glow > 0;
+      (entry.halo.material as THREE.MeshBasicMaterial).opacity = 0.34 * glow * pulse;
+      (entry.marker.material as THREE.MeshBasicMaterial).color.copy(IP_COLORS.line).lerp(IP_COLORS.lit, glow);
+      entry.marker.scale.setScalar(1 + glow * 0.45);
+      const fill = scene.fills.find((candidate) => candidate.name === entry.place.country);
+      if (fill) fill.material.color.copy(IP_COLORS.land).lerp(IP_COLORS.landLit, glow);
+
+      // A ring spreads from the place when the line arrives.
+      const ring = (t - arrival) / IP.ripple;
+      entry.ripple.visible = ring >= 0 && ring <= 1;
+      if (entry.ripple.visible) {
+        entry.ripple.scale.setScalar(1 + ring * 5);
+        (entry.ripple.material as THREE.MeshBasicMaterial).opacity = (1 - ring) * 0.6;
+      }
+    });
+    scene.core.instanceMatrix.needsUpdate = true;
+    scene.glow.instanceMatrix.needsUpdate = true;
+
+    // Once a line is up, two lights run along it in opposite directions, back and forth.
+    const traffic = !this.reduced || t < lastDone + IP.reducedTraffic;
+    scene.lines.forEach((entry, i) => {
+      const active = traffic ? clamp01((t - arrivals[i] - IP.glowIn * 0.5) / 0.5) : 0;
+      for (let j = 0; j < 2; j++) {
+        const index = i * 2 + j;
+        if (active <= 0) {
+          this.matrix.makeScale(0, 0, 0);
+          scene.trafficCore.setMatrixAt(index, this.matrix);
+          scene.trafficGlow.setMatrixAt(index, this.matrix);
+          continue;
+        }
+        const along = ((t * IP.trafficSpeed) / entry.length + j + i * 0.37) % 2;
+        entry.curve.getPointAt(clamp01(along < 1 ? along : 2 - along), HAND);
+        this.matrix.compose(HAND, this.quaternion.identity(), this.scale.set(0.075 * active, 0.075 * active, 0.075 * active));
+        scene.trafficCore.setMatrixAt(index, this.matrix);
+        this.matrix.compose(HAND, this.quaternion.identity(), this.scale.set(0.24 * active, 0.24 * active, 0.24 * active));
+        scene.trafficGlow.setMatrixAt(index, this.matrix);
+      }
+    });
+    scene.trafficCore.instanceMatrix.needsUpdate = true;
+    scene.trafficGlow.instanceMatrix.needsUpdate = true;
+
+    // With reduced motion the view redraws until the traffic has run for a while, then holds still.
+    if (!this.reduced || t < lastDone + IP.reducedTraffic) this.settleUntil = now + 400;
+  }
+
   private updatePulses() {
     let index = 0;
     const speed = 0.95;
@@ -1093,7 +2498,7 @@ export class FabricStage {
       const seedPhase = (fibre.id.charCodeAt(0) + fibre.id.charCodeAt(2)) * 0.137;
       for (let k = 0; k < this.pulsesPerFibre; k++) {
         let visible = introDone ? fibre.level : 0;
-        if (this.focus === 'consulting') visible = 0;
+        if (this.focus === 'consulting' || this.focus === 'content') visible = 0;
         if (visible < 0.02) {
           this.matrix.makeScale(0, 0, 0);
         } else {
@@ -1308,6 +2713,12 @@ export class FabricStage {
 
     this.updateJourney(dt);
     this.updateIntro(Math.min(0.12, sinceLast), now);
+    this.updateInstall(Math.min(0.12, sinceLast), now);
+    this.updateConsult(Math.min(0.12, sinceLast), now);
+    this.updateSwitch(Math.min(0.12, sinceLast), now);
+    this.updateContentLight(Math.min(0.12, sinceLast), now);
+    this.updateMetro(Math.min(0.12, sinceLast), now);
+    this.updateIp(Math.min(0.12, sinceLast), now);
     this.updateTones(1 - Math.exp(-dt * 5));
     this.updatePulses();
     this.updateCamera(dt);

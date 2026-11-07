@@ -30,7 +30,7 @@ export const Hero: React.FC<HeroProps> = ({ slotRef, sharedModel = false }) => (
   <section className="bg-paper-2 border-b border-rule overflow-hidden">
     <div className="wrap grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] items-center gap-6 lg:gap-4 pt-12 lg:pt-10 pb-6 lg:pb-10">
       <div>
-        <motion.h1 className="heading-1" {...enter(0.05)}>Colocation, transit and virtual interconnection for Philippine networks</motion.h1>
+        <motion.h1 className="heading-1" {...enter(0.05)}>IP transit, Metro-E, colocation and virtual interconnection for Philippine networks</motion.h1>
         <motion.p className="lede mt-5" {...enter(0.15)}>
           Techne is a carrier-neutral network provider and engineering firm. We host your equipment, deliver your
           upstream, and connect you to carriers and partners over one fabric, backed by a 24/7 operations team.
