@@ -1,19 +1,52 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { PANEL_IDS } from '../constants';
+import { BLOG_POSTS } from '../content/blog';
+import { Reveal } from './Reveal';
 
-/** The blog has no articles yet, so this page says so and points to the next useful places. */
+/** The list of articles. */
 export const Blog: React.FC = () => (
-  <section className="bg-paper-2 border-b border-rule min-h-[60vh] flex items-center">
-    <div className="wrap w-full py-16 md:py-24">
-      <h1 className="heading-1">Our blog is coming soon</h1>
-      <p className="lede mt-4">
-        We are preparing articles on networking, infrastructure and enterprise IT from the Techne engineering team. Please check back soon.
-      </p>
-      <div className="flex flex-wrap gap-3 mt-8">
-        <Link to={`/${PANEL_IDS.SERVICES}`} className="btn-primary">View our services</Link>
-        <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-secondary">Contact us</Link>
+  <>
+    <section className="bg-paper-2 border-b border-rule">
+      <div className="wrap py-12 md:py-16">
+        <Reveal distance={12}>
+          <h1 className="heading-1">Blog</h1>
+          <p className="lede mt-4">News and notes from the Techne team on networks, peering and infrastructure in the Philippines.</p>
+        </Reveal>
       </div>
-    </div>
-  </section>
+    </section>
+
+    <section className="section bg-paper">
+      <div className="wrap">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {BLOG_POSTS.map((post, index) => (
+            <Reveal key={post.slug} delay={Math.min(index, 5) * 0.08} className="flex">
+            <article className="bg-paper border border-rule rounded-[4px] overflow-hidden flex flex-col w-full group">
+              <Link to={`/${PANEL_IDS.BLOG}/${post.slug}`} className="block" aria-label={post.title}>
+                <span className="block overflow-hidden">
+                  <img src={post.image} alt="" className="w-full aspect-[16/9] object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]" loading="lazy" draggable="false" />
+                </span>
+              </Link>
+              <div className="p-6 flex flex-col flex-1">
+                <p className="text-[0.8125rem] leading-snug text-ink-3 mb-3">
+                  <span className="block font-semibold text-ink-2">{post.event}</span>
+                  <span className="block mt-0.5">{post.date}</span>
+                </p>
+                <h2 className="heading-3">
+                  <Link to={`/${PANEL_IDS.BLOG}/${post.slug}`} className="hover:text-accent transition-colors duration-150">{post.title}</Link>
+                </h2>
+                <p className="body-copy mt-3 flex-1">{post.summary}</p>
+                <Link to={`/${PANEL_IDS.BLOG}/${post.slug}`} className="text-link mt-5">
+                  Read the article
+                  <ArrowRight size={15} aria-hidden="true" />
+                </Link>
+              </div>
+            </article>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  </>
 );

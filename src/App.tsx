@@ -7,6 +7,7 @@ import { Services } from './components/Services';
 import { ContactForm } from './components/ContactForm';
 import { Footer } from './components/Footer';
 import { Blog } from './components/Blog';
+import { BlogPost } from './components/BlogPost';
 import { About } from './components/About';
 import { Pricing } from './components/Pricing';
 import { IPTransit } from './components/IPTransit';
@@ -121,6 +122,7 @@ function App() {
         <main className="flex-grow">
           <Routes>
             <Route path={HOME_PATH} element={<HomePanel />} />
+            <Route path={`/${PANEL_IDS.BLOG}/:slug`} element={<BlogPost />} />
             <Route path="/:id" element={<PanelRenderer />} />
           </Routes>
         </main>

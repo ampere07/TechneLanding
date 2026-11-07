@@ -13,7 +13,17 @@ export const Header: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [floating, setFloating] = useState(false);
   const closeTimer = useRef<number | undefined>(undefined);
+
+  // Once the page has scrolled a little, the bar lifts off the top edge and floats with rounded corners.
+  useEffect(() => {
+    // It lifts at 24 pixels and settles back below 8, so it never flickers around one exact point.
+    const update = () => setFloating((current) => (current ? window.scrollY > 8 : window.scrollY > 24));
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, []);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -64,7 +74,14 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Main bar */}
-      <header className="sticky top-0 z-50 bg-paper border-b border-rule">
+      <header className="sticky top-0 z-50 h-16 lg:h-[72px]">
+        <div
+          className={`absolute left-1/2 -translate-x-1/2 border backdrop-blur-md will-change-[top,width] transition-[top,width,border-radius,box-shadow,background-color,border-color] duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] motion-reduce:transition-none ${
+            floating
+              ? 'top-3 w-[min(1240px,calc(100%-1.5rem))] rounded-[28px] border-rule bg-paper/95 shadow-[0_10px_30px_-12px_rgb(11_37_54_/_0.35)]'
+              : 'top-0 w-full rounded-none border-transparent border-b-rule bg-paper shadow-[0_10px_30px_-12px_rgb(11_37_54_/_0)]'
+          }`}
+        >
         <div className="wrap flex items-center justify-between h-16 lg:h-[72px]">
           <Link to={HOME_PATH} className="flex items-center gap-2.5 shrink-0" onClick={closeAll}>
             <img src={logo} alt="" className="h-9 w-auto object-contain" draggable="false" />
@@ -85,7 +102,10 @@ export const Header: React.FC = () => {
               </button>
 
               {servicesOpen && (
-                <div id="services-menu" className="absolute left-0 right-0 top-full bg-paper border-b border-rule shadow-[0_12px_24px_-16px_rgb(11_37_54_/_0.35)]">
+                <div
+                  id="services-menu"
+                  className={`absolute left-0 right-0 top-full bg-paper border-rule shadow-[0_12px_24px_-16px_rgb(11_37_54_/_0.35)] ${floating ? 'mt-2 rounded-[28px] border overflow-hidden' : 'border-b'}`}
+                >
                   <div className="wrap py-8 grid grid-cols-4 gap-10">
                     {SERVICE_GROUPS.map((group) => (
                       <div key={group}>
@@ -117,9 +137,6 @@ export const Header: React.FC = () => {
               )}
             </div>
 
-            <Link to={`${HOME_PATH}#locations`} className="text-[0.9375rem] font-medium text-ink hover:text-accent transition-colors duration-150">
-              Location
-            </Link>
             <NavLink to={`/${PANEL_IDS.PRICING}`} className={navLinkClass}>Request a quote</NavLink>
             <NavLink to={`/${PANEL_IDS.BLOG}`} className={navLinkClass}>Blog</NavLink>
             <NavLink to={`/${PANEL_IDS.ABOUT}`} className={navLinkClass}>About</NavLink>
@@ -144,7 +161,7 @@ export const Header: React.FC = () => {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="lg:hidden absolute left-0 right-0 top-full bg-paper border-b border-rule max-h-[calc(100vh-64px)] overflow-y-auto">
+          <div className={`lg:hidden absolute left-0 right-0 top-full bg-paper border-rule max-h-[calc(100vh-88px)] overflow-y-auto ${floating ? 'mt-2 rounded-[28px] border shadow-[0_10px_30px_-12px_rgb(11_37_54_/_0.35)]' : 'border-b'}`}>
             <div className="wrap py-4">
               {SERVICE_GROUPS.map((group) => (
                 <div key={group} className="py-3 border-b border-rule">
@@ -156,7 +173,6 @@ export const Header: React.FC = () => {
                   ))}
                 </div>
               ))}
-              <Link to={`${HOME_PATH}#locations`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Location</Link>
               <Link to={`/${PANEL_IDS.PRICING}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Request a quote</Link>
               <Link to={`/${PANEL_IDS.BLOG}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Blog</Link>
               <Link to={`/${PANEL_IDS.ABOUT}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">About</Link>
@@ -176,6 +192,7 @@ export const Header: React.FC = () => {
             </div>
           </div>
         )}
+        </div>
       </header>
 
       {/* Login notice */}

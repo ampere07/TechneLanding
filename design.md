@@ -18,7 +18,7 @@ modern-minimal
 - Home: hero with a facts panel in its left column, service explorer, service finder, virtual comparison, locations, logos, reasons, process, FAQ, closing band
 - Service pages: `ServiceLayout` header with the 3D hall, facts band, body sections, related services, closing band
 - Index and company pages: pale title band, then ruled content
-- Blog: a "Coming soon" band with two links, until there are articles
+- Blog: a pale title band, then a grid of article cards. An article is a narrow reading column with pictures, captions and a plain numbered list. Articles live in `src/content/blog.ts`.
 - Request a quote: service options left, selection summary right. No prices are shown. The button opens the contact form pre-filled from the selection.
 - Contact us: details left, form right. The form sends through `api/contact.ts` and Resend. Setup is in `docs/contact-form-resend-setup.md`.
 
