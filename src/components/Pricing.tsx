@@ -484,7 +484,7 @@ export const Pricing: React.FC = () => {
           </div>
 
           {/* Quote sidebar */}
-          <div className="lg:col-span-4 lg:sticky lg:top-24">
+          <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
             <div className="bg-ink text-white rounded-[4px] p-8">
               <h3 className="text-[1.125rem] font-semibold text-white mb-5">Your selection</h3>
               <dl className="space-y-3 text-sm">
@@ -505,26 +505,18 @@ export const Pricing: React.FC = () => {
                 </p>
               </div>
             </div>
-          </div>
 
-        </div>
-
-        {/* Inclusions grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 border-t border-rule pt-16">
-          <div className="lg:col-span-4">
-            <div className="p-7 bg-paper border border-rule rounded-[4px] flex flex-col justify-between h-full min-h-[260px]">
-              <div>
-                <div className="w-10 h-10 rounded-[4px] bg-paper-2 border border-rule flex items-center justify-center text-accent mb-5">
-                  <HelpCircle size={20} />
-                </div>
-                <h4 className="font-display font-bold text-ink mb-2">Not sure what to choose?</h4>
-                <p className="font-body text-sm text-ink-2 leading-relaxed mb-5">
-                  Let our interconnection experts design a custom network structure tailored for your routing policies, latency targets, and business requirements.
-                </p>
+            <div className="p-7 bg-paper border border-rule rounded-[4px]">
+              <div className="w-10 h-10 rounded-[4px] bg-paper-2 border border-rule flex items-center justify-center text-accent mb-5">
+                <HelpCircle size={20} aria-hidden="true" />
               </div>
+              <h4 className="font-display font-bold text-ink mb-2">Not sure what to choose?</h4>
+              <p className="font-body text-sm text-ink-2 leading-relaxed mb-5">
+                Let our interconnection experts design a custom network structure tailored for your routing policies, latency targets, and business requirements.
+              </p>
               <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary w-full justify-center py-3">
                 Contact Us
-                <ChevronRight size={14} />
+                <ChevronRight size={14} aria-hidden="true" />
               </Link>
             </div>
           </div>

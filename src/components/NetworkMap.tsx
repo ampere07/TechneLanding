@@ -1,16 +1,11 @@
 import React, { Suspense, lazy, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Check, Lock, LockOpen } from 'lucide-react';
+import { Lock, LockOpen } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { PANEL_IDS } from '../constants';
 import { CONTENT_LOGOS, PLATFORM_LOGOS, type Logo } from '../content/logos';
-import { LOCATION, SERVICES } from '../content/site';
+import { LOCATION } from '../content/site';
 import { HOME_NETWORK, TRANSIT_NETWORKS, type TransitNetwork } from '../content/transit';
 import { PHILIPPINES_PATH, WORLD, WORLD_H, WORLD_W, worldPercent } from '../content/worldMap';
 import { Reveal } from './Reveal';
-
-// Consulting is not tied to a facility, so it is not listed as available there.
-const servicesAtFacility = SERVICES.filter((service) => service.id !== 'consulting');
 
 /** A ring that spreads out from the pin three times when the map first comes into view, then rests. */
 const PinPulse: React.FC = () => {
@@ -133,21 +128,6 @@ export const NetworkMap: React.FC = () => (
           <p className="mt-3 text-[0.9375rem] text-ink-2">
             Our AS number is <span className="font-data font-semibold text-ink">{HOME_NETWORK.asn}</span>.
           </p>
-
-          <h4 className="text-[0.9375rem] font-semibold text-ink mt-6 pb-2 border-b border-rule">Services available here</h4>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mt-4">
-            {servicesAtFacility.map((service) => (
-              <li key={service.id} className="flex items-center gap-2">
-                <Check size={16} className="text-accent shrink-0" aria-hidden="true" />
-                <Link to={service.path} className="text-[0.9375rem] text-ink hover:text-accent transition-colors duration-150">{service.name}</Link>
-              </li>
-            ))}
-          </ul>
-
-          <Link to={`/${PANEL_IDS.CONTACT}`} className="text-link mt-6">
-            Ask about another location
-            <ArrowRight size={15} aria-hidden="true" />
-          </Link>
         </Reveal>
 
       </div>
