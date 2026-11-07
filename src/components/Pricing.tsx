@@ -13,7 +13,7 @@ declare global {
 }
 
 type BandwidthType = 'Fixed Bandwidth' | 'Burstable';
-type CommitmentType = '100 Mbps' | '200 Mbps' | '500 Mbps' | '1 Gbps' | '2 Gbps' | '5 Gbps' | '10 Gbps';
+type CommitmentType = '1 Gbps' | '2 Gbps' | '5 Gbps' | '10 Gbps' | '20 Gbps' | '50 Gbps' | '100 Gbps';
 type TabType = 'internet' | 'colocation' | 'virtual';
 type PortSizeType = '1 Gbps' | '10 Gbps' | '100 Gbps';
 type ContractTermType = '12 months' | '24 months' | '36 months';
@@ -102,7 +102,14 @@ export const Pricing: React.FC = () => {
   const mapRef = useRef<any>(null);
 
   const burstable = bandwidthType === 'Burstable';
-  const commitments: CommitmentType[] = burstable ? BURST_COMMITMENTS : ['100 Mbps', '200 Mbps', '500 Mbps', '1 Gbps', '2 Gbps', '5 Gbps', '10 Gbps'];
+  // A 100 Gbps port offers 10, 20, 50 and 100 Gbps. The smaller ports offer 1, 2, 5 and 10 Gbps.
+  const commitments: CommitmentType[] = burstable
+    ? BURST_COMMITMENTS
+    : portSize === '100 Gbps'
+      ? ['10 Gbps', '20 Gbps', '50 Gbps', '100 Gbps']
+      : ['1 Gbps', '2 Gbps', '5 Gbps', '10 Gbps'];
+  // If the chosen speed is not offered on this port, the first one that is offered is used.
+  const activeCommitment: CommitmentType = commitments.includes(commitment) ? commitment : commitments[0];
   const chooseBandwidthType = (type: BandwidthType) => {
     if (type === bandwidthType) return;
     setBandwidthType(type);
@@ -165,8 +172,8 @@ export const Pricing: React.FC = () => {
           { label: 'Location', value: LOCATION.city },
           { label: 'Data center', value: internetDC },
           { label: 'Port size', value: portSize },
-          { label: 'Bandwidth plan', value: bandwidthType === 'Burstable' ? `Burstable, commit ${commitment}` : `${bandwidthType}, ${commitment}` },
-          ...(bandwidthType === 'Burstable' ? [{ label: 'Billing model', value: burstBilling(commitment) }] : []),
+          { label: 'Bandwidth plan', value: bandwidthType === 'Burstable' ? `Burstable, commit ${activeCommitment}` : `${bandwidthType}, ${activeCommitment}` },
+          ...(bandwidthType === 'Burstable' ? [{ label: 'Billing model', value: burstBilling(activeCommitment) }] : []),
           { label: 'Contract term', value: contractTerm },
         ]
       : activeTab === 'colocation'
@@ -323,7 +330,7 @@ export const Pricing: React.FC = () => {
 
                   <div className="relative">
                     <select
-                      value={commitment}
+                      value={activeCommitment}
                       onChange={(e) => setCommitment(e.target.value as CommitmentType)}
                       className="input-field appearance-none cursor-pointer"
                       aria-label="Bandwidth"
