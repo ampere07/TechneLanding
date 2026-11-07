@@ -209,21 +209,6 @@ interface Person {
 }
 
 /**
- * The Virtual Switch view zooms to the Techne fabric rack. One server has two ports, and two cables
- * hanging from the virtual switch above are plugged into them, one after the other. Times are in
- * seconds. The plugging repeats, or plays once and holds with reduced motion.
- */
-const SWITCH = {
-  appear: 0.8, // when the cables arrive, after the camera has started to move
-  start: [0.6, 2.1], // when each plug starts moving in, after the cables arrive
-  move: 1.2, // one plug travelling into its port
-  out: 5.1, // when both plugs are taken out again
-  back: 1.0, // taking the plugs out
-  rest: 0.7, // a pause before the next round
-  distance: 0.8, // how far in front of its port a plug waits
-};
-
-/**
  * The Content view sends light along the wires. A packet leaves each CDN cache in turn, runs along
  * its wire to the Techne fabric, then along the wire out to the customer's equipment. It runs on
  * its own clock, so it plays with reduced motion too, for a few rounds before it stops.
@@ -415,15 +400,45 @@ interface RouterFlow {
   ring: THREE.Mesh;
 }
 
-interface SwitchScene {
+/**
+ * The Virtual Switch view follows how a virtual switch works. It makes separate ports behave as if they
+ * were on one Ethernet switch, a shared broadcast domain, and it works like any switch. When a frame
+ * arrives from an address it has not seen, it learns that address and which port it is on. If it does not
+ * yet know where the destination is, it floods the frame to every other port. When the destination replies,
+ * the switch learns that port too, and from then on frames go out of only the one port that is needed.
+ */
+const VSWITCH = {
+  lead: 0.8,
+  spokeStagger: 0.45,
+  spokeDraw: 1.6,
+  loopStart: 4.0,
+  speed: 3.2,
+  loop: 14.5,
+  // When each step starts, in seconds into the loop.
+  frameIn: 0,
+  flood: 1.5,
+  replyIn: 4.2,
+  replyOut: 5.7,
+  frameAgain: 8.4,
+  unicast: 9.9,
+};
+
+interface SwitchMember {
+  path: LightPath;
+  tube: THREE.Mesh;
+  segments: number;
+  material: THREE.MeshBasicMaterial;
+  port: THREE.Sprite;
+  rig: FlowRig;
+}
+
+interface SwitchFlow {
   group: THREE.Group;
-  cabinet: Cabinet;
-  slot: number;
-  portX: number[];
-  portY: number;
-  leds: THREE.MeshBasicMaterial[];
-  plugs: THREE.Group[];
-  cables: { mesh: THREE.Mesh; anchor: THREE.Vector3 }[];
+  members: SwitchMember[];
+  macs: THREE.Sprite[];
+  flood: THREE.Sprite;
+  known: THREE.Sprite;
+  ring: THREE.Mesh;
 }
 
 interface ConsultScene {
@@ -496,7 +511,6 @@ const LABELS: LabelDef[] = [
   { id: 'virtual', text: 'Virtual Switch and Router', at: [0.75, ROUTER_Y + 0.02, -0.92] },
   { id: 'vxc', text: 'Virtual Cross Connect', at: [0, TRAY_Y + 0.03, -1.1] },
   { id: 'consult-rack', text: 'Techne fabric rack', at: [0, CAB_H + 0.04, CAB_D / 2 + 0.02] },
-  { id: 'switch-server', text: 'Server with two ports', at: [-0.36, 1.55, CAB_D / 2 + 0.02] },
   ...DESTINATIONS.map((place) => {
     const [x, z] = mapPoint(place.lon, place.lat);
     return { id: `ip-${place.name}`, text: place.name, at: [x, 0.04, z] as [number, number, number] };
@@ -566,14 +580,14 @@ const FOCUS: Record<FabricFocus, FocusSpec> = {
     zoom: 1.5,
   },
   vswitch: {
-    azimuth: 20,
-    elevation: 20,
-    cabinets: ['fa0', 'fa1'],
+    azimuth: 26,
+    elevation: 37,
+    cabinets: ['cu0', 'cu2', 'pa0', 'pa2', 'fa0', 'fa1'],
     fibres: {},
     slabs: ['vswitch'],
-    labels: ['switch-server'],
-    target: [-0.15, 1.25, 0.6],
-    zoom: 4.8,
+    labels: ['vswitch', 'fabric'],
+    target: [-0.9, 2.4, 0],
+    zoom: 1.55,
   },
   vrouter: {
     azimuth: 41,
@@ -691,9 +705,9 @@ export class FabricStage {
   private consultScene: ConsultScene | null = null;
   private consultOn = false;
   private consultTime = 0;
-  private switchScene: SwitchScene | null = null;
-  private switchOn = false;
-  private switchTime = 0;
+  private switchFlow: SwitchFlow | null = null;
+  private switchFlowOn = false;
+  private switchFlowTime = 0;
   private contentLight: { paths: LightPath[]; core: THREE.InstancedMesh; glow: THREE.InstancedMesh; sprites: THREE.Sprite[] } | null = null;
   private contentTextures: (THREE.Texture | undefined)[] = [];
   private contentOn = false;
@@ -784,7 +798,7 @@ export class FabricStage {
     this.buildPulses();
     this.buildLabels();
     this.buildConsult();
-    this.buildSwitch();
+    this.buildSwitchFlow();
     this.buildContentLight();
     this.buildMetro();
     this.buildIpMap();
@@ -1706,7 +1720,7 @@ export class FabricStage {
         this.mountUnits(scene.cabinet, BUILD.end + 10);
       }
     }
-    this.updateConsultClearing(on || this.switchOn, elapsed, now);
+    this.updateConsultClearing(on, elapsed, now);
     if (!scene || !on) return;
 
     this.consultTime += elapsed;
@@ -1773,125 +1787,142 @@ export class FabricStage {
     if (!this.reduced || t < CONSULT.start + CONSULT.hold + CONSULT.push + CONSULT.seated + 0.5) this.settleUntil = now + 400;
   }
 
-  /** The server, its two ports, and the two cables for the Virtual Switch view. Hidden until that view opens. */
-  private buildSwitch() {
-    const cabinet = this.cabinets.find((item) => item.id === 'fa0');
-    if (!cabinet || !cabinet.slots.length) return;
+  // ---------- Virtual Switch ----------
 
+  private buildSwitchFlow() {
     const group = new THREE.Group();
     group.visible = false;
     this.model.add(group);
-    const box = new THREE.BoxGeometry(1, 1, 1);
-    const part = (
-      parent: THREE.Object3D,
-      mat: THREE.Material,
-      size: [number, number, number],
-      at: [number, number, number],
-    ) => {
-      const mesh = new THREE.Mesh(box, mat);
-      mesh.scale.set(...size);
-      mesh.position.set(...at);
-      parent.add(mesh);
-      return mesh;
+    const top = CAB_H + 0.01;
+    const y = SWITCH_Y + 0.04;
+    // Two customer ports in front and two partner ports at the back, each joined to the switch layer.
+    const specs: { from: [number, number]; to: [number, number, number]; control: [number, number, number] }[] = [
+      { from: [-4.28, FRONT_Z], to: [-1.2, y, 0.78], control: [-2.4, y - 0.3, 1.6] },
+      { from: [-2.84, FRONT_Z], to: [-0.24, y, 0.78], control: [-1.2, y - 0.3, 1.6] },
+      { from: [1.1, BACK_Z], to: [0.72, y, -0.78], control: [0.9, y - 0.3, -1.6] },
+      { from: [2.54, BACK_Z], to: [1.2, y, -0.78], control: [1.9, y - 0.3, -1.6] },
+    ];
+    const members: SwitchMember[] = specs.map((spec, i) => {
+      const start = new THREE.Vector3(spec.from[0], top, spec.from[1]);
+      const lift = new THREE.Vector3(spec.from[0], 2.8, spec.from[1]);
+      const end = new THREE.Vector3(...spec.to);
+      const path = this.toLightPath(new THREE.CubicBezierCurve3(start, lift, new THREE.Vector3(...spec.control), end).getPoints(70));
+      const material = new THREE.MeshBasicMaterial({ color: '#63b4b5' });
+      const { mesh, segments } = this.makeTube(group, path, 0.03, material);
+      return { path, tube: mesh, segments, material, port: this.makeChip(group, `Port ${i + 1}`, 'ink'), rig: this.makeRig(group, 1) };
+    });
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.4, 0.45, 48),
+      new THREE.MeshBasicMaterial({ color: '#35d0c4', transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }),
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.set(0, SWITCH_Y + 0.06, 0);
+    ring.visible = false;
+    group.add(ring);
+    this.switchFlow = {
+      group,
+      members,
+      macs: [this.makeChip(group, 'aa:01 → Port 1'), this.makeChip(group, 'bb:04 → Port 4')],
+      flood: this.makeChip(group, 'Destination unknown: sent to every port', 'amber'),
+      known: this.makeChip(group, 'Destination known: sent to one port'),
+      ring,
     };
-
-    // A taller slot gives the ports room. Use the one nearest chest height.
-    let slot = 0;
-    const score = (i: number) => Math.abs(cabinet.slots[i].y - 1.3) + (cabinet.slots[i].h > 0.1 ? 0 : 0.4);
-    cabinet.slots.forEach((_, i) => {
-      if (score(i) < score(slot)) slot = i;
-    });
-    const { y: slotY, h: slotH } = cabinet.slots[slot];
-
-    const server = new THREE.Group();
-    server.position.set(cabinet.x, slotY, UNIT_FRONT - UNIT_D / 2);
-    part(server, cabinet.unit, [CAB_W - 0.12, slotH, UNIT_D], [0, 0, 0]);
-    const socket = new THREE.MeshStandardMaterial({ color: '#0a1418', roughness: 0.7 });
-    const portX = [-0.15, 0.15];
-    const leds: THREE.MeshBasicMaterial[] = [];
-    portX.forEach((x) => {
-      part(server, socket, [0.13, Math.min(slotH * 0.7, 0.09), 0.03], [x, 0, UNIT_D / 2 + 0.002]);
-      const led = new THREE.MeshBasicMaterial({ color: '#26404f' });
-      leds.push(led);
-      part(server, led, [0.024, 0.016, 0.008], [x + Math.sign(x) * 0.095, 0, UNIT_D / 2 + 0.004]);
-    });
-    group.add(server);
-
-    // Each plug has a connector, a coloured boot and a cable that hangs from the virtual switch above.
-    const metal = new THREE.MeshStandardMaterial({ color: '#2b3a45', roughness: 0.5 });
-    const gold = new THREE.MeshStandardMaterial({ color: '#d9b45a', roughness: 0.35, metalness: 0.4 });
-    const plugs: THREE.Group[] = [];
-    const cables: SwitchScene['cables'] = [];
-    ['#f2b84b', '#35d0c4'].forEach((color, i) => {
-      const boot = new THREE.MeshStandardMaterial({ color, roughness: 0.6 });
-      const plug = new THREE.Group();
-      part(plug, gold, [0.1, 0.055, 0.02], [0, 0, 0.01]);
-      part(plug, metal, [0.125, 0.075, 0.14], [0, 0, 0.09]);
-      part(plug, boot, [0.105, 0.062, 0.08], [0, 0, 0.2]);
-      group.add(plug);
-      plugs.push(plug);
-      const mesh = new THREE.Mesh(new THREE.BufferGeometry(), boot);
-      group.add(mesh);
-      cables.push({ mesh, anchor: new THREE.Vector3(cabinet.x + (i === 0 ? -0.4 : 0.25), SWITCH_Y - 0.05, 0.1) });
-    });
-
-    this.switchScene = { group, cabinet, slot, portX, portY: slotY, leds, plugs, cables };
   }
 
-  private updateSwitch(elapsed: number, now: number) {
-    const scene = this.switchScene;
-    const on = !!scene && this.focus === 'vswitch' && this.introDone;
-    if (on !== this.switchOn) {
-      this.switchOn = on;
-      this.switchTime = 0;
-      if (scene) {
-        scene.group.visible = on;
-        // The slot the server sits in is empty in the rack, because the server is drawn here instead.
-        if (on) scene.cabinet.hole = scene.slot;
-        else if (scene.cabinet.hole === scene.slot) scene.cabinet.hole = undefined;
-        this.mountUnits(scene.cabinet, BUILD.end + 10);
-        this.growTrays(on ? 0 : 1);
-        this.renderer.shadowMap.needsUpdate = true;
+  private updateSwitchFlow(elapsed: number, now: number) {
+    const flow = this.switchFlow;
+    if (!flow) return;
+    const on = this.focus === 'vswitch' && this.introDone;
+    if (on !== this.switchFlowOn) {
+      this.switchFlowOn = on;
+      this.switchFlowTime = 0;
+      flow.group.visible = on;
+      flow.ring.visible = false;
+      for (const member of flow.members) {
+        this.drawTube(member.tube, member.segments, 0);
+        member.material.color.set('#63b4b5');
+        member.port.visible = false;
+        this.hideRig(member.rig);
       }
+      for (const chip of [...flow.macs, flow.flood, flow.known]) chip.visible = false;
+      this.settleUntil = now + 400;
     }
-    if (!scene || !on) return;
+    if (!on) return;
 
-    this.switchTime += elapsed;
-    const t = this.switchTime;
-    const arrived = t > SWITCH.appear;
+    this.switchFlowTime += elapsed;
+    const t = this.switchFlowTime;
+    const { members, macs, flood, known, ring } = flow;
+    const tmp = new THREE.Vector3();
+    const point = new THREE.Vector3();
 
-    // The plugs wait in front of their ports, go in one after the other, stay, then come out together.
-    const period = SWITCH.out + SWITCH.back + SWITCH.rest;
-    const local = t - SWITCH.appear;
-    const u = local < 0 ? 0 : this.reduced ? Math.min(local, SWITCH.out - 0.01) : local % period;
-    scene.plugs.forEach((plug, i) => {
-      const start = SWITCH.start[i];
-      let distance = SWITCH.distance;
-      if (u >= start && u < start + SWITCH.move) distance = SWITCH.distance * (1 - easeInOut((u - start) / SWITCH.move));
-      else if (u >= start + SWITCH.move && u < SWITCH.out) distance = 0;
-      else if (u >= SWITCH.out && u < SWITCH.out + SWITCH.back) distance = SWITCH.distance * easeInOut((u - SWITCH.out) / SWITCH.back);
-
-      const x = scene.cabinet.x + scene.portX[i];
-      plug.position.set(x, scene.portY, UNIT_FRONT + distance);
-      plug.visible = arrived;
-      const cable = scene.cables[i];
-      cable.mesh.visible = arrived;
-      if (arrived) {
-        // The cable hangs in a soft curve from the switch above to the back of the plug.
-        const tail = new THREE.Vector3(x, scene.portY, UNIT_FRONT + distance + 0.25);
-        const middle = new THREE.Vector3().addVectors(cable.anchor, tail).multiplyScalar(0.5);
-        middle.y -= 0.35;
-        middle.z += 0.55;
-        const curve = new THREE.QuadraticBezierCurve3(cable.anchor, middle, tail);
-        cable.mesh.geometry.dispose();
-        cable.mesh.geometry = new THREE.TubeGeometry(curve, 28, 0.022, 6, false);
-      }
-      // The port light comes on when the plug is in.
-      scene.leds[i].color.set(distance < 0.02 && arrived ? '#35d0c4' : '#26404f');
+    // 1. Each member's port joins the switch.
+    members.forEach((member, i) => {
+      const start = VSWITCH.lead + i * VSWITCH.spokeStagger;
+      const progress = clamp01((t - start) / VSWITCH.spokeDraw);
+      this.drawTube(member.tube, member.segments, easeInOut(progress));
+      const up = clamp01((t - start - VSWITCH.spokeDraw) / 0.5);
+      member.material.color.set('#63b4b5').lerp(new THREE.Color('#12a2a6'), up);
+      this.pointOnPath(member.path, member.path.total * 0.9, point);
+      this.showChip(member.port, easeOut(up), tmp.copy(point).setY(point.y + 0.3), 0.17);
     });
 
-    // With reduced motion the view still redraws until the plugs have gone in once.
-    if (!this.reduced || t < SWITCH.appear + SWITCH.out + 0.4) this.settleUntil = now + 400;
+    const local0 = t - VSWITCH.loopStart;
+    let animating = t < VSWITCH.loopStart + VSWITCH.loop;
+    if (local0 < 0) {
+      for (const member of members) this.hideRig(member.rig);
+    } else {
+      const local = this.reduced ? Math.min(local0, VSWITCH.loop - 0.01) : local0 % VSWITCH.loop;
+      const speed = VSWITCH.speed;
+      // A light along one member's wire: in towards the switch, or out towards the member.
+      const run = (member: SwitchMember, since: number, out: boolean) => {
+        if (since < 0 || since * speed > member.path.total + 0.5) {
+          this.hideRig(member.rig);
+          return since >= 0 ? 1 : 0;
+        }
+        this.drawRig(member.rig, member.path, [since * speed], out);
+        return 0;
+      };
+      for (const member of members) this.hideRig(member.rig);
+      const inTime = members[0].path.total / speed;
+      let lit = 0;
+
+      // A frame from port 1 for a port the switch has not seen: the switch learns port 1, then floods it everywhere.
+      run(members[0], local - VSWITCH.frameIn, false);
+      const learned1 = local > VSWITCH.frameIn + inTime;
+      const flooded = local - VSWITCH.flood;
+      if (flooded >= 0 && flooded < VSWITCH.replyIn - VSWITCH.flood) {
+        for (let i = 1; i < members.length; i++) run(members[i], flooded, true);
+        lit = Math.max(lit, 1 - clamp01(flooded / 1.4));
+      }
+      // The reply from port 4 goes straight back to port 1, and the switch learns port 4.
+      run(members[3], local - VSWITCH.replyIn, false);
+      const learned4 = local > VSWITCH.replyIn + members[3].path.total / speed;
+      run(members[0], local - VSWITCH.replyOut, true);
+      // The next frame from port 1 now goes to port 4 only.
+      run(members[0], local - VSWITCH.frameAgain, false);
+      run(members[3], local - VSWITCH.unicast, true);
+
+      this.showChip(macs[0], learned1 ? easeOut(clamp01((local - VSWITCH.frameIn - inTime) / 0.4)) : 0, tmp.set(-1.1, SWITCH_Y + 0.5, 0.5), 0.18);
+      this.showChip(macs[1], learned4 ? easeOut(clamp01((local - VSWITCH.replyIn - members[3].path.total / speed) / 0.4)) : 0, tmp.set(1.1, SWITCH_Y + 0.5, -0.1), 0.18);
+      const floodShow = local >= VSWITCH.flood && local < VSWITCH.replyIn ? easeOut(clamp01((local - VSWITCH.flood) / 0.4)) : 0;
+      const knownShow = local >= VSWITCH.unicast + 0.2 && local < VSWITCH.loop - 0.4 ? easeOut(clamp01((local - VSWITCH.unicast - 0.2) / 0.4)) : 0;
+      this.showChip(flood, floodShow, tmp.set(0, SWITCH_Y + 1.05, 0), 0.2);
+      this.showChip(known, knownShow, tmp.set(0, SWITCH_Y + 1.05, 0), 0.2);
+
+      ring.visible = lit > 0.02;
+      if (ring.visible) {
+        ring.scale.setScalar(1 + (1 - lit) * 3);
+        (ring.material as THREE.MeshBasicMaterial).opacity = lit * 0.7;
+      }
+      animating = !this.reduced || local0 < VSWITCH.loop;
+      if (this.reduced && local0 >= VSWITCH.loop) {
+        for (const member of members) this.hideRig(member.rig);
+        ring.visible = false;
+        flood.visible = false;
+        known.visible = false;
+      }
+    }
+    if (!this.reduced || animating) this.settleUntil = now + 400;
   }
 
   /** One path for each CDN cache: along its wire into the fabric, then along the customer's wire out. */
@@ -2987,7 +3018,7 @@ export class FabricStage {
       const seedPhase = (fibre.id.charCodeAt(0) + fibre.id.charCodeAt(2)) * 0.137;
       for (let k = 0; k < this.pulsesPerFibre; k++) {
         let visible = introDone ? fibre.level : 0;
-        if (this.focus === 'consulting' || this.focus === 'content' || this.focus === 'vxc' || this.focus === 'vrouter') visible = 0;
+        if (this.focus === 'consulting' || this.focus === 'content' || this.focus === 'vxc' || this.focus === 'vrouter' || this.focus === 'vswitch') visible = 0;
         if (visible < 0.02) {
           this.matrix.makeScale(0, 0, 0);
         } else {
@@ -3204,7 +3235,7 @@ export class FabricStage {
     this.updateIntro(Math.min(0.12, sinceLast), now);
     this.updateInstall(Math.min(0.12, sinceLast), now);
     this.updateConsult(Math.min(0.12, sinceLast), now);
-    this.updateSwitch(Math.min(0.12, sinceLast), now);
+    this.updateSwitchFlow(Math.min(0.12, sinceLast), now);
     this.updateContentLight(Math.min(0.12, sinceLast), now);
     this.updateMetro(Math.min(0.12, sinceLast), now);
     this.updateIp(Math.min(0.12, sinceLast), now);

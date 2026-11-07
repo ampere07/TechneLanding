@@ -19,16 +19,6 @@ export interface ServiceSummary {
 
 export const SERVICES: ServiceSummary[] = [
   {
-    id: 'colocation',
-    name: 'Colocation',
-    group: 'Data center',
-    summary:
-      'Rack space with redundant power and controlled cooling for your routers, switches and servers, at Vitro Makati 2, where you can cross-connect to carriers and to the Techne network.',
-    builtFor: 'ISP core and edge, DNS, monitoring and security platforms',
-    menuLine: 'Rack space, power and cross-connects',
-    path: `/${PANEL_IDS.COLOCATION}`,
-  },
-  {
     id: 'ip-transit',
     name: 'IP Transit',
     group: 'Connectivity',
@@ -37,6 +27,16 @@ export const SERVICES: ServiceSummary[] = [
     builtFor: 'ISPs, hosting providers, content networks and enterprises with an ASN',
     menuLine: 'BGP upstream on 1 to 100 Gbps ports',
     path: `/${PANEL_IDS.IP_TRANSIT}`,
+  },
+  {
+    id: 'metro-e',
+    name: 'Metro-E',
+    group: 'Connectivity',
+    summary:
+      'A Layer 2 Ethernet transport service that carries your traffic from point A to point B. Link two of your sites, or a site and Vitro Makati 2, over one private circuit.',
+    builtFor: 'ISPs, enterprises and carriers linking sites or reaching the data center',
+    menuLine: 'Layer 2 transport from point A to point B',
+    path: `/${PANEL_IDS.METRO_E}`,
   },
   {
     id: 'content',
@@ -49,14 +49,14 @@ export const SERVICES: ServiceSummary[] = [
     path: `/${PANEL_IDS.CONTENT}`,
   },
   {
-    id: 'metro-e',
-    name: 'Metro-E',
-    group: 'Connectivity',
+    id: 'colocation',
+    name: 'Colocation',
+    group: 'Data center',
     summary:
-      'A Layer 2 Ethernet transport service that carries your traffic from point A to point B. Link two of your sites, or a site and Vitro Makati 2, over one private circuit.',
-    builtFor: 'ISPs, enterprises and carriers linking sites or reaching the data center',
-    menuLine: 'Layer 2 transport from point A to point B',
-    path: `/${PANEL_IDS.METRO_E}`,
+      'Rack space with redundant power and controlled cooling for your routers, switches and servers, at Vitro Makati 2, where you can cross-connect to carriers and to the Techne network.',
+    builtFor: 'ISP core and edge, DNS, monitoring and security platforms',
+    menuLine: 'Rack space, power and cross-connects',
+    path: `/${PANEL_IDS.COLOCATION}`,
   },
   {
     id: 'vxc',
@@ -100,7 +100,7 @@ export const SERVICES: ServiceSummary[] = [
   },
 ];
 
-export const SERVICE_GROUPS = ['Data center', 'Connectivity', 'Virtual services', 'Advisory'];
+export const SERVICE_GROUPS = ['Connectivity', 'Data center', 'Virtual services', 'Advisory'];
 
 export const serviceById = (id: ServiceSummary['id']) => {
   const found = SERVICES.find((service) => service.id === id);

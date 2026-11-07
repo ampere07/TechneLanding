@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Check, ChevronRight, MapPin, Activity, Cpu, Wifi, Server, Shield, HelpCircle } from 'lucide-react';
+import { Check, ChevronRight, MapPin, Cpu, Wifi, Server, HelpCircle } from 'lucide-react';
 import { PANEL_IDS } from '../constants';
 import { quoteLink } from '../content/quote';
 import { LOCATION } from '../content/site';
@@ -12,29 +12,55 @@ declare global {
   }
 }
 
+type BandwidthType = 'Fixed Bandwidth' | 'Burstable';
+type CommitmentType = '100 Mbps' | '200 Mbps' | '500 Mbps' | '1 Gbps' | '2 Gbps' | '5 Gbps' | '10 Gbps';
 type TabType = 'internet' | 'colocation' | 'virtual';
 type PortSizeType = '1 Gbps' | '10 Gbps' | '100 Gbps';
-type ReachPlanType = 'Fixed Bandwidth' | 'Burstable';
 type ContractTermType = '12 months' | '24 months' | '36 months';
-type SpeedCommitType = 'None' | '100 Mbps' | '200 Mbps' | '500 Mbps' | '1 Gbps' | '2 Gbps' | '5 Gbps' | '10 Gbps';
 
 type ColoCabinetType = '1U Server' | '10U Quarter' | '20U Half' | '42U Full';
 type ColoPowerType = '1 kW' | '2 kW' | '3 kW' | '5 kW';
 
 type VirtualServiceType = 'Virtual Router' | 'Virtual Switch' | 'Virtual Cross Connect';
-type VirtualTierType = 'Starter' | 'Professional' | 'Enterprise' | 'Carrier';
-type VirtualSupportType = 'Self-Managed' | 'Semi-Managed' | 'Fully-Managed';
+
+/** Burstable plans run on a 10 Gbps port. The commit is billed, and use above it is billed at the 95th percentile. */
+const BURST_PORT = '10 Gbps';
+const BURST_COMMITMENTS: CommitmentType[] = ['1 Gbps', '2 Gbps', '5 Gbps'];
+const burstBilling = (commitment: string) => `${commitment} committed + 95th percentile overage`;
+
+/** How a bandwidth option reads. Fixed shows the speed alone. Burstable spells out the port and the billing. */
+const bandwidthLabel = (type: string, commitment: string) =>
+  type === 'Burstable' ? `Commit ${commitment}, ${BURST_PORT} port capacity, billing model: ${burstBilling(commitment)}` : commitment;
 
 const SITE_COORDINATES: [number, number] = [14.5547, 121.0244];
 
 const DATA_CENTER_OPTIONS = [LOCATION.facility, 'My location is not listed'];
 
-const VIRTUAL_TIERS: { id: VirtualTierType; specs: string }[] = [
-  { id: 'Starter', specs: '1 vCPU / 2GB' },
-  { id: 'Professional', specs: '2 vCPU / 4GB' },
-  { id: 'Enterprise', specs: '4 vCPU / 8GB' },
-  { id: 'Carrier', specs: '8 vCPU / 16GB' },
-];
+/** What can be chosen for each virtual service. */
+const ROUTER_BANDWIDTHS = ['10 Gbps', '20 Gbps', '30 Gbps', '40 Gbps'];
+const SWITCH_PORT_SIZES = ['1 Gbps', '10 Gbps'];
+const SWITCH_PORT_CAPACITIES = ['1 Gbps', '2 Gbps', '5 Gbps', '10 Gbps'];
+const VXC_CAPACITIES = ['1 Gbps', '2 Gbps', '5 Gbps', '10 Gbps'];
+
+/** A row of cards, one of which is chosen. */
+const OptionGroup: React.FC<{ title: string; options: string[]; value: string; onChange: (value: string) => void }> = ({ title, options, value, onChange }) => (
+  <div>
+    <h3 className="text-sm font-semibold text-ink mb-4">{title}</h3>
+    <div className={`grid grid-cols-2 gap-3 ${options.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-4'}`}>
+      {options.map((option) => (
+        <button
+          key={option}
+          type="button"
+          onClick={() => onChange(option)}
+          aria-pressed={value === option}
+          className={`p-4 rounded-[4px] border text-center transition-colors duration-[180ms] flex flex-col items-center ${value === option ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
+        >
+          <span className="font-data font-semibold text-ink text-sm">{option}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+);
 
 const CONTRACT_TERMS: ContractTermType[] = ['12 months', '24 months', '36 months'];
 
@@ -44,9 +70,11 @@ export const Pricing: React.FC = () => {
   const [internetDC, setInternetDC] = useState<string>(LOCATION.facility);
   const [isDcDropdownOpen, setIsDcDropdownOpen] = useState(false);
   const dcDropdownRef = useRef<HTMLDivElement>(null);
+  const [bandwidthType, setBandwidthType] = useState<BandwidthType>('Fixed Bandwidth');
+  // The port size chosen for a fixed plan, kept while a burstable plan locks the port to 10 Gbps.
+  const [fixedPort, setFixedPort] = useState<PortSizeType>('1 Gbps');
+  const [commitment, setCommitment] = useState<CommitmentType>('1 Gbps');
   const [portSize, setPortSize] = useState<PortSizeType>('1 Gbps');
-  const [reachPlanType, setReachPlanType] = useState<ReachPlanType>('Fixed Bandwidth');
-  const [speedCommit, setSpeedCommit] = useState<SpeedCommitType>('None');
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -62,8 +90,10 @@ export const Pricing: React.FC = () => {
   const [powerAlloc, setPowerAlloc] = useState<ColoPowerType>('1 kW');
 
   const [vService, setVService] = useState<VirtualServiceType>('Virtual Router');
-  const [vTier, setVTier] = useState<VirtualTierType>('Starter');
-  const [vSupport, setVSupport] = useState<VirtualSupportType>('Self-Managed');
+  const [routerBandwidth, setRouterBandwidth] = useState('10 Gbps');
+  const [switchPortSize, setSwitchPortSize] = useState('1 Gbps');
+  const [switchPortCapacity, setSwitchPortCapacity] = useState('1 Gbps');
+  const [vxcCapacity, setVxcCapacity] = useState('1 Gbps');
 
   const [contractTerm, setContractTerm] = useState<ContractTermType>('12 months');
 
@@ -71,7 +101,19 @@ export const Pricing: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
 
-  const speedCommits: SpeedCommitType[] = ['None', '100 Mbps', '200 Mbps', '500 Mbps', '1 Gbps', '2 Gbps', '5 Gbps', '10 Gbps'];
+  const burstable = bandwidthType === 'Burstable';
+  const commitments: CommitmentType[] = burstable ? BURST_COMMITMENTS : ['100 Mbps', '200 Mbps', '500 Mbps', '1 Gbps', '2 Gbps', '5 Gbps', '10 Gbps'];
+  const chooseBandwidthType = (type: BandwidthType) => {
+    if (type === bandwidthType) return;
+    setBandwidthType(type);
+    if (type === 'Burstable') {
+      setFixedPort(portSize);
+      setPortSize(BURST_PORT);
+      if (!BURST_COMMITMENTS.includes(commitment)) setCommitment('1 Gbps');
+    } else {
+      setPortSize(fixedPort);
+    }
+  };
   useEffect(() => {
     if (window.L) { setLeafletLoaded(true); return; }
     const link = document.createElement('link');
@@ -116,7 +158,6 @@ export const Pricing: React.FC = () => {
   }, [leafletLoaded]);
 
   // What the visitor has chosen. It fills the summary panel and the contact form.
-  const selectedTier = VIRTUAL_TIERS.find((tier) => tier.id === vTier);
   const selection: { label: string; value: string }[] =
     activeTab === 'internet'
       ? [
@@ -124,7 +165,8 @@ export const Pricing: React.FC = () => {
           { label: 'Location', value: LOCATION.city },
           { label: 'Data center', value: internetDC },
           { label: 'Port size', value: portSize },
-          { label: 'Reach plan', value: speedCommit === 'None' ? 'None, peering ports only' : `${reachPlanType}, ${speedCommit}` },
+          { label: 'Bandwidth plan', value: bandwidthType === 'Burstable' ? `Burstable, commit ${commitment}` : `${bandwidthType}, ${commitment}` },
+          ...(bandwidthType === 'Burstable' ? [{ label: 'Billing model', value: burstBilling(commitment) }] : []),
           { label: 'Contract term', value: contractTerm },
         ]
       : activeTab === 'colocation'
@@ -140,12 +182,14 @@ export const Pricing: React.FC = () => {
             { label: 'Service', value: vService },
             { label: 'Location', value: LOCATION.city },
             { label: 'Data center', value: LOCATION.facility },
-            ...(vService === 'Virtual Router'
+            ...(vService === 'Virtual Router' ? [{ label: 'Bandwidth capacity', value: routerBandwidth }] : []),
+            ...(vService === 'Virtual Switch'
               ? [
-                  { label: 'Capacity', value: `${vTier}, ${selectedTier?.specs}` },
-                  { label: 'Management', value: vSupport },
+                  { label: 'Port size', value: switchPortSize },
+                  { label: 'Port capacity', value: switchPortCapacity },
                 ]
               : []),
+            ...(vService === 'Virtual Cross Connect' ? [{ label: 'Capacity', value: vxcCapacity }] : []),
             { label: 'Contract term', value: contractTerm },
           ];
 
@@ -239,18 +283,20 @@ export const Pricing: React.FC = () => {
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                 <div>
                   <h3 className="text-sm font-semibold text-ink mb-4">Port Size</h3>
+                  {burstable && <p className="font-body text-xs text-ink-2 -mt-2 mb-4">Burstable plans run on a {BURST_PORT} port, so the port size cannot be changed.</p>}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {(['1 Gbps', '10 Gbps', '100 Gbps'] as PortSizeType[]).map((size) => (
                       <button
                         key={size}
                         onClick={() => setPortSize(size)}
-                        className={`p-5 rounded-[4px] border text-left transition-colors duration-[180ms] ${portSize === size ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
+                        disabled={burstable}
+                        className={`p-5 rounded-[4px] border text-left transition-colors duration-[180ms] ${portSize === size ? 'border-brand-blue bg-brand-blue/5' : burstable ? 'border-rule bg-paper-2' : 'border-rule hover:border-ink-2 bg-paper-2'} ${burstable ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         <div className="flex justify-between items-center mb-1">
                           <span className="font-data text-xl font-semibold text-ink">{size}</span>
                           {portSize === size && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white"><Check size={11} strokeWidth={3} /></div>}
                         </div>
-                        <span className="text-sm font-semibold text-ink">Peering Interface</span>
+                        <span className="text-sm font-semibold text-ink">Port capacity</span>
                       </button>
                     ))}
                   </div>
@@ -259,15 +305,15 @@ export const Pricing: React.FC = () => {
                 <div className="pt-6 border-t border-rule">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
                     <div>
-                      <h3 className="text-sm font-semibold text-ink">Techne Reach Plan</h3>
-                      <p className="font-body text-xs text-ink-2 mt-1">Global upstream & exchange cache paths</p>
+                      <h3 className="text-sm font-semibold text-ink">Bandwidth Plan</h3>
+                      <p className="font-body text-xs text-ink-2 mt-1">The bandwidth you commit to on this port</p>
                     </div>
                     <div className="bg-paper-2 border border-rule p-1 rounded-[4px] flex gap-1">
-                      {(['Fixed Bandwidth', 'Burstable'] as ReachPlanType[]).map((type) => (
+                      {(['Fixed Bandwidth', 'Burstable'] as BandwidthType[]).map((type) => (
                         <button
                           key={type}
-                          onClick={() => setReachPlanType(type)}
-                          className={`px-3 py-1.5 rounded-[4px] font-body text-xs font-semibold transition-colors duration-[180ms] ${reachPlanType === type ? 'bg-paper text-ink shadow-sm border border-rule' : 'text-ink-2 hover:text-ink'}`}
+                          onClick={() => chooseBandwidthType(type)}
+                          className={`px-3 py-1.5 rounded-[4px] font-body text-xs font-semibold transition-colors duration-[180ms] ${bandwidthType === type ? 'bg-paper text-ink shadow-sm border border-rule' : 'text-ink-2 hover:text-ink'}`}
                         >
                           {type}
                         </button>
@@ -277,13 +323,14 @@ export const Pricing: React.FC = () => {
 
                   <div className="relative">
                     <select
-                      value={speedCommit}
-                      onChange={(e) => setSpeedCommit(e.target.value as SpeedCommitType)}
+                      value={commitment}
+                      onChange={(e) => setCommitment(e.target.value as CommitmentType)}
                       className="input-field appearance-none cursor-pointer"
+                      aria-label="Bandwidth"
                     >
-                      {speedCommits.map((speed) => (
+                      {commitments.map((speed) => (
                         <option key={speed} value={speed}>
-                          {speed === 'None' ? 'No Techne Reach Plan (Peering Ports Only)' : `Commitment: ${speed}`}
+                          {bandwidthLabel(bandwidthType, speed)}
                         </option>
                       ))}
                     </select>
@@ -396,46 +443,18 @@ export const Pricing: React.FC = () => {
                   </div>
                 </div>
 
-                {vService === 'Virtual Router' && (<>
-                <div>
-                  <h3 className="text-sm font-semibold text-ink mb-4">Resource Capacity Tier</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {VIRTUAL_TIERS.map((tier) => (
-                      <button
-                        key={tier.id}
-                        onClick={() => setVTier(tier.id)}
-                        className={`p-4 rounded-[4px] border text-center transition-colors duration-[180ms] flex flex-col items-center ${vTier === tier.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
-                      >
-                        <span className="font-body font-semibold text-ink text-sm">{tier.id}</span>
-                        <span className="font-data text-xs text-ink-2 mt-1">{tier.specs}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-semibold text-ink mb-4">Managed Engineering Support</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {([
-                      { id: 'Self-Managed', label: 'Self-Managed', desc: 'No engineer support' },
-                      { id: 'Semi-Managed', label: 'Semi-Managed', desc: 'Config backup & updates' },
-                      { id: 'Fully-Managed', label: 'Fully-Managed', desc: '24/7 engineer management' }
-                    ] as { id: VirtualSupportType; label: string; desc: string }[]).map((supp) => (
-                      <button
-                        key={supp.id}
-                        onClick={() => setVSupport(supp.id)}
-                        className={`p-4 rounded-[4px] border text-left transition-colors duration-[180ms] flex justify-between items-start ${vSupport === supp.id ? 'border-brand-blue bg-brand-blue/5' : 'border-rule hover:border-ink-2 bg-paper-2'}`}
-                      >
-                        <div>
-                          <span className="font-body font-semibold text-ink text-sm block mb-1">{supp.label}</span>
-                          <span className="font-body text-xs text-ink-2">{supp.desc}</span>
-                        </div>
-                        {vSupport === supp.id && <div className="w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center text-white shrink-0 ml-2"><Check size={11} strokeWidth={3} /></div>}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                </>)}
+                {vService === 'Virtual Router' && (
+                  <OptionGroup title="Bandwidth Capacity" options={ROUTER_BANDWIDTHS} value={routerBandwidth} onChange={setRouterBandwidth} />
+                )}
+                {vService === 'Virtual Switch' && (
+                  <>
+                    <OptionGroup title="Port Size" options={SWITCH_PORT_SIZES} value={switchPortSize} onChange={setSwitchPortSize} />
+                    <OptionGroup title="Port Capacity" options={SWITCH_PORT_CAPACITIES} value={switchPortCapacity} onChange={setSwitchPortCapacity} />
+                  </>
+                )}
+                {vService === 'Virtual Cross Connect' && (
+                  <OptionGroup title="Capacity" options={VXC_CAPACITIES} value={vxcCapacity} onChange={setVxcCapacity} />
+                )}
               </motion.div>
             )}
 
@@ -485,73 +504,6 @@ export const Pricing: React.FC = () => {
 
         {/* Inclusions grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 border-t border-rule pt-16">
-
-          <div className="lg:col-span-4 space-y-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-accent/10 rounded-[4px] text-accent">
-                {activeTab === 'internet' ? <Cpu size={18} /> : activeTab === 'colocation' ? <Server size={18} /> : <Shield size={18} />}
-              </div>
-              <h3 className="font-display font-semibold text-ink">
-                {activeTab === 'internet' && 'Port Plan Inclusions'}
-                {activeTab === 'colocation' && 'Datacenter Standards'}
-                {activeTab === 'virtual' && 'Virtual Edge Benefits'}
-              </h3>
-            </div>
-            <ul className="space-y-3">
-              {activeTab === 'internet' && ['Peered traffic from Alibaba, Amazon, Facebook, Fastly, Google, Riot Games, Swarmify, Tencent, TikTok, Twitch, Zenlayer','Bilateral/multilateral peering support via redundant route servers','Advanced BGP community-based route control','Private VLAN support for secure and isolated traffic exchange','Access to open-source mirror servers'].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-ink-2">
-                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
-                  <span className="font-body text-sm leading-relaxed">{item}</span>
-                </li>
-              ))}
-              {activeTab === 'colocation' && ['A+B Redundant Power allocation from separate UPS configurations','Carrier-Neutral cross connects with all major local fibers','Strict environmental controls (20-24°C, 40-60% humidity)','Direct physical access authorization workflows','24/7 smart-hands engineer support availability on-site'].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-ink-2">
-                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
-                  <span className="font-body text-sm leading-relaxed">{item}</span>
-                </li>
-              ))}
-              {activeTab === 'virtual' && ['Instant automated deployment and configuration sync','Full IPv4/IPv6 dual stack support built-in','Redundant virtual backplane','Integrated stateful packet filters and access logs','Elastic scalability to dynamically resize CPU/RAM capacity'].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-ink-2">
-                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
-                  <span className="font-body text-sm leading-relaxed">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="lg:col-span-4 space-y-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-accent/10 rounded-[4px] text-accent">
-                {activeTab === 'internet' ? <Activity size={18} /> : activeTab === 'colocation' ? <Cpu size={18} /> : <Activity size={18} />}
-              </div>
-              <h3 className="font-display font-semibold text-ink">
-                {activeTab === 'internet' && 'Techne Reach Plan Inclusions'}
-                {activeTab === 'colocation' && 'Infrastructure Facilities'}
-                {activeTab === 'virtual' && 'Virtual Service Integrations'}
-              </h3>
-            </div>
-            <ul className="space-y-3">
-              {activeTab === 'internet' && ['Expanded content via partner Internet Exchanges in Singapore and Hong Kong','Cached content from Akamai, Cloudflare, Facebook, Google, Microsoft, Netflix (coming soon), Steam','Burstable plans and usage-based billing','Longer contract terms available','Optimized performance by serving content closer to your network'].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-ink-2">
-                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
-                  <span className="font-body text-sm leading-relaxed">{item}</span>
-                </li>
-              ))}
-              {activeTab === 'colocation' && ['Precision N+1 cooling infrastructure with hot/cold aisle setups','Gas-based fire suppression systems (FM-200 or equivalent)','Dual diesel engine backup generators with 72-hour fuel storage','Underfloor cable pathways for power and fiber routing','Dedicated client testing benches and assembly spaces'].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-ink-2">
-                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
-                  <span className="font-body text-sm leading-relaxed">{item}</span>
-                </li>
-              ))}
-              {activeTab === 'virtual' && ['Direct link to local Internet Peering (PHOpenIX)','Zero-downtime routing protocol migrations','Optional cloud-delivered DNS firewall integration','Custom API endpoint control keys','Comprehensive flow log export pipelines (NetFlow/IPFIX)'].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-ink-2">
-                  <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5"><Check size={10} strokeWidth={3} /></div>
-                  <span className="font-body text-sm leading-relaxed">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
           <div className="lg:col-span-4">
             <div className="p-7 bg-paper border border-rule rounded-[4px] flex flex-col justify-between h-full min-h-[260px]">
               <div>

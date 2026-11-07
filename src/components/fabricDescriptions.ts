@@ -9,7 +9,7 @@ export const FABRIC_DESCRIPTIONS: Record<FabricFocus, string> = {
   content: 'Scale model of a data hall showing light travelling along the wires from the CDN cache cabinets, through the Techne fabric, to a customer cabinet.',
   'metro-e': 'Scale model of two separate facilities side by side, with a link carrying light between a point A rack in the first and a point B rack in the second.',
   vxc: 'Scale model of a data hall showing one private path between a customer port and a partner port.',
-  vswitch: 'Scale model of a data hall zoomed to the Techne fabric rack, where two cables hanging from the virtual switch above are plugged into the two ports of one server.',
+  vswitch: 'Scale model of a data hall showing four cabinets joined to a virtual switch above the fabric, which learns the address behind each port, floods a frame to every port when it does not know the destination, and then sends frames to one port only.',
   vrouter: 'Scale model of a data hall showing a virtual router above the fabric routing between a customer cabinet and upstream carriers.',
   consulting: 'Scale model of a data hall zoomed to the Techne fabric rack, where an engineer pushes a server into the rack while an analyst works at a table with a laptop.',
 };
