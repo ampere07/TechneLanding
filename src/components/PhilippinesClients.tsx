@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, Maximize2 } from 'lucide-react';
-import { CLIENT_SITES, REGIONS, type Region } from '../content/clients';
+import { CLIENT_SITES, REGIONS, SERVICES, type Region, type Service } from '../content/clients';
 import { PHILIPPINES_PATH, WORLD_H, WORLD_W, worldPercent } from '../content/worldMap';
 import type { PhilippinesOrigin } from './Globe';
 
@@ -110,6 +110,9 @@ const Pin: React.FC<{
 export const PhilippinesClients: React.FC<{ onClose: () => void; from?: PhilippinesOrigin }> = ({ onClose, from }) => {
   const [active, setActive] = useState<number | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
+  const [service, setService] = useState<Service | null>(null);
+  // The areas shown, numbered in this order. A service filter leaves out the areas without it.
+  const sites = CLIENT_SITES.filter((s) => !service || s.services.includes(service));
   const calm = !!useReducedMotion();
 
   // The map starts out small, on top of the islands on the globe, then grows and slides to its place at the left.
@@ -199,13 +202,13 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
             </div>
 
             {/* Pins appear only for the island group that has been chosen */}
-            {CLIENT_SITES.map((site, i) => {
+            {sites.map((site, i) => {
               if (site.region !== region) return null;
               const at = toBox(site.lon, site.lat);
-              const order = CLIENT_SITES.filter((s) => s.region === region).indexOf(site);
+              const order = sites.filter((s) => s.region === region).indexOf(site);
               return (
                 <Pin
-                  key={`${site.city}-${i}`}
+                  key={site.name}
                   n={i}
                   delay={0.7 + order * 0.1}
                   left={at.left}
@@ -214,7 +217,7 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
                   still={calm}
                   open={active === i}
                   name={site.name}
-                  detail={`${site.city} · ${site.type}`}
+                  detail={site.services.join(' · ')}
                   onActive={(on) => setActive(on ? i : null)}
                   onToggle={() => setActive(active === i ? null : i)}
                 />
@@ -274,11 +277,28 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
         </button>
         <p className="eyebrow mb-1">Philippines</p>
         <h3 className="heading-2">Where our clients are</h3>
-        <p className="lede mt-3">{CLIENT_SITES.length} client sites across Luzon, Visayas and Mindanao. Choose an island group to see its clients on the map.</p>
+        <p className="lede mt-3">{sites.length} client areas across Luzon, Visayas and Mindanao. Choose an island group to see its clients on the map.</p>
+
+        <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filter by service">
+          {([null, ...SERVICES] as (Service | null)[]).map((option) => (
+            <button
+              key={option ?? 'all'}
+              type="button"
+              aria-pressed={service === option}
+              onClick={() => {
+                setActive(null);
+                setService(option);
+              }}
+              className={`text-[0.8125rem] font-medium rounded-[3px] border px-3 py-1.5 cursor-pointer transition-colors duration-150 ${service === option ? 'bg-navy border-navy text-white' : 'border-rule text-ink-2 hover:border-accent hover:text-accent'}`}
+            >
+              {option ?? 'All'}
+            </button>
+          ))}
+        </div>
 
         <div className="mt-6 space-y-6">
           {REGIONS.map((name, g) => {
-            const rows = CLIENT_SITES.map((site, index) => ({ site, index })).filter(({ site }) => site.region === name);
+            const rows = sites.map((site, index) => ({ site, index })).filter(({ site }) => site.region === name);
             const selected = region === name;
             return (
               <motion.div
@@ -292,7 +312,7 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
                   onClick={() => pick(name)}
                   aria-pressed={selected}
                   aria-expanded={selected}
-                  aria-label={`${name}, ${rows.length} sites. ${selected ? 'Hide the clients' : `Show the clients in ${name} on the map`}`}
+                  aria-label={`${name}, ${rows.length} areas. ${selected ? 'Hide the clients' : `Show the clients in ${name} on the map`}`}
                   className="group w-full flex items-baseline justify-between border-b-2 border-ink pb-1.5 cursor-pointer text-left"
                 >
                   <span className={`text-[0.9375rem] font-semibold transition-colors duration-150 ${selected ? 'text-accent' : 'text-ink group-hover:text-accent'}`}>{name}</span>
@@ -315,7 +335,7 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
                     >
                       {rows.map(({ site, index }) => (
                         <li
-                          key={`${site.city}-${index}`}
+                          key={site.name}
                           onPointerEnter={() => setActive(index)}
                           onPointerLeave={() => setActive(null)}
                           className={`flex items-center gap-3 py-2.5 border-b border-rule transition-colors duration-150 ${active === index ? 'bg-accent-soft' : ''}`}
@@ -325,9 +345,12 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
                           </span>
                           <span className="flex-1 min-w-0">
                             <span className="block text-[0.9375rem] font-medium text-ink truncate">{site.name}</span>
-                            <span className="block text-[0.8125rem] text-ink-2">{site.city}</span>
                           </span>
-                          <span className="text-[0.75rem] text-ink-3 border border-rule rounded-[2px] px-1.5 py-0.5">{site.type}</span>
+                          <span className="flex flex-wrap justify-end gap-1.5">
+                            {site.services.map((sv) => (
+                              <span key={sv} className="text-[0.75rem] text-ink-3 border border-rule rounded-[2px] px-1.5 py-0.5">{sv}</span>
+                            ))}
+                          </span>
                         </li>
                       ))}
                     </motion.ul>

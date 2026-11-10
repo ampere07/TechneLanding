@@ -1,30 +1,47 @@
 /**
- * Techne client sites shown on the zoomed Philippines map.
- * PLACEHOLDERS: the names and the list of cities are examples only. Replace them with real clients,
- * keeping the longitude and latitude of each site. Within a region, list sites from north to south.
+ * Techne client areas shown on the zoomed Philippines map. Each area is a place where Techne has clients, and the
+ * services it has there. Within a region, areas are listed from north to south.
+ * The longitude and latitude are the approximate centre of each area, used to place the pin.
  */
 export type Region = 'Luzon' | 'Visayas' | 'Mindanao';
+export type Service = 'Network Consulting' | 'Internet';
+
+export const REGIONS: Region[] = ['Luzon', 'Visayas', 'Mindanao'];
+export const SERVICES: Service[] = ['Network Consulting', 'Internet'];
 
 export interface ClientSite {
+  /** The area, as it is shown in the list and on the pin. */
   name: string;
-  city: string;
-  type: 'ISP' | 'Enterprise';
   region: Region;
+  services: Service[];
   lon: number;
   lat: number;
 }
 
-export const REGIONS: Region[] = ['Luzon', 'Visayas', 'Mindanao'];
+const NC: Service[] = ['Network Consulting'];
+const BOTH: Service[] = ['Network Consulting', 'Internet'];
 
 export const CLIENT_SITES: ClientSite[] = [
-  { name: 'Client name', city: 'Baguio', type: 'ISP', region: 'Luzon', lon: 120.6, lat: 16.4 },
-  { name: 'Client name', city: 'Clark, Pampanga', type: 'Enterprise', region: 'Luzon', lon: 120.55, lat: 15.18 },
-  { name: 'Client name', city: 'Manila', type: 'ISP', region: 'Luzon', lon: 121.0, lat: 14.6 },
-  { name: 'Client name', city: 'Legazpi', type: 'ISP', region: 'Luzon', lon: 123.75, lat: 13.14 },
-  { name: 'Client name', city: 'Iloilo', type: 'Enterprise', region: 'Visayas', lon: 122.57, lat: 10.72 },
-  { name: 'Client name', city: 'Tacloban', type: 'ISP', region: 'Visayas', lon: 125.0, lat: 11.24 },
-  { name: 'Client name', city: 'Cebu City', type: 'ISP', region: 'Visayas', lon: 123.89, lat: 10.32 },
-  { name: 'Client name', city: 'Cagayan de Oro', type: 'Enterprise', region: 'Mindanao', lon: 124.64, lat: 8.48 },
-  { name: 'Client name', city: 'Davao', type: 'ISP', region: 'Mindanao', lon: 125.46, lat: 7.07 },
-  { name: 'Client name', city: 'Zamboanga', type: 'Enterprise', region: 'Mindanao', lon: 122.08, lat: 6.91 },
+  // Luzon
+  { name: 'Pangasinan', region: 'Luzon', services: NC, lon: 120.35, lat: 15.9 },
+  { name: 'Nueva Ecija', region: 'Luzon', services: NC, lon: 121.0, lat: 15.58 },
+  { name: 'Pampanga', region: 'Luzon', services: BOTH, lon: 120.65, lat: 15.05 },
+  { name: 'Bulacan', region: 'Luzon', services: BOTH, lon: 120.85, lat: 14.85 },
+  { name: 'Caloocan', region: 'Luzon', services: BOTH, lon: 120.97, lat: 14.65 },
+  { name: 'Makati', region: 'Luzon', services: BOTH, lon: 121.02, lat: 14.55 },
+  { name: 'Rizal', region: 'Luzon', services: BOTH, lon: 121.3, lat: 14.6 },
+  { name: 'Cavite', region: 'Luzon', services: NC, lon: 120.9, lat: 14.28 },
+  { name: 'Laguna', region: 'Luzon', services: BOTH, lon: 121.33, lat: 14.17 },
+  { name: 'Bicol', region: 'Luzon', services: NC, lon: 123.75, lat: 13.14 },
+  // Visayas
+  { name: 'Aklan', region: 'Visayas', services: NC, lon: 122.37, lat: 11.7 },
+  { name: 'Ormoc, Leyte', region: 'Visayas', services: NC, lon: 124.6, lat: 11.0 },
+  { name: 'Maasin, Leyte', region: 'Visayas', services: NC, lon: 124.84, lat: 10.13 },
+  { name: 'Bohol', region: 'Visayas', services: BOTH, lon: 124.2, lat: 9.85 },
+  // Mindanao
+  { name: 'Surigao', region: 'Mindanao', services: NC, lon: 125.5, lat: 9.78 },
+  { name: 'Samal', region: 'Mindanao', services: NC, lon: 125.72, lat: 7.07 },
+  { name: 'Zamboanga', region: 'Mindanao', services: BOTH, lon: 122.08, lat: 6.91 },
+  { name: 'Basilan', region: 'Mindanao', services: BOTH, lon: 122.0, lat: 6.55 },
+  { name: 'Jolo', region: 'Mindanao', services: BOTH, lon: 121.0, lat: 6.05 },
 ];

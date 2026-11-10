@@ -117,9 +117,11 @@ interface GlobeProps {
   onSelectPhilippines?: (origin: PhilippinesOrigin) => void;
   /** While true the globe turns to the Philippines and moves in closer. */
   zoomed?: boolean;
+  /** Start already facing the Philippines with the lines drawn, as when the visitor comes back from the client map. */
+  skipIntro?: boolean;
 }
 
-const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = false }) => {
+const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = false, skipIntro = false }) => {
   const hostRef = useRef<HTMLDivElement>(null);
   const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
   const calloutRef = useRef<HTMLDivElement>(null);
@@ -137,6 +139,7 @@ const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = f
     const host = hostRef.current;
     if (!host) return;
     const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const instant = calm || skipIntro; // no opening spin or line drawing
 
     let renderer: THREE.WebGLRenderer;
     try {
@@ -223,7 +226,7 @@ const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = f
       spin.add(mesh);
       return { mesh, total: geometry.index ? geometry.index.count : 0 };
     });
-    let arcTime = calm ? 99 : 0;
+    let arcTime = instant ? 99 : 0;
     const drawArcs = () => {
       arcs.forEach((arc, i) => {
         const progress = Math.max(0, Math.min(1, (arcTime - 1.2 - i * 0.35) / 1.6));
@@ -307,13 +310,13 @@ const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = f
     scene.add(glow);
 
     // Where the globe is facing: the longitude and latitude at the centre.
-    let lon = calm ? HOME_NETWORK.lon : HOME_NETWORK.lon - 80;
+    let lon = instant ? HOME_NETWORK.lon : HOME_NETWORK.lon - 80;
     let lat = 14;
     let velocityLon = 0;
     let velocityLat = 0;
     let dragging = false;
     let last = { x: 0, y: 0 };
-    let intro = calm ? 1 : 0;
+    let intro = instant ? 1 : 0;
     let inView = true;
     let raf = 0;
     let lastTime = performance.now();
@@ -336,10 +339,10 @@ const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = f
     ro.observe(host);
     resize();
 
-    // The "click to see clients" message starts at the west coast of the Visayas, so it sits right on the enlarged islands.
+    // The "click to see clients" message sits just off the east coast of the islands, on their right side.
     const callout = toVector(
-      HOME_NETWORK.lon + (121.9 - HOME_NETWORK.lon) * PH_SCALE,
-      HOME_NETWORK.lat + (11.2 - HOME_NETWORK.lat) * PH_SCALE,
+      HOME_NETWORK.lon + (127.2 - HOME_NETWORK.lon) * PH_SCALE,
+      HOME_NETWORK.lat + (12.0 - HOME_NETWORK.lat) * PH_SCALE,
       new THREE.Vector3(),
     );
     const calloutAt = new THREE.Vector3();
@@ -542,10 +545,10 @@ const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = f
       {/* A message on the islands that tells the visitor they can be clicked */}
       <div ref={calloutRef} aria-hidden="true" className="absolute left-0 top-0 pointer-events-none will-change-transform" style={{ visibility: 'hidden' }}>
         <motion.span
-          className="absolute left-1/2 -translate-x-1/2 top-full mt-3 md:left-full md:top-1/2 md:translate-x-0 md:-translate-y-1/2 md:mt-0 md:ml-0 whitespace-nowrap bg-accent text-white text-[0.75rem] font-semibold leading-tight px-3 py-2 rounded-[3px] shadow-[0_6px_16px_-6px_rgb(11_37_54_/_0.5)]"
-          initial={{ opacity: 0, scale: 0.9 }}
+          className="absolute left-1/2 -translate-x-1/2 top-full mt-3 md:left-full md:top-1/2 md:translate-x-0 md:-translate-y-1/2 md:mt-0 md:ml-2 whitespace-nowrap bg-accent text-white text-[0.75rem] font-semibold leading-tight px-3 py-2 rounded-[3px] shadow-[0_6px_16px_-6px_rgb(11_37_54_/_0.5)]"
+          initial={skipIntro ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1, y: [0, -3, 0] }}
-          transition={{ opacity: { duration: 0.5, delay: 2 }, scale: { duration: 0.5, delay: 2 }, y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: 2.5 } }}
+          transition={{ opacity: { duration: 0.5, delay: skipIntro ? 0 : 2 }, scale: { duration: 0.5, delay: skipIntro ? 0 : 2 }, y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: skipIntro ? 0 : 2.5 } }}
         >
           {/* Pointer towards the islands */}
           <span className="absolute left-1/2 -translate-x-1/2 -top-1 w-2 h-2 rotate-45 bg-accent md:left-[-4px] md:top-1/2 md:-translate-y-1/2 md:translate-x-0" />

@@ -15,10 +15,72 @@ const EASE = [0.16, 1, 0.3, 1] as const;
  * 'gallery' is a set of photos (`count` of them) the visitor can step through.
  */
 type Kind = 'comparison' | 'single' | 'gallery';
-const PROJECTS: { title: string; kind: Kind; count?: number }[] = [
-  { title: 'Project title', kind: 'comparison' },
-  { title: 'Project title', kind: 'single' },
-  { title: 'Project title', kind: 'gallery', count: 5 },
+interface Project {
+  title: string;
+  kind: Kind;
+  count?: number;
+  /** A real photo for a 'single' project. Leave out to show the placeholder. */
+  photo?: string;
+  summary?: string;
+  link?: string;
+}
+const PROJECTS: Project[] = [
+  {
+    title: "Laguna Network Deployment",
+    kind: 'single',
+    photo: '/network-buildout/laguna-network-deployment.jpg',
+    summary:
+      "End-to-end deployment and implementation of a Core, Distribution, and Network Monitoring System for an ISP network in Laguna. The project focused on building a scalable network architecture, improving traffic visibility, and strengthening overall network performance, reliability, and manageability.",
+    link: 'https://www.facebook.com/share/p/1MqTipwuMd/',
+  },
+  {
+    title: "Surigao Network Deployment",
+    kind: 'single',
+    photo: '/network-buildout/surigao.jpg',
+    summary:
+      "End-to-end deployment and implementation of a Core, Distribution, and Network Monitoring System for an ISP network in Surigao. The project focused on building a more scalable and resilient infrastructure while improving network visibility, performance, and operational control.",
+    link: 'https://www.facebook.com/share/p/1CQxGmaFUC/',
+  },
+  {
+    title: "Rizal Network Deployment",
+    kind: 'single',
+    photo: '/network-buildout/rizal.jpg',
+    summary:
+      "Deployment and implementation of a Core, Distribution, and Network Monitoring System for an ISP network in Rizal, designed to improve scalability, reliability, traffic visibility, and overall network operations.",
+    link: 'https://www.facebook.com/share/p/1CuNUEEJv1/',
+  },
+  {
+    title: "Zamboanga, Basilan & Jolo Network Deployment",
+    kind: 'single',
+    photo: '/network-buildout/zamboanga-basilan-jolo.jpg',
+    summary:
+      "Deployment and implementation of a multi-site ISP network across Zamboanga, Basilan, and Jolo, focused on strengthening inter-site connectivity, network reliability, scalability, and operational visibility across geographically challenging areas.",
+    link: 'https://www.facebook.com/share/p/19enECDbgv/',
+  },
+  {
+    title: "Vitro Makati 2 Data Center Presence Deployment",
+    kind: 'single',
+    photo: '/network-buildout/vitro-makati-2.jpg',
+    summary:
+      "Deployment and implementation of a data center network presence at VITRO Makati 2 for an ISP client from Leyte, providing a stronger foundation for upstream connectivity, peering, network scalability, and future expansion.",
+    link: 'https://www.facebook.com/share/p/1eQvr8uvki/',
+  },
+  {
+    title: "Bohol Network Deployment",
+    kind: 'single',
+    photo: '/network-buildout/bohol.jpg',
+    summary:
+      "Deployment and implementation of a scalable ISP network infrastructure for clients in Bohol, focused on improving core connectivity, network reliability, traffic visibility, and readiness for future capacity and service expansion.",
+    link: 'https://www.facebook.com/share/p/1X3jPwFEwW/',
+  },
+  {
+    title: "Leyte Network Deployment",
+    kind: 'single',
+    photo: '/network-buildout/leyte.jpg',
+    summary:
+      "Deployment and implementation of a core and distribution network infrastructure for an ISP in Leyte, designed to improve network reliability, scalability, traffic management, and overall service performance while preparing the network for future growth and expansion.",
+    link: 'https://www.facebook.com/share/p/1DCofhk6Wq/',
+  },
 ];
 
 const FACTS = [
@@ -178,9 +240,17 @@ const PhotoPlaceholder: React.FC<{ kind: 'before' | 'after'; label?: string }> =
 };
 
 /** A single finished-result photo for projects with no before shot. */
-const SuccessPhoto: React.FC = () => (
-  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[4px] border border-rule">
-    <PhotoPlaceholder kind="after" label="Completed project photo placeholder" />
+const SuccessPhoto: React.FC<{ src?: string; alt?: string }> = ({ src, alt = '' }) => (
+  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[4px] border border-rule bg-navy-2">
+    {src ? (
+      <>
+        {/* A blurred copy fills the frame, so a portrait photo is shown whole without bars */}
+        <img src={src} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60" />
+        <img src={src} alt={alt} loading="lazy" className="absolute inset-0 w-full h-full object-contain" />
+      </>
+    ) : (
+      <PhotoPlaceholder kind="after" label="Completed project photo placeholder" />
+    )}
     <span className="absolute top-3 left-3 bg-navy/85 text-white text-[0.75rem] font-medium px-2.5 py-1 rounded-[3px]">As delivered</span>
   </div>
 );
@@ -397,11 +467,18 @@ export const NetworkBuildout: React.FC = () => (
                 <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] gap-6 lg:gap-10 items-start">
                   <div>
                     {project.kind === 'comparison' && <BeforeAfter label={project.title} />}
-                    {project.kind === 'single' && <SuccessPhoto />}
+                    {project.kind === 'single' && <SuccessPhoto src={project.photo} alt={project.title} />}
                     {project.kind === 'gallery' && <Gallery label={`${project.title} (${index + 1})`} count={project.count ?? 4} />}
                   </div>
                   <div>
-                    <p className="body-copy">Project summary placeholder. A short account of the requirement, what Techne built and the outcome for the customer.</p>
+                    <p className="body-copy">
+                      {project.summary ?? 'Project summary placeholder. A short account of the requirement, what Techne built and the outcome for the customer.'}
+                    </p>
+                    {project.link && (
+                      <a href={project.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-4 text-[0.9375rem] font-medium text-accent hover:underline">
+                        View the original post
+                      </a>
+                    )}
                   </div>
                 </div>
               </article>

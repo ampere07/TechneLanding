@@ -104,12 +104,16 @@ const WorldMap: React.FC<{ onSelectPhilippines?: (origin: PhilippinesOrigin) => 
 // The globe loads three.js, so it loads on demand. If WebGL is missing, the flat map is shown instead.
 const Globe = lazy(() => import('./Globe'));
 
-const GlobeOrMap: React.FC<{ zoomed: boolean; onSelectPhilippines: (origin: PhilippinesOrigin) => void }> = ({ zoomed, onSelectPhilippines }) => {
+const GlobeOrMap: React.FC<{ zoomed: boolean; skipIntro?: boolean; onSelectPhilippines: (origin: PhilippinesOrigin) => void }> = ({
+  zoomed,
+  skipIntro,
+  onSelectPhilippines,
+}) => {
   const [failed, setFailed] = useState(false);
   if (failed) return <WorldMap onSelectPhilippines={onSelectPhilippines} />;
   return (
     <Suspense fallback={<div className="mx-auto w-full max-w-[640px] aspect-square" />}>
-      <Globe onFailed={() => setFailed(true)} zoomed={zoomed} onSelectPhilippines={onSelectPhilippines} />
+      <Globe onFailed={() => setFailed(true)} zoomed={zoomed} skipIntro={skipIntro} onSelectPhilippines={onSelectPhilippines} />
     </Suspense>
   );
 };
@@ -172,8 +176,8 @@ export const NetworkMap: React.FC = () => {
             <motion.div
               key="globe"
               className="col-start-1 row-start-1 [--t:clamp(min(2.5rem,calc((100vw_-_40px)/6.9)),7.4vw,6.5rem)]"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0, transition: { duration: 0.5, ease: 'easeIn' } }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
@@ -184,6 +188,7 @@ export const NetworkMap: React.FC = () => {
               <Reveal className="relative z-10 mt-[calc(var(--t)*-0.2-min(640px,100vw-40px)*0.085)] md:mt-[calc(var(--t)*-0.66-min(640px,100vw-40px)*0.085)]">
                 <GlobeOrMap
                   zoomed={false}
+                  skipIntro={origin !== undefined}
                   onSelectPhilippines={(from) => {
                     setOrigin(from);
                     setZoomed(true);
