@@ -33,7 +33,7 @@ const SIDE: Record<TransitNetwork['side'], string> = {
 };
 const UNLOCKED_COUNTRIES = new Set(TRANSIT_NETWORKS.filter((network) => network.unlocked).map((network) => network.country));
 /** The Philippines is drawn this many times larger than its true size, so it stands out. */
-const PH_SCALE = 2.6;
+const PH_SCALE = 4.1;
 
 /** The world, with the Philippines enlarged and highlighted, and each country's upstream network shown locked or unlocked. */
 const WorldMap: React.FC<{ onSelectPhilippines?: (origin: PhilippinesOrigin) => void }> = ({ onSelectPhilippines }) => {

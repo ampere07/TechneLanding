@@ -13,7 +13,7 @@ import { PHILIPPINES_PATH, WORLD, WORLD_H, WORLD_W } from '../content/worldMap';
 
 const TEX_W = 2048;
 const TEX_H = 1024;
-const PH_SCALE = 2.6;
+const PH_SCALE = 4.1;
 const DEG = Math.PI / 180;
 const LAT_LIMIT = 62;
 

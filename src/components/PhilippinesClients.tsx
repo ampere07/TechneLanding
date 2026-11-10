@@ -187,7 +187,7 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
               <svg viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`} className="absolute inset-0 w-full h-full" aria-hidden="true">
                 <motion.path
                   d={PHILIPPINES_PATH}
-                  fill="#0e6b70"
+                  fill="#2a8f93"
                   stroke="#ffffff"
                   strokeWidth="1"
                   vectorEffect="non-scaling-stroke"
