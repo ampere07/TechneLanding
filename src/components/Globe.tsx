@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { motion } from 'framer-motion';
 import { HOME_NETWORK, TRANSIT_NETWORKS, type TransitNetwork } from '../content/transit';
 import { PHILIPPINES_PATH, WORLD, WORLD_H, WORLD_W } from '../content/worldMap';
 
@@ -121,6 +122,7 @@ interface GlobeProps {
 const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = false }) => {
   const hostRef = useRef<HTMLDivElement>(null);
   const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const calloutRef = useRef<HTMLDivElement>(null);
   const failedRef = useRef(onFailed);
   const selectRef = useRef(onSelectPhilippines);
   const zoomedRef = useRef(zoomed);
@@ -334,9 +336,25 @@ const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = f
     ro.observe(host);
     resize();
 
+    // The "click to see clients" message starts at the west coast of the Visayas, so it sits right on the enlarged islands.
+    const callout = toVector(
+      HOME_NETWORK.lon + (121.9 - HOME_NETWORK.lon) * PH_SCALE,
+      HOME_NETWORK.lat + (11.2 - HOME_NETWORK.lat) * PH_SCALE,
+      new THREE.Vector3(),
+    );
+    const calloutAt = new THREE.Vector3();
     const place = new THREE.Vector3();
     const updateChips = () => {
       spin.updateMatrixWorld();
+      const hint = calloutRef.current;
+      if (hint) {
+        calloutAt.copy(callout).applyMatrix4(spin.matrixWorld);
+        const facing = Math.max(0, Math.min(1, (calloutAt.z - 0.18) / 0.22));
+        calloutAt.project(camera);
+        hint.style.transform = `translate(${(calloutAt.x * 0.5 + 0.5) * width}px, ${(-calloutAt.y * 0.5 + 0.5) * height}px)`;
+        hint.style.opacity = String(facing);
+        hint.style.visibility = facing > 0 ? 'visible' : 'hidden';
+      }
       PINS.forEach((pin, i) => {
         const el = chipRefs.current[i];
         if (!el) return;
@@ -496,18 +514,16 @@ const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = f
           style={{ visibility: 'hidden' }}
         >
           <span
-            className={`absolute -left-1 -top-1 rounded-full ${
-              pin.kind === 'home' ? 'w-3 h-3 -left-1.5 -top-1.5 bg-white ring-2 ring-accent' : pin.kind === 'open' ? 'w-2 h-2 bg-accent' : 'w-2 h-2 bg-ink-3/60'
-            }`}
+            className={`absolute -left-1 -top-1 rounded-full ${pin.kind === 'home' ? 'w-3 h-3 -left-1.5 -top-1.5 bg-white ring-2 ring-accent' : pin.kind === 'open' ? 'w-2 h-2 bg-accent' : 'w-2 h-2 bg-ink-3/60'
+              }`}
           />
           <span
-            className={`absolute ${SIDE[pin.side]} whitespace-nowrap rounded-[2px] border leading-tight ${
-              pin.kind === 'home'
+            className={`absolute ${SIDE[pin.side]} whitespace-nowrap rounded-[2px] border leading-tight ${pin.kind === 'home'
                 ? 'bg-paper border-accent px-2 py-1 shadow-sm mt-5'
                 : pin.kind === 'open'
                   ? 'bg-paper border-accent text-ink px-1.5 py-0.5 text-[0.6875rem] flex items-center gap-1'
                   : 'hidden md:flex items-center gap-1 bg-paper/80 border-rule border-dashed text-ink-3 px-1.5 py-0.5 text-[0.6875rem]'
-            }`}
+              }`}
           >
             {pin.kind === 'home' ? (
               <>
@@ -523,6 +539,19 @@ const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = f
           </span>
         </div>
       ))}
+      {/* A message on the islands that tells the visitor they can be clicked */}
+      <div ref={calloutRef} aria-hidden="true" className="absolute left-0 top-0 pointer-events-none will-change-transform" style={{ visibility: 'hidden' }}>
+        <motion.span
+          className="absolute left-1/2 -translate-x-1/2 top-full mt-3 md:left-full md:top-1/2 md:translate-x-0 md:-translate-y-1/2 md:mt-0 md:ml-0 whitespace-nowrap bg-accent text-white text-[0.75rem] font-semibold leading-tight px-3 py-2 rounded-[3px] shadow-[0_6px_16px_-6px_rgb(11_37_54_/_0.5)]"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1, y: [0, -3, 0] }}
+          transition={{ opacity: { duration: 0.5, delay: 2 }, scale: { duration: 0.5, delay: 2 }, y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: 2.5 } }}
+        >
+          {/* Pointer towards the islands */}
+          <span className="absolute left-1/2 -translate-x-1/2 -top-1 w-2 h-2 rotate-45 bg-accent md:left-[-4px] md:top-1/2 md:-translate-y-1/2 md:translate-x-0" />
+          Click ph country see clients
+        </motion.span>
+      </div>
       <p
         aria-hidden="true"
         className={`absolute left-1/2 -translate-x-1/2 -bottom-7 w-max max-w-full text-center text-[0.8125rem] text-ink-3 transition-opacity duration-300 ${touched ? 'opacity-0' : 'opacity-100'}`}
