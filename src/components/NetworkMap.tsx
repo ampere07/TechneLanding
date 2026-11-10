@@ -1,9 +1,11 @@
 import React, { Suspense, lazy, useLayoutEffect, useRef, useState } from 'react';
 import { Lock, LockOpen } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { CONTENT_LOGOS, PLATFORM_LOGOS, type Logo } from '../content/logos';
 import { HOME_NETWORK, TRANSIT_NETWORKS, type TransitNetwork } from '../content/transit';
 import { PHILIPPINES_PATH, WORLD, WORLD_H, WORLD_W, worldPercent } from '../content/worldMap';
+import type { PhilippinesOrigin } from './Globe';
+import { PhilippinesClients } from './PhilippinesClients';
 import { Reveal } from './Reveal';
 
 /** A ring that spreads out from the pin three times when the map first comes into view, then rests. */
@@ -34,7 +36,7 @@ const UNLOCKED_COUNTRIES = new Set(TRANSIT_NETWORKS.filter((network) => network.
 const PH_SCALE = 2.6;
 
 /** The world, with the Philippines enlarged and highlighted, and each country's upstream network shown locked or unlocked. */
-const WorldMap: React.FC = () => {
+const WorldMap: React.FC<{ onSelectPhilippines?: (origin: PhilippinesOrigin) => void }> = ({ onSelectPhilippines }) => {
   const cx = (MANILA.left / 100) * WORLD_W;
   const cy = (MANILA.top / 100) * WORLD_H;
   return (
@@ -48,7 +50,14 @@ const WorldMap: React.FC = () => {
         {WORLD.map((country) => (
           <path key={country.name} d={country.d} fill={UNLOCKED_COUNTRIES.has(country.name) ? '#b9dcdc' : '#dbe3e9'} stroke="#f6f9fb" strokeWidth="0.5" />
         ))}
-        <g transform={`translate(${cx} ${cy}) scale(${PH_SCALE}) translate(${-cx} ${-cy})`}>
+        <g
+          transform={`translate(${cx} ${cy}) scale(${PH_SCALE}) translate(${-cx} ${-cy})`}
+          onClick={(event) => {
+            const box = event.currentTarget.getBoundingClientRect();
+            onSelectPhilippines?.({ x: box.left + box.width / 2, y: box.top + box.height / 2, height: box.height });
+          }}
+          className={onSelectPhilippines ? 'cursor-pointer' : undefined}
+        >
           <path
             d={PHILIPPINES_PATH}
             fill="#0e6b70"
@@ -95,12 +104,12 @@ const WorldMap: React.FC = () => {
 // The globe loads three.js, so it loads on demand. If WebGL is missing, the flat map is shown instead.
 const Globe = lazy(() => import('./Globe'));
 
-const GlobeOrMap: React.FC = () => {
+const GlobeOrMap: React.FC<{ zoomed: boolean; onSelectPhilippines: (origin: PhilippinesOrigin) => void }> = ({ zoomed, onSelectPhilippines }) => {
   const [failed, setFailed] = useState(false);
-  if (failed) return <WorldMap />;
+  if (failed) return <WorldMap onSelectPhilippines={onSelectPhilippines} />;
   return (
     <Suspense fallback={<div className="mx-auto w-full max-w-[640px] aspect-square" />}>
-      <Globe onFailed={() => setFailed(true)} />
+      <Globe onFailed={() => setFailed(true)} zoomed={zoomed} onSelectPhilippines={onSelectPhilippines} />
     </Suspense>
   );
 };
@@ -141,8 +150,12 @@ const AsTitle: React.FC = () => {
 };
 
 /** Where Techne's services are delivered from. */
-export const NetworkMap: React.FC = () => (
-  <section id="locations" className="section bg-paper-2 border-y border-rule">
+export const NetworkMap: React.FC = () => {
+  // Clicking the Philippines on the globe opens its own map, with a pin for each client, beside the globe.
+  const [zoomed, setZoomed] = useState(false);
+  const [origin, setOrigin] = useState<PhilippinesOrigin | undefined>();
+  return (
+  <section id="locations" className="section bg-paper-2 border-y border-rule overflow-x-clip">
     <div className="wrap">
       <Reveal className="max-w-4xl mx-auto text-center mb-10">
         <h2 className="heading-2">Expanding Techne’s Global IP Transit Network</h2>
@@ -152,18 +165,42 @@ export const NetworkMap: React.FC = () => (
       </Reveal>
 
       {/* Like a magazine cover: the big title sits behind the globe, and on wider screens the globe rises over the lower part of its second line. On phones the globe sits just below the title, so every letter stays readable. */}
-      <div className="[--t:clamp(min(2.5rem,calc((100vw_-_40px)/6.9)),7.4vw,6.5rem)]">
-        <Reveal className="relative z-0 text-center -translate-y-[calc(var(--t)*0.3)]">
-          <AsTitle />
-        </Reveal>
+      {/* Clicking the Philippines on the globe sends only the islands out to the left as a map, with the client list beside it. The globe fades behind them, so both sit in the same grid cell while they cross. */}
+      <div className="grid">
+        <AnimatePresence initial={false}>
+          {!zoomed && (
+            <motion.div
+              key="globe"
+              className="col-start-1 row-start-1 [--t:clamp(min(2.5rem,calc((100vw_-_40px)/6.9)),7.4vw,6.5rem)]"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.5, ease: 'easeIn' } }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Reveal className="relative z-0 text-center -translate-y-[calc(var(--t)*0.3)]">
+                <AsTitle />
+              </Reveal>
 
-        <Reveal className="relative z-10 mt-[calc(var(--t)*-0.2-min(640px,100vw-40px)*0.085)] md:mt-[calc(var(--t)*-0.66-min(640px,100vw-40px)*0.085)]">
-          <GlobeOrMap />
-        </Reveal>
+              <Reveal className="relative z-10 mt-[calc(var(--t)*-0.2-min(640px,100vw-40px)*0.085)] md:mt-[calc(var(--t)*-0.66-min(640px,100vw-40px)*0.085)]">
+                <GlobeOrMap
+                  zoomed={false}
+                  onSelectPhilippines={(from) => {
+                    setOrigin(from);
+                    setZoomed(true);
+                  }}
+                />
+              </Reveal>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {zoomed && <PhilippinesClients key="clients" from={origin} onClose={() => setZoomed(false)} />}
+        </AnimatePresence>
       </div>
     </div>
   </section>
-);
+  );
+};
 
 const LogoTile: React.FC<{ logo: Logo }> = ({ logo }) => (
   <div className="bg-paper h-20 md:h-24 flex items-center justify-center px-6">

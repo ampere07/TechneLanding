@@ -51,7 +51,7 @@ export const BlogPost: React.FC = () => {
       <section className="bg-paper-2 border-b border-rule">
         <div className="wrap py-10 md:py-14">
           <nav aria-label="Breadcrumb" className="text-[0.8125rem] text-ink-3 mb-5">
-            <Link to={`/${PANEL_IDS.BLOG}`} className="hover:text-accent transition-colors duration-150">Blog</Link>
+            <Link to={`/${PANEL_IDS.BLOG}`} className="hover:text-accent transition-colors duration-150">Engagement</Link>
             <span className="mx-2" aria-hidden="true">/</span>
             <span className="text-ink-2">{post.title}</span>
           </nav>

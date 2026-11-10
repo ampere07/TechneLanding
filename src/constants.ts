@@ -21,7 +21,8 @@ export const PANEL_IDS = {
   VIRTUAL_CROSS_CONNECT: '556677889',
   VIRTUAL_SWITCH: '667788990',
   VIRTUAL_ROUTER: '778899001',
-  CONTENT: '889900112'
+  CONTENT: '889900112',
+  NETWORK_BUILDOUT: '151617181'
 };
 
 /** Addresses of the blog articles that were removed. They redirect to the blog page. */

@@ -80,7 +80,7 @@ const drawPhilippines = () => {
   const canvas = document.createElement('canvas');
   canvas.width = TEX_W;
   canvas.height = TEX_H;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true }); // read back to tell whether a click landed on the islands
   if (!ctx) return canvas;
   const cx = ((HOME_NETWORK.lon + 180) / 360) * WORLD_W;
   const cy = ((84 - HOME_NETWORK.lat) / 142) * WORLD_H;
@@ -101,15 +101,35 @@ const drawPhilippines = () => {
   return canvas;
 };
 
-interface GlobeProps {
-  onFailed: () => void;
+/** Where the Philippines sits on screen when it is chosen, so the map that replaces it can fly out from there. */
+export interface PhilippinesOrigin {
+  /** Centre of the islands, in window coordinates. */
+  x: number;
+  y: number;
+  /** How tall the islands look on the globe, in pixels. */
+  height: number;
 }
 
-const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
+interface GlobeProps {
+  onFailed: () => void;
+  /** Called when the visitor clicks the Philippines. */
+  onSelectPhilippines?: (origin: PhilippinesOrigin) => void;
+  /** While true the globe turns to the Philippines and moves in closer. */
+  zoomed?: boolean;
+}
+
+const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = false }) => {
   const hostRef = useRef<HTMLDivElement>(null);
   const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
   const failedRef = useRef(onFailed);
+  const selectRef = useRef(onSelectPhilippines);
+  const zoomedRef = useRef(zoomed);
   const [touched, setTouched] = useState(false);
+
+  useEffect(() => {
+    selectRef.current = onSelectPhilippines;
+    zoomedRef.current = zoomed;
+  }, [onSelectPhilippines, zoomed]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -140,9 +160,42 @@ const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
     earthTexture.anisotropy = 4;
     spin.add(new THREE.Mesh(new THREE.SphereGeometry(1, 72, 54), new THREE.MeshBasicMaterial({ map: earthTexture })));
 
-    const phTexture = new THREE.CanvasTexture(drawPhilippines());
+    const phCanvas = drawPhilippines();
+    const phContext = phCanvas.getContext('2d', { willReadFrequently: true });
+    const phTexture = new THREE.CanvasTexture(phCanvas);
     phTexture.colorSpace = THREE.SRGBColorSpace;
-    spin.add(new THREE.Mesh(new THREE.SphereGeometry(1.012, 72, 54), new THREE.MeshBasicMaterial({ map: phTexture, transparent: true, depthWrite: false })));
+    const phMesh = new THREE.Mesh(new THREE.SphereGeometry(1.012, 72, 54), new THREE.MeshBasicMaterial({ map: phTexture, transparent: true, depthWrite: false }));
+    spin.add(phMesh);
+
+    // Is the pointer over the drawn islands? The ray is cast at the Philippines layer and the pixel it lands on is checked.
+    const raycaster = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    // Window position of a place on the globe.
+    const screenAt = (lon: number, lat: number) => {
+      spin.updateMatrixWorld();
+      const point = toVector(lon, lat, new THREE.Vector3()).applyMatrix4(spin.matrixWorld).project(camera);
+      const box = renderer.domElement.getBoundingClientRect();
+      return { x: box.left + (point.x * 0.5 + 0.5) * box.width, y: box.top + (-point.y * 0.5 + 0.5) * box.height };
+    };
+    // The islands are drawn 2.6 times larger around Manila, so the centre and the height are taken from that drawn layer.
+    const philippinesOrigin = (): PhilippinesOrigin => {
+      const drawn = (value: number, around: number) => around + (value - around) * PH_SCALE;
+      const centre = screenAt(drawn(121.5, HOME_NETWORK.lon), drawn(12.7, HOME_NETWORK.lat));
+      const top = screenAt(HOME_NETWORK.lon, drawn(21.3, HOME_NETWORK.lat));
+      const bottom = screenAt(HOME_NETWORK.lon, drawn(4.3, HOME_NETWORK.lat));
+      return { x: centre.x, y: centre.y, height: Math.abs(bottom.y - top.y) };
+    };
+    const overPhilippines = (clientX: number, clientY: number) => {
+      if (!phContext) return false;
+      const box = renderer.domElement.getBoundingClientRect();
+      ndc.set(((clientX - box.left) / box.width) * 2 - 1, -((clientY - box.top) / box.height) * 2 + 1);
+      raycaster.setFromCamera(ndc, camera);
+      const uv = raycaster.intersectObject(phMesh)[0]?.uv;
+      if (!uv) return false;
+      const px = Math.min(TEX_W - 1, Math.max(0, Math.floor(uv.x * TEX_W)));
+      const py = Math.min(TEX_H - 1, Math.max(0, Math.floor((1 - uv.y) * TEX_H)));
+      return phContext.getImageData(px, py, 1, 1).data[3] > 120;
+    };
 
     // A line from the Philippines pin to each unlocked country. It arcs above the surface and draws out when the globe appears.
     const arcs = TRANSIT_NETWORKS.filter((network) => network.unlocked).map((network) => {
@@ -307,7 +360,18 @@ const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
         intro = Math.min(1, intro + dt / 1.8);
         lon = HOME_NETWORK.lon - 80 * Math.pow(1 - intro, 3);
       }
-      if (!dragging && (Math.abs(velocityLon) > 0.01 || Math.abs(velocityLat) > 0.01)) {
+      // When the Philippines is selected the globe turns to face it and the camera moves in.
+      const wantZ = zoomedRef.current ? 3.1 : 3.7;
+      if (Math.abs(camera.position.z - wantZ) > 0.002) {
+        camera.position.z += (wantZ - camera.position.z) * Math.min(1, dt * 4);
+        camera.updateMatrixWorld();
+      }
+      if (zoomedRef.current && !dragging && intro >= 1) {
+        const k = Math.min(1, dt * 3);
+        lon += (HOME_NETWORK.lon - lon) * k;
+        lat += (12 - lat) * k;
+        velocityLon = velocityLat = 0;
+      } else if (!dragging && (Math.abs(velocityLon) > 0.01 || Math.abs(velocityLat) > 0.01)) {
         lon += velocityLon * dt;
         lat = Math.max(-LAT_LIMIT, Math.min(LAT_LIMIT, lat + velocityLat * dt));
         const decay = Math.exp(-dt * 3.2);
@@ -332,17 +396,22 @@ const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
     // Degrees of turn for each pixel dragged. A full width of the globe is about 100 degrees.
     const perPixel = () => 100 / Math.max(1, width * 0.8);
     const el = renderer.domElement;
+    let start = { x: 0, y: 0 };
     const down = (event: PointerEvent) => {
       dragging = true;
       intro = 1;
       velocityLon = velocityLat = 0;
       last = { x: event.clientX, y: event.clientY };
+      start = { x: event.clientX, y: event.clientY };
       el.setPointerCapture(event.pointerId);
       el.style.cursor = 'grabbing';
       setTouched(true);
     };
     const move = (event: PointerEvent) => {
-      if (!dragging) return;
+      if (!dragging) {
+        if (event.pointerType === 'mouse') el.style.cursor = overPhilippines(event.clientX, event.clientY) ? 'pointer' : 'grab';
+        return;
+      }
       const dx = event.clientX - last.x;
       const dy = event.pointerType === 'touch' ? 0 : event.clientY - last.y;
       last = { x: event.clientX, y: event.clientY };
@@ -354,9 +423,15 @@ const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
       velocityLat = calm ? 0 : dy * k * 60;
     };
     const up = (event: PointerEvent) => {
+      const wasDragging = dragging;
       dragging = false;
       el.style.cursor = 'grab';
       if (el.hasPointerCapture(event.pointerId)) el.releasePointerCapture(event.pointerId);
+      // A press that barely moved is a click. If it landed on the islands, open the Philippines.
+      const moved = Math.hypot(event.clientX - start.x, event.clientY - start.y);
+      if (wasDragging && event.type === 'pointerup' && moved < 6 && overPhilippines(event.clientX, event.clientY)) {
+        selectRef.current?.(philippinesOrigin());
+      }
     };
     el.addEventListener('pointerdown', down);
     el.addEventListener('pointermove', move);
@@ -364,6 +439,11 @@ const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
     el.addEventListener('pointercancel', up);
 
     const keys = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectRef.current?.(philippinesOrigin());
+        return;
+      }
       const step = 12;
       if (event.key === 'ArrowLeft') lon -= step;
       else if (event.key === 'ArrowRight') lon += step;
@@ -402,7 +482,7 @@ const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
       ref={hostRef}
       role="group"
       aria-roledescription="interactive globe"
-      aria-label="Globe with the Philippines enlarged and highlighted. Hong Kong and Australia are unlocked and the other countries are locked. Drag, or use the arrow keys, to turn it."
+      aria-label="Globe with the Philippines enlarged and highlighted. Hong Kong and Australia are unlocked and the other countries are locked. Drag, or use the arrow keys, to turn it. Click the Philippines, or press Enter, to see Techne client sites."
       tabIndex={0}
       className="relative mx-auto w-full max-w-[640px] aspect-square outline-none"
     >
@@ -445,9 +525,9 @@ const Globe: React.FC<GlobeProps> = ({ onFailed }) => {
       ))}
       <p
         aria-hidden="true"
-        className={`absolute left-1/2 -translate-x-1/2 -bottom-7 text-[0.8125rem] text-ink-3 transition-opacity duration-300 ${touched ? 'opacity-0' : 'opacity-100'}`}
+        className={`absolute left-1/2 -translate-x-1/2 -bottom-7 w-max max-w-full text-center text-[0.8125rem] text-ink-3 transition-opacity duration-300 ${touched ? 'opacity-0' : 'opacity-100'}`}
       >
-        Drag to turn the globe
+        Drag to turn the globe · Click the Philippines to see our clients
       </p>
     </div>
   );

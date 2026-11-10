@@ -35,9 +35,9 @@ export const Footer: React.FC = () => (
           <h2 className="text-[0.9375rem] font-semibold mb-4">Company</h2>
           <ul className="space-y-2.5">
             <li><Link to={`/${PANEL_IDS.ABOUT}`} className={linkClass}>About Techne</Link></li>
-            <li><Link to={`${HOME_PATH}#locations`} className={linkClass}>Location</Link></li>
             <li><Link to={`/${PANEL_IDS.PRICING}`} className={linkClass}>Request a quote</Link></li>
-            <li><Link to={`/${PANEL_IDS.BLOG}`} className={linkClass}>Blog</Link></li>
+            <li><Link to={`/${PANEL_IDS.BLOG}`} className={linkClass}>Engagement</Link></li>
+            <li><Link to={`/${PANEL_IDS.NETWORK_BUILDOUT}`} className={linkClass}>Network Buildout</Link></li>
             <li><Link to={`/${PANEL_IDS.CONTACT}`} className={linkClass}>Contact</Link></li>
           </ul>
         </div>

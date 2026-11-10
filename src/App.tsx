@@ -8,6 +8,7 @@ import { ContactForm } from './components/ContactForm';
 import { Footer } from './components/Footer';
 import { Blog } from './components/Blog';
 import { BlogPost } from './components/BlogPost';
+import { NetworkBuildout } from './components/NetworkBuildout';
 import { About } from './components/About';
 import { Pricing } from './components/Pricing';
 import { IPTransit } from './components/IPTransit';
@@ -55,6 +56,8 @@ const PanelRenderer = () => {
       return <Services />;
     case PANEL_IDS.BLOG:
       return <Blog />;
+    case PANEL_IDS.NETWORK_BUILDOUT:
+      return <NetworkBuildout />;
     case PANEL_IDS.PRICING:
       return <Pricing />;
     case PANEL_IDS.ABOUT:
