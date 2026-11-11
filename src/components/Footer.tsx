@@ -38,6 +38,7 @@ export const Footer: React.FC = () => (
             <li><Link to={`/${PANEL_IDS.PRICING}`} className={linkClass}>Request a quote</Link></li>
             <li><Link to={`/${PANEL_IDS.BLOG}`} className={linkClass}>Engagement</Link></li>
             <li><Link to={`/${PANEL_IDS.NETWORK_BUILDOUT}`} className={linkClass}>Network Buildout</Link></li>
+            <li><Link to={`/${PANEL_IDS.CLIENTS}`} className={linkClass}>All our clients</Link></li>
             <li><Link to={`/${PANEL_IDS.FAQ}`} className={linkClass}>FAQ</Link></li>
             <li><Link to={`/${PANEL_IDS.CONTACT}`} className={linkClass}>Contact</Link></li>
           </ul>

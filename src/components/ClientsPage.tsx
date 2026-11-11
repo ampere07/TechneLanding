@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { HOME_PATH } from '../constants';
 import { CLIENT_SITES, REGIONS, SERVICES, type Service } from '../content/clients';
@@ -13,10 +13,17 @@ export const ClientsPage: React.FC = () => {
   const [active, setActive] = useState<number | null>(null);
   const [service, setService] = useState<Service | null>(null);
 
-  // A new page starts at the top.
+  // A new page starts at the top. With ?region=Luzon (or Visayas, Mindanao) it goes on to that island group.
+  const [params] = useSearchParams();
+  const wanted = params.get('region');
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    if (!wanted) return;
+    const timer = window.setTimeout(() => {
+      document.getElementById(`region-${wanted}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [wanted]);
 
   const sites = CLIENT_SITES.filter((site) => !service || site.services.includes(service));
 
@@ -92,7 +99,7 @@ export const ClientsPage: React.FC = () => {
               const rows = sites.map((site, index) => ({ site, index })).filter(({ site }) => site.region === name);
               if (rows.length === 0) return null;
               return (
-                <motion.div key={name} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                <motion.div key={name} id={`region-${name}`} className="scroll-mt-28" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                   <h2 className="text-[0.9375rem] font-semibold text-ink border-b-2 border-ink pb-1.5">{name}</h2>
                   <ul>
                     {rows.map(({ site, index }) => (

@@ -1,8 +1,9 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
+import { motion, useMotionValueEvent, useReducedMotion, useScroll } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { PANEL_IDS } from '../constants';
-import { PARTNERS } from '../content/partners';
+import { PARTNERS, type Partner } from '../content/partners';
+import { flyPartner } from './PartnerFlyer';
 import { JOURNEY, JOURNEY_FINAL, JOURNEY_INTRO, JOURNEY_TITLE, type JourneyStep } from '../content/journey';
 import { Reveal } from './Reveal';
 import { AfterIntro } from './AfterIntro';
@@ -197,6 +198,25 @@ export const JourneyTimeline: React.FC<{ ready: boolean; started: boolean }> = (
   const titleRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [offset, setOffset] = useState<{ x: number; y: number } | null>(null);
+  const calm = !!useReducedMotion();
+
+  // Choosing a partner: its logo glides to the middle of the screen and then the partner's page opens. A modified
+  // click (new tab, new window) and people who ask for less motion get the ordinary link.
+  const openPartner = (event: React.MouseEvent<HTMLAnchorElement>, partner: Partner) => {
+    if (calm || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const mark = event.currentTarget.querySelector<HTMLElement>('[data-partner-logo]');
+    if (!mark) return;
+    const box = mark.getBoundingClientRect();
+    const started = flyPartner({
+      to: `/${PANEL_IDS.PARTNERS}/${partner.slug}`,
+      name: partner.name,
+      src: partner.src,
+      darkLogo: partner.darkLogo,
+      rect: { left: box.left, top: box.top, width: box.width, height: box.height },
+      fontSize: window.getComputedStyle(mark).fontSize,
+    });
+    if (started) event.preventDefault();
+  };
 
   // Work out how far the title is from the middle of the screen, so it can start there.
   useLayoutEffect(() => {
@@ -284,23 +304,37 @@ export const JourneyTimeline: React.FC<{ ready: boolean; started: boolean }> = (
             <div className="mt-8">
               <p className="text-[0.8125rem] font-medium uppercase tracking-wider text-ink-3">Our partners</p>
               <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-                {PARTNERS.map((partner) => (
-                  <li key={partner.slug}>
-                    <Link
-                      to={`/${PANEL_IDS.PARTNERS}/${partner.slug}`}
-                      aria-label={`${partner.name}: ${partner.type}. See details`}
-                      className="group inline-flex flex-col items-center gap-1"
-                    >
-                      {partner.src ? (
-                        <span className="flex items-center px-2 py-1 group-hover:-translate-y-0.5 transition-transform duration-150">
-                          <img src={partner.src} alt="" className="h-16 md:h-20 w-auto max-w-[160px] object-contain" draggable={false} />
-                        </span>
+                {PARTNERS.map((partner) => {
+                  const logo = partner.src ? (
+                    <span className="flex items-center px-2 py-1 group-hover:-translate-y-0.5 transition-transform duration-150">
+                      <img
+                        src={partner.src}
+                        alt={partner.about ? '' : partner.name}
+                        data-partner-logo
+                        className={`${partner.darkLogo ? 'logo-on-dark ' : ''}h-12 md:h-16 w-auto max-w-[150px] object-contain`}
+                        draggable={false}
+                      />
+                    </span>
+                  ) : (
+                    <span data-partner-logo className="font-display text-[1.5rem] md:text-[1.75rem] font-bold tracking-tight text-ink group-hover:text-accent transition-colors duration-150">{partner.name}</span>
+                  );
+                  return (
+                    <li key={partner.slug}>
+                      {partner.about ? (
+                        <Link
+                          to={`/${PANEL_IDS.PARTNERS}/${partner.slug}`}
+                          aria-label={`${partner.name}${partner.type ? `: ${partner.type}` : ''}. See details`}
+                          className="group inline-flex items-center"
+                          onClick={(event) => openPartner(event, partner)}
+                        >
+                          {logo}
+                        </Link>
                       ) : (
-                        <span className="font-display text-[1.375rem] font-bold tracking-tight text-ink group-hover:text-accent transition-colors duration-150">{partner.name}</span>
+                        <span className="group inline-flex items-center">{logo}</span>
                       )}
-                    </Link>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </AfterIntro>

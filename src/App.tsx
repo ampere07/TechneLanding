@@ -28,6 +28,7 @@ import {
   WhyChooseTechne,
 } from './components/HomeSections';
 import { ClientsPage } from './components/ClientsPage';
+import { PartnerFlyer } from './components/PartnerFlyer';
 import { PartnerPage } from './components/PartnerPage';
 import { FAQPage } from './components/FAQPage';
 // import { Testimonials } from './components/Testimonials'; // hidden for now
@@ -127,6 +128,7 @@ function App() {
     <MotionConfig reducedMotion="user">
     <Router>
       <ScrollToTop />
+      <PartnerFlyer />
       <div className="min-h-screen bg-paper flex flex-col">
         <Header />
         <main className="flex-grow">

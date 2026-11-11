@@ -40,7 +40,7 @@ export const PartnerPage: React.FC = () => {
     );
   }
 
-  const others = PARTNERS.filter((item) => item.slug !== partner.slug);
+  const others = PARTNERS.filter((item) => item.slug !== partner.slug && item.about);
 
   return (
     <>
@@ -52,12 +52,12 @@ export const PartnerPage: React.FC = () => {
             <div className="flex flex-wrap items-center justify-center gap-4">
               {partner.src && (
                 <span className="inline-flex items-center">
-                  <img src={partner.src} alt="" className="partner-logo h-36 md:h-52 w-auto max-w-full object-contain" draggable={false} />
+                  <img src={partner.src} alt="" className="h-36 md:h-52 w-auto max-w-full object-contain" draggable={false} />
                 </span>
               )}
               <h1 className="heading-1 w-full">{partner.name}</h1>
             </div>
-            <p className="lede mt-4 mx-auto">{partner.summary}</p>
+            {partner.summary && <p className="lede mt-4 mx-auto">{partner.summary}</p>}
           </Reveal>
         </div>
       </section>
@@ -67,7 +67,7 @@ export const PartnerPage: React.FC = () => {
           <Reveal>
             <h2 className="heading-2">About {partner.name}</h2>
             <div className="mt-4 space-y-4 max-w-[68ch]">
-              {partner.about.map((paragraph, index) => (
+              {(partner.about ?? []).map((paragraph, index) => (
                 <p key={index} className="body-copy !text-[1rem]">{paragraph}</p>
               ))}
             </div>
@@ -96,6 +96,7 @@ export const PartnerPage: React.FC = () => {
             )}
           </Reveal>
 
+          {others.length > 0 && (
           <Reveal delay={0.1}>
             <h2 className="heading-3 border-b-2 border-ink pb-1.5">Other partners</h2>
             <ul>
@@ -109,6 +110,7 @@ export const PartnerPage: React.FC = () => {
               ))}
             </ul>
           </Reveal>
+          )}
         </div>
       </section>
 

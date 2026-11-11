@@ -488,3 +488,8 @@ body {
   filter: none;
   opacity: 1;
 }
+
+/* A logo drawn in black or a very dark colour is turned white in dark mode. */
+:root[data-theme='dark'] .logo-on-dark {
+  filter: brightness(0) invert(1);
+}

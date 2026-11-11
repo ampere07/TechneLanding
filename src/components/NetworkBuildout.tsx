@@ -34,31 +34,31 @@ interface Project {
 }
 const PROJECTS: Project[] = [
   {
-    title: "Laguna Network Deployment",
+    title: "Laguna — Building the Network Foundation",
     kind: 'comparison',
     before: '/network-buildout/laguna-before.jpg',
     after: '/network-buildout/laguna-after.jpg',
     summary:
-      "End-to-end deployment and implementation of a Core, Distribution, and Network Monitoring System for an ISP network in Laguna. The project focused on building a scalable network architecture, improving traffic visibility, and strengthening overall network performance, reliability, and manageability.",
+      "A complete core, distribution, and monitoring system deployment designed to give the ISP better visibility, stronger network control, and a scalable foundation for continued growth.",
     link: 'https://www.facebook.com/share/p/1MqTipwuMd/',
   },
   {
-    title: "Surigao Network Deployment",
+    title: "Surigao — Strengthening Network Resilience",
     kind: 'gallery',
     photos: [1, 2, 3, 4, 5].map((n) => `/network-buildout/surigao-${n}.jpg`),
     summary:
-      "End-to-end deployment and implementation of a Core, Distribution, and Network Monitoring System for an ISP network in Surigao. The project focused on building a more scalable and resilient infrastructure while improving network visibility, performance, and operational control.",
+      "Modernizing the ISP network in Surigao with improved core and distribution infrastructure, supported by centralized monitoring for better reliability and day-to-day operations.",
     link: 'https://www.facebook.com/share/p/1CQxGmaFUC/',
   },
   {
-    title: "Rizal Network Deployment",
+    title: "Rizal — Engineering for Scale",
     kind: 'comparison',
     pairs: [
       { before: '/network-buildout/rizal-before-1.jpg', after: '/network-buildout/rizal-after-1.jpg' },
       { before: '/network-buildout/rizal-before-2.jpg', after: '/network-buildout/rizal-after-2.jpg' },
     ],
     summary:
-      "Deployment and implementation of a Core, Distribution, and Network Monitoring System for an ISP network in Rizal, designed to improve scalability, reliability, traffic visibility, and overall network operations.",
+      "A network infrastructure upgrade in Rizal focused on improving routing, distribution, operational visibility, and overall readiness for increasing subscriber and traffic demand.",
     link: 'https://www.facebook.com/share/p/1CuNUEEJv1/',
   },
   {
@@ -75,27 +75,27 @@ const PROJECTS: Project[] = [
     link: 'https://www.facebook.com/share/p/19enECDbgv/',
   },
   {
-    title: "Vitro Makati 2 Data Center Presence Deployment",
+    title: "Leyte — Extending the Network to the Data Center",
     kind: 'gallery',
     photos: [1, 2, 3, 4].map((n) => `/network-buildout/vitro-makati-2-${n}.jpg`),
     summary:
-      "Deployment and implementation of a data center network presence at VITRO Makati 2 for an ISP client from Leyte, providing a stronger foundation for upstream connectivity, peering, network scalability, and future expansion.",
+      "Establishing a VITRO Makati 2 data center presence for a Leyte-based ISP, creating a stronger gateway for upstream connectivity, peering, capacity expansion, and future network growth.",
     link: 'https://www.facebook.com/share/p/1eQvr8uvki/',
   },
   {
-    title: "Bohol Network Deployment",
+    title: "Bohol — Preparing for the Next Stage of Growth",
     kind: 'gallery',
     photos: Array.from({ length: 10 }, (_, i) => `/network-buildout/bohol-${i + 1}.jpg`),
     summary:
-      "Deployment and implementation of a scalable ISP network infrastructure for clients in Bohol, focused on improving core connectivity, network reliability, traffic visibility, and readiness for future capacity and service expansion.",
+      "Building a more scalable ISP infrastructure in Bohol, with improvements focused on network reliability, visibility, capacity management, and long-term expansion.",
     link: 'https://www.facebook.com/share/p/1X3jPwFEwW/',
   },
   {
-    title: "Leyte Network Deployment",
+    title: "Leyte — Core Network Modernization",
     kind: 'gallery',
     photos: Array.from({ length: 6 }, (_, i) => `/network-buildout/leyte-${i + 1}.jpg`),
     summary:
-      "Deployment and implementation of a core and distribution network infrastructure for an ISP in Leyte, designed to improve network reliability, scalability, traffic management, and overall service performance while preparing the network for future growth and expansion.",
+      "Strengthening an ISP network in Leyte through core and distribution improvements designed to enhance performance, simplify operations, and provide a more reliable foundation for subscriber growth.",
     link: 'https://www.facebook.com/share/p/1DCofhk6Wq/',
   },
   {
