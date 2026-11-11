@@ -27,7 +27,7 @@ const SectionHeading: React.FC<{ number: string; title: string }> = ({ title }) 
 );
 
 const CapabilityBox: React.FC<{ icon: React.ReactNode; heading: string; items: string[] }> = ({ icon, heading, items }) => (
-  <div className="bg-ink rounded-[4px] p-8 text-white">
+  <div className="bg-navy rounded-[4px] p-8 text-white">
     <h3 className="font-display text-lg font-semibold text-white mb-5 flex items-center gap-2">
       <span className="text-teal-bright">{icon}</span>
       {heading}
@@ -340,7 +340,7 @@ export const ProtectiveDNS = () => (
       </div>
 
       {/* Summary */}
-      <div className="bg-ink rounded-[4px] p-10 text-center">
+      <div className="bg-navy rounded-[4px] p-10 text-center">
         <h3 className="font-display text-2xl font-bold text-white mb-3">Protect Your Users. Secure Your Reputation.</h3>
         <p className="font-body text-sm text-white/50 max-w-2xl mx-auto leading-relaxed">
           This ensures safer browsing for end-users and significantly reduces the risk of widespread infections within your network infrastructure.

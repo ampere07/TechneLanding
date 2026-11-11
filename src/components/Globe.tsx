@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { motion } from 'framer-motion';
 import { HOME_NETWORK, TRANSIT_NETWORKS, type TransitNetwork } from '../content/transit';
 import { PHILIPPINES_PATH, WORLD, WORLD_H, WORLD_W } from '../content/worldMap';
+import { getTheme, subscribeTheme } from '../theme';
 
 /**
  * A globe the visitor can turn. The map is drawn once onto a canvas and wrapped round a sphere, and the
@@ -61,15 +62,16 @@ const drawWorld = () => {
   canvas.height = TEX_H;
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
-  ctx.fillStyle = '#e8f0f4';
+  const dark = getTheme() === 'dark';
+  ctx.fillStyle = dark ? '#142738' : '#e8f0f4';
   ctx.fillRect(0, 0, TEX_W, TEX_H);
   // The paths cover latitude 84 to -58, so they are placed within the full 90 to -90.
   ctx.setTransform(TEX_W / WORLD_W, 0, 0, (TEX_H * (142 / 180)) / WORLD_H, 0, TEX_H * (6 / 180));
   ctx.lineWidth = 0.8;
-  ctx.strokeStyle = '#f7fafc';
+  ctx.strokeStyle = dark ? '#0f1f2c' : '#f7fafc';
   for (const country of WORLD) {
     const path = new Path2D(country.d);
-    ctx.fillStyle = UNLOCKED.has(country.name) ? '#a6d4d4' : '#cfd9e1';
+    ctx.fillStyle = UNLOCKED.has(country.name) ? (dark ? '#1f6a70' : '#a6d4d4') : dark ? '#2b4357' : '#cfd9e1';
     ctx.fill(path);
     ctx.stroke(path);
   }
@@ -164,6 +166,11 @@ const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = f
     earthTexture.colorSpace = THREE.SRGBColorSpace;
     earthTexture.anisotropy = 4;
     spin.add(new THREE.Mesh(new THREE.SphereGeometry(1, 72, 54), new THREE.MeshBasicMaterial({ map: earthTexture })));
+    // Switching between light and dark draws the map again in the new colours.
+    const stopTheme = subscribeTheme(() => {
+      earthTexture.image = drawWorld();
+      earthTexture.needsUpdate = true;
+    });
 
     const phCanvas = drawPhilippines();
     const phContext = phCanvas.getContext('2d', { willReadFrequently: true });
@@ -486,6 +493,7 @@ const Globe: React.FC<GlobeProps> = ({ onFailed, onSelectPhilippines, zoomed = f
       el.removeEventListener('pointerup', up);
       el.removeEventListener('pointercancel', up);
       host.removeEventListener('keydown', keys);
+      stopTheme();
       earthTexture.dispose();
       phTexture.dispose();
       scene.traverse((object) => {

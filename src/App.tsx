@@ -22,24 +22,25 @@ import { VirtualCrossConnect, VirtualRouter, VirtualSwitch } from './components/
 import { NetworkMap, TrustedBrands } from './components/NetworkMap';
 import { ClosingCTA } from './components/ClosingCTA';
 import {
-  HomeFAQ,
   Methodology,
   ServiceFinder,
   VirtualCompare,
   WhyChooseTechne,
 } from './components/HomeSections';
+import { FAQPage } from './components/FAQPage';
+import { Testimonials } from './components/Testimonials';
 import { HOME_PATH, PANEL_IDS, RETIRED_BLOG_IDS } from './constants';
 
 const HomePanel = () => (
   <>
     <HomeJourney />
+    <Testimonials />
     <ServiceFinder />
     <VirtualCompare />
     <NetworkMap />
     <TrustedBrands />
     <WhyChooseTechne />
     <Methodology />
-    <HomeFAQ />
     <ClosingCTA reveal />
   </>
 );
@@ -58,6 +59,8 @@ const PanelRenderer = () => {
       return <Blog />;
     case PANEL_IDS.NETWORK_BUILDOUT:
       return <NetworkBuildout />;
+    case PANEL_IDS.FAQ:
+      return <FAQPage />;
     case PANEL_IDS.PRICING:
       return <Pricing />;
     case PANEL_IDS.ABOUT:

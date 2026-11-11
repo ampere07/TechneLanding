@@ -406,7 +406,7 @@ export const Pricing: React.FC = () => {
 
           {/* Quote sidebar */}
           <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
-            <div className="bg-ink text-white rounded-[4px] p-8">
+            <div className="bg-navy text-white rounded-[4px] p-8">
               <h3 className="text-[1.125rem] font-semibold text-white mb-5">Your selection</h3>
               <dl className="space-y-3 text-sm">
                 {selection.map((row) => (

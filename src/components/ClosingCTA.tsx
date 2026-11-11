@@ -6,7 +6,7 @@ import { CONTACT } from '../content/site';
 import { Reveal } from './Reveal';
 
 const primaryClass =
-  'inline-flex items-center justify-center px-5 py-3 bg-white text-accent-hover text-[0.9375rem] font-semibold rounded-[3px] hover:bg-paper-3 transition-colors duration-150 whitespace-nowrap';
+  'inline-flex items-center justify-center px-5 py-3 bg-white text-[#0a5559] text-[0.9375rem] font-semibold rounded-[3px] hover:bg-[#e6ecf0] transition-colors duration-150 whitespace-nowrap';
 
 /** The call to action that closes every page. Service pages pass their name to request a quote directly. */
 export const ClosingCTA: React.FC<{ service?: string; reveal?: boolean }> = ({ service, reveal = false }) => (

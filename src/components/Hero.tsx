@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { PANEL_IDS } from '../constants';
 import { FACTS, LOCATION } from '../content/site';
 import { FabricView } from './FabricView';
+import { FacebookLink } from './FacebookLink';
 import { Odometer } from './Odometer';
 
 // Three facts share the top row and two share the bottom, so both rows fill the panel.
@@ -39,6 +40,7 @@ export const Hero: React.FC<HeroProps> = ({ slotRef, sharedModel = false }) => (
         <motion.div className="flex flex-wrap gap-3 mt-6" {...enter(0.25)}>
           <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary">Contact us</Link>
           <Link to={`/${PANEL_IDS.SERVICES}`} className="btn-secondary">View all services</Link>
+          <FacebookLink className="self-center" />
         </motion.div>
 
         <motion.dl aria-label="Network facts" className="grid grid-cols-2 sm:grid-cols-6 gap-px mt-7 bg-rule border-y border-rule" {...enter(0.35)}>

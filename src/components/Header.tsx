@@ -5,6 +5,7 @@ import { Link, NavLink } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { HOME_PATH, PANEL_IDS } from '../constants';
 import { CONTACT, SERVICES, SERVICE_GROUPS } from '../content/site';
+import { ThemeToggle } from './ThemeToggle';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `text-[0.9375rem] font-medium transition-colors duration-150 ${isActive ? 'text-accent' : 'text-ink hover:text-accent'}`;
@@ -140,9 +141,11 @@ export const Header: React.FC = () => {
               <NavLink to={`/${PANEL_IDS.BLOG}`} className={navLinkClass}>Engagement</NavLink>
               <NavLink to={`/${PANEL_IDS.NETWORK_BUILDOUT}`} className={navLinkClass}>Network Buildout</NavLink>
               <NavLink to={`/${PANEL_IDS.ABOUT}`} className={navLinkClass}>About</NavLink>
+              <NavLink to={`/${PANEL_IDS.FAQ}`} className={navLinkClass}>FAQ</NavLink>
             </nav>
 
-            <div className="hidden lg:block">
+            <div className="hidden lg:flex items-center gap-3">
+              <ThemeToggle />
               <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary" onClick={closeAll}>
                 Contact us
               </Link>
@@ -177,7 +180,9 @@ export const Header: React.FC = () => {
                 <Link to={`/${PANEL_IDS.BLOG}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Blog</Link>
                 <Link to={`/${PANEL_IDS.NETWORK_BUILDOUT}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Network Buildout</Link>
                 <Link to={`/${PANEL_IDS.ABOUT}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">About</Link>
+                <Link to={`/${PANEL_IDS.FAQ}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">FAQ</Link>
                 <div className="pt-4 flex flex-col gap-3">
+                  <ThemeToggle className="w-full" />
                   <Link to={`/${PANEL_IDS.CONTACT}`} onClick={closeAll} className="btn-primary w-full">Contact us</Link>
                   <button
                     type="button"

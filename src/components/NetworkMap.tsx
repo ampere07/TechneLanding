@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { CONTENT_LOGOS, PLATFORM_LOGOS, type Logo } from '../content/logos';
 import { HOME_NETWORK, TRANSIT_NETWORKS, type TransitNetwork } from '../content/transit';
 import { PHILIPPINES_PATH, WORLD, WORLD_H, WORLD_W, worldPercent } from '../content/worldMap';
+import { useTheme } from '../theme';
 import type { PhilippinesOrigin } from './Globe';
 import { PhilippinesClients } from './PhilippinesClients';
 import { Reveal } from './Reveal';
@@ -37,6 +38,7 @@ const PH_SCALE = 4.1;
 
 /** The world, with the Philippines enlarged and highlighted, and each country's upstream network shown locked or unlocked. */
 const WorldMap: React.FC<{ onSelectPhilippines?: (origin: PhilippinesOrigin) => void }> = ({ onSelectPhilippines }) => {
+  const dark = useTheme() === 'dark';
   const cx = (MANILA.left / 100) * WORLD_W;
   const cy = (MANILA.top / 100) * WORLD_H;
   return (
@@ -48,7 +50,7 @@ const WorldMap: React.FC<{ onSelectPhilippines?: (origin: PhilippinesOrigin) => 
         aria-label="World map with the Philippines enlarged and highlighted. Hong Kong and Australia are unlocked and the other countries are locked."
       >
         {WORLD.map((country) => (
-          <path key={country.name} d={country.d} fill={UNLOCKED_COUNTRIES.has(country.name) ? '#b9dcdc' : '#dbe3e9'} stroke="#f6f9fb" strokeWidth="0.5" />
+          <path key={country.name} d={country.d} fill={UNLOCKED_COUNTRIES.has(country.name) ? (dark ? '#1f5f66' : '#b9dcdc') : dark ? '#22394a' : '#dbe3e9'} stroke={dark ? '#0f1f2c' : '#f6f9fb'} strokeWidth="0.5" />
         ))}
         <g
           transform={`translate(${cx} ${cy}) scale(${PH_SCALE}) translate(${-cx} ${-cy})`}

@@ -60,6 +60,29 @@ body {
   --font-data:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
+/* Dark mode. Only the colour tokens change, so every component follows. The navy sections stay a deep blue and are
+   lifted a little so they still stand apart from the dark page. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-paper:        #0a1721;
+  --color-paper-2:      #0f1f2c;
+  --color-paper-3:      #162b3b;
+  --color-ink:          #e9f0f4;
+  --color-ink-2:        #b2c2cd;
+  --color-ink-3:        #8da0ad;
+  --color-rule:         #1f3445;
+  --color-rule-strong:  #35505f;
+  --color-navy:         #123448;
+  --color-navy-2:       #194259;
+  --color-navy-3:       #235873;
+  --color-accent:       #2a979d;
+  --color-accent-hover: #3aaab0;
+  --color-accent-ink:   #03161d;
+  --color-accent-soft:  #12303a;
+  --color-danger:       #f2877d;
+  --color-focus:        #5cb8e6;
+}
+
 @layer base {
   body {
     @apply bg-paper text-ink antialiased;
@@ -172,11 +195,11 @@ body {
 
   .btn-outline-on-navy {
     background: transparent;
-    color: var(--color-paper);
+    color: #ffffff;
     border-color: rgb(255 255 255 / 0.35);
   }
   .btn-outline-on-navy:hover {
-    border-color: var(--color-paper);
+    border-color: #ffffff;
   }
 
   .btn-primary:active,
@@ -438,7 +461,7 @@ body {
 
 /* The About page opening: a shine sweeps across the title's letters. The movement is run in code. */
 .journey-shine {
-  background-image: linear-gradient(105deg, #0b2536 0%, #0b2536 42%, #8be4e6 50%, #0b2536 58%, #0b2536 100%);
+  background-image: linear-gradient(105deg, var(--color-ink) 0%, var(--color-ink) 42%, #8be4e6 50%, var(--color-ink) 58%, var(--color-ink) 100%);
   background-size: 250% 100%;
   background-position: 130% 0;
   -webkit-background-clip: text;

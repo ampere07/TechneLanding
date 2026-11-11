@@ -28,7 +28,8 @@ interface Project {
   /** Several before and after pairs, shown side by side. Used instead of `before` and `after`. */
   pairs?: { before: string; after: string }[];
   after?: string;
-  summary?: string;
+  /** One paragraph, or a list of paragraphs. */
+  summary?: string | string[];
   link?: string;
 }
 const PROJECTS: Project[] = [
@@ -61,11 +62,16 @@ const PROJECTS: Project[] = [
     link: 'https://www.facebook.com/share/p/1CuNUEEJv1/',
   },
   {
-    title: "Zamboanga, Basilan & Jolo Network Deployment",
+    title: "Zamboanga, Basilan & Sulu — Multi-Site Core & Distribution Deployment",
     kind: 'gallery',
-    photos: [1, 2, 3, 4, 5].map((n) => `/network-buildout/zamboanga-${n}.jpg`),
+    photos: [1, 2, 3, 4, 5, 6].map((n) => `/network-buildout/zamboanga-${n}.jpg`),
     summary:
-      "Deployment and implementation of a multi-site ISP network across Zamboanga, Basilan, and Jolo, focused on strengthening inter-site connectivity, network reliability, scalability, and operational visibility across geographically challenging areas.",
+      [
+        "Building separate core and distribution networks across Zamboanga, Basilan, and Sulu to strengthen regional connectivity and extend reliable Internet access to underserved communities in Mindanao.",
+        "In Basilan, the network was designed to distribute connectivity toward Isabela and Maluso using approximately 50 kilometers of wireless radio backhaul. From Basilan, a further 120-kilometer radio link was established toward Sulu, creating a long-distance inter-island connection supporting the expansion of Internet services across the region.",
+        "The deployment focused on building resilient core infrastructure, improving inter-site connectivity, and helping bring better Internet access to Muslim communities across Basilan and Sulu.",
+        "Connecting islands, strengthening networks, and extending Internet access to communities that need it most.",
+      ],
     link: 'https://www.facebook.com/share/p/19enECDbgv/',
   },
   {
@@ -91,6 +97,13 @@ const PROJECTS: Project[] = [
     summary:
       "Deployment and implementation of a core and distribution network infrastructure for an ISP in Leyte, designed to improve network reliability, scalability, traffic management, and overall service performance while preparing the network for future growth and expansion.",
     link: 'https://www.facebook.com/share/p/1DCofhk6Wq/',
+  },
+  {
+    title: "MN2 Equinix Carmona — Core & BGP Peering Deployment",
+    kind: 'gallery',
+    photos: [1, 2, 3].map((n) => `/network-buildout/mn2-carmona-${n}.jpg`),
+    summary:
+      "Deployment and implementation of a core network and supporting systems at Equinix MN2 in Carmona, including BGP peering integration to strengthen upstream connectivity, routing control, and network resiliency. The project focused on building a scalable data center presence with improved route diversity, operational visibility, and readiness for future capacity growth.",
   },
 ];
 
@@ -422,7 +435,7 @@ const BeforeAfter: React.FC<{ label: string; before?: string; after?: string }> 
             if (e.key === 'ArrowLeft') pos.set(Math.max(0, pos.get() - 5));
             if (e.key === 'ArrowRight') pos.set(Math.min(100, pos.get() + 5));
           }}
-          className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-10 h-10 touch-none pointer-events-auto rounded-[3px] bg-white text-ink border border-rule shadow-[0_2px_8px_-2px_rgb(11_37_54_/_0.35)] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-10 h-10 touch-none pointer-events-auto rounded-[3px] bg-white text-navy border border-rule shadow-[0_2px_8px_-2px_rgb(11_37_54_/_0.35)] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           <ArrowLeftRight size={18} aria-hidden="true" />
         </div>
@@ -487,7 +500,7 @@ const Gallery: React.FC<{ label: string; count: number; photos?: string[] }> = (
             type="button"
             aria-label={side === 'prev' ? 'Previous photo' : 'Next photo'}
             onClick={() => step(side === 'prev' ? -1 : 1)}
-            className={`absolute top-1/2 -translate-y-1/2 ${side === 'prev' ? 'left-3' : 'right-3'} w-10 h-10 rounded-[3px] bg-white text-ink border border-rule flex items-center justify-center cursor-pointer transition-colors duration-150 hover:text-accent`}
+            className={`absolute top-1/2 -translate-y-1/2 ${side === 'prev' ? 'left-3' : 'right-3'} w-10 h-10 rounded-[3px] bg-white text-navy border border-rule flex items-center justify-center cursor-pointer transition-colors duration-150 hover:text-accent`}
           >
             {side === 'prev' ? <ChevronLeft size={20} aria-hidden="true" /> : <ChevronRight size={20} aria-hidden="true" />}
           </button>
@@ -582,9 +595,16 @@ export const NetworkBuildout: React.FC = () => (
                     {project.kind === 'gallery' && <Gallery label={`${project.title} (${index + 1})`} count={project.count ?? 4} photos={project.photos} />}
                   </div>
                   <div>
-                    <p className="body-copy">
-                      {project.summary ?? 'Project summary placeholder. A short account of the requirement, what Techne built and the outcome for the customer.'}
-                    </p>
+                    <div className="space-y-4">
+                      {(Array.isArray(project.summary)
+                        ? project.summary
+                        : [project.summary ?? 'Project summary placeholder. A short account of the requirement, what Techne built and the outcome for the customer.']
+                      ).map((paragraph, n, all) => (
+                        <p key={n} className={n === all.length - 1 && all.length > 1 ? 'body-copy font-medium !text-ink' : 'body-copy'}>
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
                     {project.link && (
                       <a
                         href={project.link}

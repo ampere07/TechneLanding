@@ -3,6 +3,10 @@
 
 <head>
   <meta charset="UTF-8" />
+  <script>
+    /* Light is the default. Dark is used only if the visitor chose it earlier. Set before the first paint, so there is no flash. */
+    try { if (localStorage.getItem('techne-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}
+  </script>
   <link rel="icon" type="image/png" href="/src/assets/logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +26,7 @@
       font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
       transition: opacity 0.55s ease, visibility 0s linear 0.55s;
     }
+    html[data-theme='dark'] #splash { background: #0a1721; color: #e9f0f4; }
     #splash.splash--out { opacity: 0; visibility: hidden; pointer-events: none; }
     .splash__inner { display: flex; flex-direction: column; align-items: center; padding: 24px; text-align: center; }
     .splash__brand { display: flex; align-items: center; gap: 12px; }

@@ -277,7 +277,7 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
         </button>
         <p className="eyebrow mb-1">Philippines</p>
         <h3 className="heading-2">Where our clients are</h3>
-        <p className="lede mt-3">{sites.length} client areas across Luzon, Visayas and Mindanao. Choose an island group to see its clients on the map.</p>
+        <p className="lede mt-3">Our clients across Luzon, Visayas and Mindanao. Choose an island group to see its clients on the map.</p>
 
         <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filter by service">
           {([null, ...SERVICES] as (Service | null)[]).map((option) => (
@@ -312,7 +312,7 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
                   onClick={() => pick(name)}
                   aria-pressed={selected}
                   aria-expanded={selected}
-                  aria-label={`${name}, ${rows.length} areas. ${selected ? 'Hide the clients' : `Show the clients in ${name} on the map`}`}
+                  aria-label={`${name}. ${selected ? 'Hide the clients' : `Show the clients in ${name} on the map`}`}
                   className="group w-full flex items-baseline justify-between border-b-2 border-ink pb-1.5 cursor-pointer text-left"
                 >
                   <span className={`text-[0.9375rem] font-semibold transition-colors duration-150 ${selected ? 'text-accent' : 'text-ink group-hover:text-accent'}`}>{name}</span>
@@ -320,7 +320,6 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
                     <span className="hidden sm:inline text-[0.75rem] font-body text-ink-3 group-hover:text-accent transition-colors duration-150">
                       {selected ? 'Hide' : 'View clients'}
                     </span>
-                    {String(rows.length).padStart(2, '0')}
                   </span>
                 </button>
                 <AnimatePresence initial={false}>
