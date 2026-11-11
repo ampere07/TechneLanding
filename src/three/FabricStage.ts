@@ -2005,7 +2005,7 @@ export class FabricStage {
         texture.colorSpace = THREE.SRGBColorSpace;
         this.contentTextures[index] = texture;
       };
-      image.src = logo.src;
+      if (logo.src) image.src = logo.src;
     });
   }
 

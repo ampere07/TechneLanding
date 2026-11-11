@@ -210,7 +210,7 @@ export const NetworkMap: React.FC = () => {
 };
 
 /** Logos with white detail inside them. A plain silhouette would lose that detail, so they stay grey in dark mode. */
-const KEEP_DETAIL = new Set(['Twitch', 'Supermicro']);
+const KEEP_DETAIL = new Set(['Twitch', 'Supermicro', 'SmokePing']);
 
 const LogoTile: React.FC<{ logo: Logo }> = ({ logo }) => {
   return (
@@ -236,6 +236,7 @@ export const LogoGrid: React.FC<{ logos: Logo[] }> = ({ logos }) => (
 
 /** Content networks and the vendor platforms Techne works with. */
 export const TrustedBrands: React.FC = () => {
+  const dark = useTheme() === 'dark';
   return (
   <section className="section bg-paper">
     <div className="wrap space-y-14">
@@ -253,14 +254,22 @@ export const TrustedBrands: React.FC = () => {
         <h3 className="heading-3 mb-5">Hardware and software platforms we deploy and support</h3>
         <div className="flex flex-wrap items-center gap-x-10 gap-y-6">
           {PLATFORM_LOGOS.map((logo) => (
-            <img
-              key={logo.name}
-              src={logo.src}
-              alt={logo.name}
-              loading="lazy"
-              className={`${KEEP_DETAIL.has(logo.name) ? 'logo-grey' : 'logo-mark'} h-7 md:h-8 max-w-[110px] w-auto object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-[filter,opacity] duration-150`}
-              draggable="false"
-            />
+            <span key={logo.name} className="group inline-flex items-center gap-2">
+              {logo.src && (
+                <img
+                  src={dark && logo.srcDark ? logo.srcDark : logo.src}
+                  alt={logo.label ? '' : logo.name}
+                  loading="lazy"
+                  className={`${KEEP_DETAIL.has(logo.name) ? 'logo-grey' : 'logo-mark'} h-7 md:h-8 max-w-[110px] w-auto object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-[filter,opacity] duration-150`}
+                  draggable="false"
+                />
+              )}
+              {(!logo.src || logo.label) && (
+                <span className="font-display text-[1.125rem] md:text-[1.25rem] font-bold tracking-tight text-ink-3 group-hover:text-ink transition-colors duration-150">
+                  {logo.label ?? logo.name}
+                </span>
+              )}
+            </span>
           ))}
         </div>
       </Reveal>

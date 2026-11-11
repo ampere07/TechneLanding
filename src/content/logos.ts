@@ -22,10 +22,24 @@ import pfsense from '../assets/trusted/PfSense_logo.png';
 import supermicro from '../assets/trusted/Super_Micro_Computer_Logo.svg.png';
 import zte from '../assets/trusted/ZTE-logo.svg.png';
 import libreqos from '../assets/trusted/libreqos.logo.svg';
+import akvorado from '../assets/trusted/akvorado.svg';
+import bind9 from '../assets/trusted/bind9.png';
+import cacti from '../assets/trusted/cacti.svg';
+import librenms from '../assets/trusted/librenms.png';
+import powerdns from '../assets/trusted/powerdns.png';
+import ruijie from '../assets/trusted/ruijie.svg';
+import smokeping from '../assets/trusted/smokeping.png';
+import smokepingDark from '../assets/trusted/smokeping-dark.png';
+import tplink from '../assets/trusted/tp-link.svg';
 
 export interface Logo {
   name: string;
-  src: string;
+  /** The logo image. Without one, the name is shown as text. */
+  src?: string;
+  /** A version of the logo for dark mode, when the normal one would not show on a dark page. */
+  srcDark?: string;
+  /** Text shown beside the image, for a logo that is only a symbol and has no name in it. */
+  label?: string;
 }
 
 export const CONTENT_LOGOS: Logo[] = [
@@ -55,4 +69,16 @@ export const PLATFORM_LOGOS: Logo[] = [
   { name: 'Proxmox VE', src: proxmox },
   { name: 'pfSense', src: pfsense },
   { name: 'LibreQoS', src: libreqos },
+  { name: 'TP-Link', src: tplink },
+  { name: 'Ruijie', src: ruijie },
+  { name: 'Cacti', src: cacti, label: 'Cacti' },
+  { name: 'LibreNMS', src: librenms },
+  { name: 'SmokePing', src: smokeping, srcDark: smokepingDark },
+  { name: 'Akvorado', src: akvorado, label: 'Akvorado' },
+  { name: 'syslog' },
+  { name: 'Weathermap' },
+  { name: 'Oxidized' },
+  { name: 'RANCID' },
+  { name: 'BIND 9', src: bind9 },
+  { name: 'PowerDNS', src: powerdns },
 ];
