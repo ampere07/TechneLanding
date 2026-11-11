@@ -55,7 +55,15 @@ const UNLOCKED = new Set(TRANSIT_NETWORKS.filter((network) => network.unlocked).
 const toVector = (lon: number, lat: number, into = new THREE.Vector3()) =>
   into.set(Math.cos(lat * DEG) * Math.cos(lon * DEG), Math.sin(lat * DEG), -Math.cos(lat * DEG) * Math.sin(lon * DEG));
 
-/** Draws the map paths onto a canvas that covers the whole world, using the paths' own box. */
+/** Gap between dots, and the width of each square dot, in texture pixels. */
+const DOT_GAP = 10;
+const DOT_SIZE = 5.6;
+
+/**
+ * Draws the world onto a canvas that covers the whole globe, as a grid of small squares instead of filled countries.
+ * The countries are first drawn as shapes on a hidden canvas. A dot is then placed at each grid point that falls
+ * inside land, in the colour of the country it falls in. The Philippines is not drawn here: it has its own layer.
+ */
 const drawWorld = () => {
   const canvas = document.createElement('canvas');
   canvas.width = TEX_W;
@@ -65,16 +73,36 @@ const drawWorld = () => {
   const dark = getTheme() === 'dark';
   ctx.fillStyle = dark ? '#142738' : '#e8f0f4';
   ctx.fillRect(0, 0, TEX_W, TEX_H);
+
+  // Land shapes: one colour for locked networks, another for unlocked ones.
+  const land = document.createElement('canvas');
+  land.width = TEX_W;
+  land.height = TEX_H;
+  const lctx = land.getContext('2d', { willReadFrequently: true });
+  if (!lctx) return canvas;
   // The paths cover latitude 84 to -58, so they are placed within the full 90 to -90.
-  ctx.setTransform(TEX_W / WORLD_W, 0, 0, (TEX_H * (142 / 180)) / WORLD_H, 0, TEX_H * (6 / 180));
-  ctx.lineWidth = 0.8;
-  ctx.strokeStyle = dark ? '#0f1f2c' : '#f7fafc';
+  lctx.setTransform(TEX_W / WORLD_W, 0, 0, (TEX_H * (142 / 180)) / WORLD_H, 0, TEX_H * (6 / 180));
   for (const country of WORLD) {
-    const path = new Path2D(country.d);
-    ctx.fillStyle = UNLOCKED.has(country.name) ? (dark ? '#1f6a70' : '#a6d4d4') : dark ? '#2b4357' : '#cfd9e1';
-    ctx.fill(path);
-    ctx.stroke(path);
+    lctx.fillStyle = UNLOCKED.has(country.name) ? '#00ff00' : '#ff0000';
+    lctx.fill(new Path2D(country.d));
   }
+  const pixels = lctx.getImageData(0, 0, TEX_W, TEX_H).data;
+
+  const locked = dark ? '#4d6a80' : '#a9b9c6';
+  const unlocked = dark ? '#33999f' : '#58aaae';
+  for (let y = DOT_GAP / 2; y < TEX_H; y += DOT_GAP) {
+    // Rows near the poles are stretched on the sphere, so their dots are placed further apart.
+    const lat = 90 - (y / TEX_H) * 180;
+    const stretch = Math.max(0.35, Math.cos(lat * DEG));
+    const step = DOT_GAP / stretch;
+    for (let x = step / 2; x < TEX_W; x += step) {
+      const i = (Math.floor(y) * TEX_W + Math.floor(x)) * 4;
+      if (pixels[i + 3] < 128) continue;
+      ctx.fillStyle = pixels[i + 1] > pixels[i] ? unlocked : locked;
+      ctx.fillRect(x - DOT_SIZE / 2, y - DOT_SIZE / 2, DOT_SIZE, DOT_SIZE);
+    }
+  }
+
   return canvas;
 };
 

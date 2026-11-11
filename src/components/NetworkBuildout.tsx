@@ -105,6 +105,15 @@ const PROJECTS: Project[] = [
     summary:
       "Deployment and implementation of a core network and supporting systems at Equinix MN2 in Carmona, including BGP peering integration to strengthen upstream connectivity, routing control, and network resiliency. The project focused on building a scalable data center presence with improved route diversity, operational visibility, and readiness for future capacity growth.",
   },
+  {
+    title: "Cavite — Core Network Deployment",
+    kind: 'gallery',
+    photos: [1, 2, 3].map((n) => `/network-buildout/cavite-${n}.jpg`),
+    summary: [
+      "Deployment and implementation of a core network infrastructure for an ISP in Cavite, designed to improve routing efficiency, network stability, scalability, and overall service reliability.",
+      "The project established a stronger foundation for future capacity growth and continued network expansion.",
+    ],
+  },
 ];
 
 const FACTS = [
@@ -352,7 +361,7 @@ const SuccessPhoto: React.FC<{ src?: string; alt?: string }> = ({ src, alt = '' 
     {src ? (
       <>
         {/* A blurred copy fills the frame, so a portrait photo is shown whole without bars */}
-        <img src={src} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60" />
+        <img src={src} alt="" aria-hidden="true" className="hidden md:block absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60" />
         <img src={src} alt={alt} loading="lazy" className="absolute inset-0 w-full h-full object-contain" />
       </>
     ) : (
@@ -482,7 +491,7 @@ const Gallery: React.FC<{ label: string; count: number; photos?: string[] }> = (
             {photos ? (
               <>
                 {/* Shown whole, so a wide photo is not cropped. A blurred copy fills the rest of the frame. */}
-                <img src={photos[index]} alt="" aria-hidden="true" draggable={false} className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60" />
+                <img src={photos[index]} alt="" aria-hidden="true" draggable={false} className="hidden md:block absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60" />
                 <img src={photos[index]} alt={`${label}, photo ${index + 1} of ${count}`} draggable={false} className="absolute inset-0 w-full h-full object-contain" />
               </>
             ) : <PhotoPlaceholder kind="after" label={`Photo ${index + 1} placeholder`} />}
@@ -517,7 +526,7 @@ const Gallery: React.FC<{ label: string; count: number; photos?: string[] }> = (
             onClick={() => go(i)}
             className={`relative shrink-0 w-20 aspect-[4/3] rounded-[3px] border bg-paper-3 text-ink-3 flex items-center justify-center cursor-pointer transition-[border-color,opacity] duration-150 ${i === index ? 'border-accent opacity-100' : 'border-rule opacity-60 hover:opacity-100'}`}
           >
-            {photos ? <img src={photos[i]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover rounded-[3px]" /> : <ImageIcon size={16} aria-hidden="true" />}
+            {photos ? <img src={photos[i]} alt="" className="absolute inset-0 w-full h-full object-cover rounded-[3px]" /> : <ImageIcon size={16} aria-hidden="true" />}
             {i === index && <motion.span layoutId={`${label}-thumb`} className="absolute inset-0 rounded-[3px] ring-2 ring-accent" transition={{ duration: 0.3, ease: EASE }} />}
           </button>
         ))}

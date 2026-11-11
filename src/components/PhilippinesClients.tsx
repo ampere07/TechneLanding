@@ -1,6 +1,8 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, Maximize2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { PANEL_IDS } from '../constants';
 import { CLIENT_SITES, REGIONS, SERVICES, type Region, type Service } from '../content/clients';
 import { PHILIPPINES_PATH, WORLD_H, WORLD_W, worldPercent } from '../content/worldMap';
 import type { PhilippinesOrigin } from './Globe';
@@ -8,10 +10,10 @@ import type { PhilippinesOrigin } from './Globe';
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 // The part of the world map that holds the Philippines, in the map's own units.
-const VB = { x: 822, y: 174, w: 34, h: 50 };
+export const VB = { x: 822, y: 174, w: 34, h: 50 };
 
 /** A longitude and latitude as a percentage of the map's width and height. */
-const toBox = (lon: number, lat: number) => {
+export const toBox = (lon: number, lat: number) => {
   const p = worldPercent(lon, lat);
   return {
     left: ((((p.left / 100) * WORLD_W) - VB.x) / VB.w) * 100,
@@ -26,7 +28,7 @@ const REGION_AREA: Record<Region, { lon: [number, number]; lat: [number, number]
   Mindanao: { lon: [121.6, 127.0], lat: [10.0, 5.0] },
 };
 
-interface Framing {
+export interface Framing {
   /** Scale, and shift as a percentage of the frame, that make an island group fill it. */
   s: number;
   x: number;
@@ -49,7 +51,7 @@ const MOVE = 'transform 1.2s cubic-bezier(0.65, 0, 0.35, 1)';
  * A pin. The map is moved by a scale and a shift. A pin is moved by the shift that puts it at the same place on the
  * scaled map, but it is never scaled itself, so it keeps its size.
  */
-const Pin: React.FC<{
+export const Pin: React.FC<{
   n: number;
   delay: number;
   left: number;
@@ -279,7 +281,7 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
         <h3 className="heading-2">Where our clients are</h3>
         <p className="lede mt-3">Our clients across Luzon, Visayas and Mindanao. Choose an island group to see its clients on the map.</p>
 
-        <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filter by service">
+        <div className="mt-5 flex flex-wrap items-center gap-2" role="group" aria-label="Filter by service">
           {([null, ...SERVICES] as (Service | null)[]).map((option) => (
             <button
               key={option ?? 'all'}
@@ -294,6 +296,12 @@ export const PhilippinesClients: React.FC<{ onClose: () => void; from?: Philippi
               {option ?? 'All'}
             </button>
           ))}
+          <Link
+            to={`/${PANEL_IDS.CLIENTS}`}
+            className="ml-2 text-[0.875rem] font-semibold text-accent underline-offset-4 hover:underline"
+          >
+            View all clients
+          </Link>
         </div>
 
         <div className="mt-6 space-y-6">

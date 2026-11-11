@@ -23,7 +23,9 @@ export const PANEL_IDS = {
   VIRTUAL_ROUTER: '778899001',
   CONTENT: '889900112',
   NETWORK_BUILDOUT: '151617181',
-  FAQ: '262728293'
+  FAQ: '262728293',
+  CLIENTS: '303132333',
+  PARTNERS: '343536373'
 };
 
 /** Addresses of the blog articles that were removed. They redirect to the blog page. */

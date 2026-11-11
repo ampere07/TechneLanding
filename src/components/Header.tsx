@@ -78,7 +78,7 @@ export const Header: React.FC = () => {
       <header className="sticky top-0 z-50 h-16 lg:h-[72px]">
         <div
           className={`absolute left-1/2 -translate-x-1/2 border backdrop-blur-md will-change-[top,width] transition-[top,width,border-radius,box-shadow,background-color,border-color] duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] motion-reduce:transition-none ${floating
-              ? 'top-3 w-[min(1240px,calc(100%-1.5rem))] rounded-[28px] border-rule bg-paper/95 shadow-[0_10px_30px_-12px_rgb(11_37_54_/_0.35)]'
+              ? 'top-3 w-[min(1240px,calc(100%-1.5rem))] rounded-[44px] border-rule bg-paper/95 shadow-[0_10px_30px_-12px_rgb(11_37_54_/_0.35)]'
               : 'top-0 w-full rounded-none border-transparent border-b-rule bg-paper shadow-[0_10px_30px_-12px_rgb(11_37_54_/_0)]'
             }`}
         >
@@ -146,7 +146,7 @@ export const Header: React.FC = () => {
 
             <div className="hidden lg:flex items-center gap-3">
               <ThemeToggle />
-              <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary" onClick={closeAll}>
+              <Link to={`/${PANEL_IDS.CONTACT}`} className="btn-primary !rounded-full !px-6" onClick={closeAll}>
                 Contact us
               </Link>
             </div>
@@ -177,13 +177,13 @@ export const Header: React.FC = () => {
                   </div>
                 ))}
                 <Link to={`/${PANEL_IDS.PRICING}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Request a quote</Link>
-                <Link to={`/${PANEL_IDS.BLOG}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Blog</Link>
+                <Link to={`/${PANEL_IDS.BLOG}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Engagement</Link>
                 <Link to={`/${PANEL_IDS.NETWORK_BUILDOUT}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">Network Buildout</Link>
                 <Link to={`/${PANEL_IDS.ABOUT}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">About</Link>
                 <Link to={`/${PANEL_IDS.FAQ}`} onClick={closeAll} className="block py-3 border-b border-rule font-medium text-ink">FAQ</Link>
                 <div className="pt-4 flex flex-col gap-3">
-                  <ThemeToggle className="w-full" />
-                  <Link to={`/${PANEL_IDS.CONTACT}`} onClick={closeAll} className="btn-primary w-full">Contact us</Link>
+                  <ThemeToggle withLabel />
+                  <Link to={`/${PANEL_IDS.CONTACT}`} onClick={closeAll} className="btn-primary w-full !rounded-full">Contact us</Link>
                   <button
                     type="button"
                     onClick={() => {

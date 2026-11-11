@@ -468,3 +468,23 @@ body {
   background-clip: text;
   color: transparent;
 }
+
+/* Brand logos are drawn for a light page. In dark mode they become plain light-grey silhouettes. Pointing at one
+   shows the logo in its own colours again, as it does in light mode. */
+:root[data-theme='dark'] .logo-mark {
+  filter: brightness(0) invert(1);
+  opacity: 0.6;
+}
+:root[data-theme='dark'] .logo-mark:hover {
+  filter: none;
+  opacity: 1;
+}
+/* Logos with white detail inside keep that detail: they are only greyed and lightened. */
+:root[data-theme='dark'] .logo-grey {
+  filter: grayscale(1) brightness(1.7);
+  opacity: 0.75;
+}
+:root[data-theme='dark'] .logo-grey:hover {
+  filter: none;
+  opacity: 1;
+}

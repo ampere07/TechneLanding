@@ -1,5 +1,8 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { PANEL_IDS } from '../constants';
+import { PARTNERS } from '../content/partners';
 import { JOURNEY, JOURNEY_FINAL, JOURNEY_INTRO, JOURNEY_TITLE, type JourneyStep } from '../content/journey';
 import { Reveal } from './Reveal';
 import { AfterIntro } from './AfterIntro';
@@ -278,6 +281,28 @@ export const JourneyTimeline: React.FC<{ ready: boolean; started: boolean }> = (
           </h1>
           <AfterIntro ready={ready} delay={1050}>
             <p className="lede mt-4 mx-auto">{JOURNEY_INTRO}</p>
+            <div className="mt-8">
+              <p className="text-[0.8125rem] font-medium uppercase tracking-wider text-ink-3">Our partners</p>
+              <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+                {PARTNERS.map((partner) => (
+                  <li key={partner.slug}>
+                    <Link
+                      to={`/${PANEL_IDS.PARTNERS}/${partner.slug}`}
+                      aria-label={`${partner.name}: ${partner.type}. See details`}
+                      className="group inline-flex flex-col items-center gap-1"
+                    >
+                      {partner.src ? (
+                        <span className="flex items-center px-2 py-1 group-hover:-translate-y-0.5 transition-transform duration-150">
+                          <img src={partner.src} alt="" className="h-16 md:h-20 w-auto max-w-[160px] object-contain" draggable={false} />
+                        </span>
+                      ) : (
+                        <span className="font-display text-[1.375rem] font-bold tracking-tight text-ink group-hover:text-accent transition-colors duration-150">{partner.name}</span>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </AfterIntro>
         </div>
 

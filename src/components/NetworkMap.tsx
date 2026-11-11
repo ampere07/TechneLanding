@@ -209,17 +209,22 @@ export const NetworkMap: React.FC = () => {
   );
 };
 
-const LogoTile: React.FC<{ logo: Logo }> = ({ logo }) => (
+/** Logos with white detail inside them. A plain silhouette would lose that detail, so they stay grey in dark mode. */
+const KEEP_DETAIL = new Set(['Twitch', 'Supermicro']);
+
+const LogoTile: React.FC<{ logo: Logo }> = ({ logo }) => {
+  return (
   <div className="bg-paper h-20 md:h-24 flex items-center justify-center px-6">
     <img
       src={logo.src}
       alt={logo.name}
       loading="lazy"
-      className="max-h-8 md:max-h-9 max-w-[120px] w-auto object-contain grayscale opacity-75 hover:grayscale-0 hover:opacity-100 transition-[filter,opacity] duration-150"
+      className={`${KEEP_DETAIL.has(logo.name) ? 'logo-grey' : 'logo-mark'} max-h-8 md:max-h-9 max-w-[120px] w-auto object-contain grayscale opacity-75 hover:grayscale-0 hover:opacity-100 transition-[filter,opacity] duration-150`}
       draggable="false"
     />
   </div>
-);
+  );
+};
 
 export const LogoGrid: React.FC<{ logos: Logo[] }> = ({ logos }) => (
   <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-rule border border-rule rounded-[4px] overflow-hidden">
@@ -230,7 +235,8 @@ export const LogoGrid: React.FC<{ logos: Logo[] }> = ({ logos }) => (
 );
 
 /** Content networks and the vendor platforms Techne works with. */
-export const TrustedBrands: React.FC = () => (
+export const TrustedBrands: React.FC = () => {
+  return (
   <section className="section bg-paper">
     <div className="wrap space-y-14">
       <div>
@@ -252,7 +258,7 @@ export const TrustedBrands: React.FC = () => (
               src={logo.src}
               alt={logo.name}
               loading="lazy"
-              className="h-7 md:h-8 max-w-[110px] w-auto object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-[filter,opacity] duration-150"
+              className={`${KEEP_DETAIL.has(logo.name) ? 'logo-grey' : 'logo-mark'} h-7 md:h-8 max-w-[110px] w-auto object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-[filter,opacity] duration-150`}
               draggable="false"
             />
           ))}
@@ -260,4 +266,5 @@ export const TrustedBrands: React.FC = () => (
       </Reveal>
     </div>
   </section>
-);
+  );
+};

@@ -27,14 +27,16 @@ import {
   VirtualCompare,
   WhyChooseTechne,
 } from './components/HomeSections';
+import { ClientsPage } from './components/ClientsPage';
+import { PartnerPage } from './components/PartnerPage';
 import { FAQPage } from './components/FAQPage';
-import { Testimonials } from './components/Testimonials';
+// import { Testimonials } from './components/Testimonials'; // hidden for now
 import { HOME_PATH, PANEL_IDS, RETIRED_BLOG_IDS } from './constants';
 
 const HomePanel = () => (
   <>
     <HomeJourney />
-    <Testimonials />
+    {/* <Testimonials /> */}
     <ServiceFinder />
     <VirtualCompare />
     <NetworkMap />
@@ -61,6 +63,8 @@ const PanelRenderer = () => {
       return <NetworkBuildout />;
     case PANEL_IDS.FAQ:
       return <FAQPage />;
+    case PANEL_IDS.CLIENTS:
+      return <ClientsPage />;
     case PANEL_IDS.PRICING:
       return <Pricing />;
     case PANEL_IDS.ABOUT:
@@ -129,6 +133,7 @@ function App() {
           <Routes>
             <Route path={HOME_PATH} element={<HomePanel />} />
             <Route path={`/${PANEL_IDS.BLOG}/:slug`} element={<BlogPost />} />
+            <Route path={`/${PANEL_IDS.PARTNERS}/:slug`} element={<PartnerPage />} />
             <Route path="/:id" element={<PanelRenderer />} />
           </Routes>
         </main>
