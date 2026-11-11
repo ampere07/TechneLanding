@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, animate, motion, useInView, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
-import { ArrowLeftRight, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react';
+import { ArrowLeftRight, ChevronLeft, ChevronRight, ExternalLink, ImageIcon } from 'lucide-react';
 import { HOME_PATH } from '../constants';
 import { ClosingCTA } from './ClosingCTA';
 import { Reveal } from './Reveal';
@@ -21,62 +21,73 @@ interface Project {
   count?: number;
   /** A real photo for a 'single' project. Leave out to show the placeholder. */
   photo?: string;
+  /** Real photos for a 'gallery' project. Portrait. */
+  photos?: string[];
+  /** Real before and after photos for a 'comparison' project. Both are portrait. */
+  before?: string;
+  /** Several before and after pairs, shown side by side. Used instead of `before` and `after`. */
+  pairs?: { before: string; after: string }[];
+  after?: string;
   summary?: string;
   link?: string;
 }
 const PROJECTS: Project[] = [
   {
     title: "Laguna Network Deployment",
-    kind: 'single',
-    photo: '/network-buildout/laguna-network-deployment.jpg',
+    kind: 'comparison',
+    before: '/network-buildout/laguna-before.jpg',
+    after: '/network-buildout/laguna-after.jpg',
     summary:
       "End-to-end deployment and implementation of a Core, Distribution, and Network Monitoring System for an ISP network in Laguna. The project focused on building a scalable network architecture, improving traffic visibility, and strengthening overall network performance, reliability, and manageability.",
     link: 'https://www.facebook.com/share/p/1MqTipwuMd/',
   },
   {
     title: "Surigao Network Deployment",
-    kind: 'single',
-    photo: '/network-buildout/surigao.jpg',
+    kind: 'gallery',
+    photos: [1, 2, 3, 4, 5].map((n) => `/network-buildout/surigao-${n}.jpg`),
     summary:
       "End-to-end deployment and implementation of a Core, Distribution, and Network Monitoring System for an ISP network in Surigao. The project focused on building a more scalable and resilient infrastructure while improving network visibility, performance, and operational control.",
     link: 'https://www.facebook.com/share/p/1CQxGmaFUC/',
   },
   {
     title: "Rizal Network Deployment",
-    kind: 'single',
-    photo: '/network-buildout/rizal.jpg',
+    kind: 'comparison',
+    pairs: [
+      { before: '/network-buildout/rizal-before-1.jpg', after: '/network-buildout/rizal-after-1.jpg' },
+      { before: '/network-buildout/rizal-before-2.jpg', after: '/network-buildout/rizal-after-2.jpg' },
+    ],
     summary:
       "Deployment and implementation of a Core, Distribution, and Network Monitoring System for an ISP network in Rizal, designed to improve scalability, reliability, traffic visibility, and overall network operations.",
     link: 'https://www.facebook.com/share/p/1CuNUEEJv1/',
   },
   {
     title: "Zamboanga, Basilan & Jolo Network Deployment",
-    kind: 'single',
-    photo: '/network-buildout/zamboanga-basilan-jolo.jpg',
+    kind: 'gallery',
+    photos: [1, 2, 3, 4, 5].map((n) => `/network-buildout/zamboanga-${n}.jpg`),
     summary:
       "Deployment and implementation of a multi-site ISP network across Zamboanga, Basilan, and Jolo, focused on strengthening inter-site connectivity, network reliability, scalability, and operational visibility across geographically challenging areas.",
     link: 'https://www.facebook.com/share/p/19enECDbgv/',
   },
   {
     title: "Vitro Makati 2 Data Center Presence Deployment",
-    kind: 'single',
-    photo: '/network-buildout/vitro-makati-2.jpg',
+    kind: 'gallery',
+    photos: [1, 2, 3, 4].map((n) => `/network-buildout/vitro-makati-2-${n}.jpg`),
     summary:
       "Deployment and implementation of a data center network presence at VITRO Makati 2 for an ISP client from Leyte, providing a stronger foundation for upstream connectivity, peering, network scalability, and future expansion.",
     link: 'https://www.facebook.com/share/p/1eQvr8uvki/',
   },
   {
     title: "Bohol Network Deployment",
-    kind: 'single',
-    photo: '/network-buildout/bohol.jpg',
+    kind: 'gallery',
+    photos: Array.from({ length: 10 }, (_, i) => `/network-buildout/bohol-${i + 1}.jpg`),
     summary:
       "Deployment and implementation of a scalable ISP network infrastructure for clients in Bohol, focused on improving core connectivity, network reliability, traffic visibility, and readiness for future capacity and service expansion.",
     link: 'https://www.facebook.com/share/p/1X3jPwFEwW/',
   },
   {
     title: "Leyte Network Deployment",
-    kind: 'single',
-    photo: '/network-buildout/leyte.jpg',
+    kind: 'gallery',
+    photos: Array.from({ length: 6 }, (_, i) => `/network-buildout/leyte-${i + 1}.jpg`),
     summary:
       "Deployment and implementation of a core and distribution network infrastructure for an ISP in Leyte, designed to improve network reliability, scalability, traffic management, and overall service performance while preparing the network for future growth and expansion.",
     link: 'https://www.facebook.com/share/p/1DCofhk6Wq/',
@@ -98,123 +109,206 @@ const STEPS = [
 ];
 
 /**
- * Network drawn in the page header, built up the way a real buildout is:
- * devices are racked, links are patched in (dashed, unlit), the core lights each link outward,
- * and then traffic flows along every live link.
+ * Rack drawn in the page header, built the way a real buildout goes: the rack frame stands, each unit is slid in
+ * from the side one after another, fibre is patched to every unit from a trunk, and then the port lights come on.
  */
-type NodeKind = 'core' | 'dist' | 'edge';
-const NODES: { x: number; y: number; kind: NodeKind; label: string; hops: number }[] = [
-  { x: 60, y: 200, kind: 'edge', label: 'EDGE-01', hops: 2 },
-  { x: 180, y: 90, kind: 'dist', label: 'DIST-01', hops: 1 },
-  { x: 190, y: 290, kind: 'dist', label: 'DIST-02', hops: 1 },
-  { x: 320, y: 190, kind: 'core', label: 'CORE', hops: 0 },
-  { x: 440, y: 80, kind: 'dist', label: 'DIST-03', hops: 1 },
-  { x: 450, y: 300, kind: 'dist', label: 'DIST-04', hops: 1 },
-  { x: 560, y: 190, kind: 'edge', label: 'EDGE-02', hops: 2 },
-];
-const LINKS: { a: number; b: number; cap?: string }[] = [
-  { a: 0, b: 1 }, { a: 0, b: 2 }, { a: 1, b: 3, cap: '100G' }, { a: 2, b: 3 }, { a: 1, b: 4 }, { a: 3, b: 4 },
-  { a: 3, b: 5, cap: '100G' }, { a: 2, b: 5 }, { a: 4, b: 6 }, { a: 5, b: 6 }, { a: 3, b: 6, cap: '10G' },
+type UnitKind = 'router' | 'switch' | 'olt';
+const UNITS: { kind: UnitKind; label: string }[] = [
+  { kind: 'router', label: 'RADI-1' },
+  { kind: 'router', label: 'MGMT-1' },
+  { kind: 'switch', label: 'CSW-1' },
+  { kind: 'router', label: 'CRT-1' },
+  { kind: 'router', label: 'AGR-1' },
+  { kind: 'router', label: 'AC-1' },
+  { kind: 'router', label: 'AC-2' },
+  { kind: 'switch', label: 'DSW-1' },
+  { kind: 'olt', label: 'OLT-1' },
+  { kind: 'olt', label: 'OLT-2' },
 ];
 
 const TEAL = 'var(--color-teal-bright)';
 const MONO = 'var(--font-data)';
+const FIBRE = '#f2c230';
 
-const HeroNetwork: React.FC = () => {
-  const reduced = useReducedMotion();
+const RACK = { x: 130, w: 200, top: 22, bottom: 372 };
+const UNIT = { x: 140, w: 180, h: 26, first: 40, step: 32 };
+const TRUNK_X = 96;
+
+/** Port detail drawn on the face of each kind of unit. */
+const Ports: React.FC<{ kind: UnitKind; y: number }> = ({ kind, y }) => {
+  if (kind === 'router') {
+    return (
+      <>
+        {Array.from({ length: 12 }, (_, k) => (
+          <rect key={k} x={UNIT.x + 30 + k * 9 + Math.floor(k / 4) * 5} y={y + 9} width={7} height={7} rx={1} fill="#fff" fillOpacity={0.35} />
+        ))}
+        <rect x={UNIT.x + 8} y={y + 7} width={12} height={12} rx={1.5} fill={TEAL} fillOpacity={0.55} />
+      </>
+    );
+  }
+  if (kind === 'switch') {
+    return (
+      <>
+        {Array.from({ length: 8 }, (_, k) => (
+          <rect key={k} x={UNIT.x + 14 + k * 15} y={y + 8} width={11} height={10} rx={1} fill={TEAL} fillOpacity={0.5} />
+        ))}
+      </>
+    );
+  }
   return (
-    <svg viewBox="0 0 620 380" className="w-full h-auto" role="img" aria-label="Network topology with a core router, distribution switches and edge sites, all links up">
-      {LINKS.map(({ a, b, cap }, i) => {
-        const A = NODES[a];
-        const B = NODES[b];
-        const lit = 0.9 + Math.max(A.hops, B.hops) * 0.7;
-        const flow = lit + 0.9;
-        const forward = i % 2 === 0;
-        return (
-          <g key={i}>
-            {/* Cable run, not yet carrying traffic */}
-            <motion.line
-              x1={A.x} y1={A.y} x2={B.x} y2={B.y}
-              stroke="#fff" strokeOpacity={0.22} strokeWidth={1.25} strokeDasharray="3 5"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 + i * 0.05 }}
-            />
-            {/* Link comes up, spreading outward from the core */}
-            <motion.line
-              x1={A.x} y1={A.y} x2={B.x} y2={B.y}
-              stroke={TEAL} strokeOpacity={0.6} strokeWidth={1.75}
-              initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-              transition={{ duration: 0.7, delay: lit, ease: EASE }}
-            />
-            {/* Traffic moving along the live link */}
-            <motion.line
-              x1={forward ? A.x : B.x} y1={forward ? A.y : B.y} x2={forward ? B.x : A.x} y2={forward ? B.y : A.y}
-              stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeDasharray="1 13"
-              initial={{ opacity: 0, strokeDashoffset: 0 }}
-              animate={reduced ? { opacity: 0.7 } : { opacity: 0.85, strokeDashoffset: -28 }}
-              transition={{
-                opacity: { duration: 0.6, delay: flow },
-                strokeDashoffset: { duration: 2.4 + (i % 3) * 0.5, delay: flow, repeat: Infinity, ease: 'linear' },
-              }}
-            />
-            {cap && (
-              <motion.text
-                x={(A.x + B.x) / 2} y={(A.y + B.y) / 2 - 7} textAnchor="middle"
-                fontSize={10} fontFamily={MONO} fill={TEAL} stroke="var(--color-navy)" strokeWidth={4} paintOrder="stroke"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: flow + 0.2 }}
-              >
-                {cap}
-              </motion.text>
-            )}
-          </g>
-        );
-      })}
+    <>
+      {Array.from({ length: 8 }, (_, k) => (
+        <rect key={k} x={UNIT.x + 14 + k * 11} y={y + 8} width={8} height={10} rx={1} fill="#4aa3ff" fillOpacity={0.75} />
+      ))}
+      <rect x={UNIT.x + 108} y={y + 8} width={36} height={10} rx={1} fill="#fff" fillOpacity={0.2} />
+    </>
+  );
+};
 
-      {NODES.map((n, i) => {
-        const size = n.kind === 'core' ? 26 : n.kind === 'dist' ? 18 : 14;
-        const appear = 0.15 + i * 0.08;
-        const online = 0.9 + n.hops * 0.7;
-        return (
-          <g key={i}>
-            {/* One ring leaves each device as it comes online */}
-            <motion.rect
-              x={n.x - size / 2} y={n.y - size / 2} width={size} height={size} rx={n.kind === 'edge' ? size / 2 : 3}
-              fill="none" stroke={TEAL} strokeWidth={1.5}
-              style={{ transformOrigin: `${n.x}px ${n.y}px` }}
-              initial={{ opacity: 0, scale: 1 }} animate={{ opacity: [0, 0.8, 0], scale: [1, 2.6] }}
-              transition={{ duration: 1.2, delay: online, ease: 'easeOut' }}
-            />
-            <motion.rect
-              x={n.x - size / 2} y={n.y - size / 2} width={size} height={size} rx={n.kind === 'edge' ? size / 2 : 3}
-              fill="var(--color-navy)" stroke={TEAL} strokeWidth={2}
-              style={{ transformOrigin: `${n.x}px ${n.y}px` }}
-              initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: appear, ease: EASE }}
-            />
-            {n.kind === 'core' && (
-              <motion.path
-                d={`M${n.x - 6} ${n.y - 2} h12 M${n.x - 6} ${n.y + 3} h12`} stroke={TEAL} strokeWidth={1.5} strokeLinecap="round"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: appear + 0.3 }}
-              />
-            )}
-            <motion.text
-              x={n.x} y={n.y + size / 2 + 15} textAnchor="middle" fontSize={10} fontFamily={MONO} fill="#fff" fillOpacity={0.6}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: appear + 0.3 }}
-            >
-              {n.label}
-            </motion.text>
-          </g>
-        );
-      })}
+/** How long one deployment runs before the rack is cleared and built again. */
+const CYCLE = 11;
 
-      {/* Status line shown once everything is up */}
-      <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 3.2 }}>
-        <motion.circle
-          cx={64} cy={350} r={4} fill={TEAL}
-          animate={reduced ? undefined : { opacity: [1, 0.35, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+/** Progress bar and stage name, counting up as the rack is built. */
+const Progress: React.FC = () => {
+  const [pct, setPct] = useState(0);
+  useEffect(() => {
+    const run = animate(0, 100, { duration: 3.7, delay: 0.35, ease: 'linear', onUpdate: (v) => setPct(Math.round(v)) });
+    return () => run.stop();
+  }, []);
+  const stage = pct >= 100 ? 'Rack commissioned' : pct >= 70 ? 'Bringing links up' : pct >= 40 ? 'Patching fibre' : 'Racking units';
+  return (
+    <g>
+      <rect x={RACK.x} y={382} width={RACK.w} height={3} rx={1.5} fill="#fff" fillOpacity={0.15} />
+      <rect x={RACK.x} y={382} width={(RACK.w * pct) / 100} height={3} rx={1.5} fill={TEAL} />
+      <circle cx={RACK.x + 3} cy={398} r={3.5} fill={pct >= 100 ? '#3ddc84' : '#f5a623'} />
+      <text x={RACK.x + 12} y={402} fontSize={11} fontFamily={MONO} fill="#fff" fillOpacity={0.8}>
+        {stage}
+        {pct < 100 ? '...' : ''}
+      </text>
+      <text x={RACK.x + RACK.w} y={402} textAnchor="end" fontSize={11} fontFamily={MONO} fill={TEAL}>
+        {pct}%
+      </text>
+    </g>
+  );
+};
+
+/**
+ * The build always plays. For people who ask their system for less motion it plays once, as fades only, and then stays
+ * still: no sliding, no looping and no blinking lights.
+ */
+const HeroNetwork: React.FC = () => {
+  const calm = !!useReducedMotion();
+  // The deployment runs again and again: after a pause the rack fades out and is built from the start.
+  const [cycle, setCycle] = useState(0);
+  useEffect(() => {
+    if (calm) return;
+    const timer = setTimeout(() => setCycle((c) => c + 1), CYCLE * 1000);
+    return () => clearTimeout(timer);
+  }, [calm, cycle]);
+
+  const ready = 0.35 + UNITS.length * 0.22;
+  const yOf = (i: number) => UNIT.first + i * UNIT.step;
+
+  return (
+    <svg viewBox="0 0 460 412" className="w-full h-auto max-w-[460px] mx-auto" role="img" aria-label="A network rack being built: units are installed, fibre is patched to each one, and the port lights come on">
+      <motion.g
+        key={cycle}
+        initial={{ opacity: 1 }}
+        animate={calm ? { opacity: 1 } : { opacity: [1, 1, 0] }}
+        transition={{ duration: CYCLE, times: [0, 0.93, 1], ease: 'linear' }}
+      >
+        {/* Rack frame */}
+        <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+          <rect x={RACK.x} y={RACK.top} width={RACK.w} height={RACK.bottom - RACK.top} rx={4} fill="#fff" fillOpacity={0.03} stroke="#fff" strokeOpacity={0.35} strokeWidth={2} />
+          {[RACK.x + 5, RACK.x + RACK.w - 5].map((x) =>
+            Array.from({ length: 22 }, (_, k) => <circle key={`${x}-${k}`} cx={x} cy={RACK.top + 12 + k * 15.5} r={1.4} fill="#fff" fillOpacity={0.25} />),
+          )}
+        </motion.g>
+
+        {/* Fibre trunk, then a branch into each unit */}
+        <motion.path
+          d={`M${TRUNK_X} ${UNIT.first - 18} V${RACK.bottom - 10}`}
+          stroke={FIBRE} strokeWidth={5} strokeLinecap="round" strokeOpacity={0.9} fill="none"
+          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+          transition={{ duration: 1.2, delay: ready - 0.4, ease: EASE }}
         />
-        <text x={76} y={354} fontSize={11} fontFamily={MONO} fill="#fff" fillOpacity={0.75}>All links up</text>
+        {UNITS.map((_, i) => {
+          const y = yOf(i) + UNIT.h / 2;
+          return (
+            <g key={i}>
+              <motion.path
+                d={`M${TRUNK_X} ${y} C${TRUNK_X + 16} ${y} ${UNIT.x - 14} ${y} ${UNIT.x + 14} ${y}`}
+                stroke={FIBRE} strokeWidth={2} strokeLinecap="round" fill="none"
+                initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+                transition={{ duration: 0.5, delay: ready + i * 0.07, ease: EASE }}
+              />
+              <motion.circle
+                cx={UNIT.x + 14} cy={y} r={2.5} fill={FIBRE}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: ready + 0.4 + i * 0.07 }}
+              />
+            </g>
+          );
+        })}
+
+        {/* A pulse travels down the trunk once it is live */}
+        {!calm && (
+          <motion.circle
+            cx={TRUNK_X} r={3.5} fill="#fff"
+            initial={{ cy: UNIT.first - 18, opacity: 0 }}
+            animate={{ cy: [UNIT.first - 18, RACK.bottom - 10], opacity: [0, 1, 1, 0] }}
+            transition={{ duration: 2.4, delay: ready + 1.2, repeat: Infinity, repeatDelay: 0.8, ease: 'easeInOut' }}
+          />
+        )}
+
+        {/* Units slide in from the side, one after another */}
+        {UNITS.map((u, i) => {
+          const y = yOf(i);
+          const start = 0.35 + i * 0.22;
+          const online = ready + 0.5 + i * 0.07;
+          return (
+            <motion.g
+              key={i}
+              initial={{ x: calm ? 0 : 90, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.7, delay: start, ease: EASE }}
+            >
+              <rect x={UNIT.x} y={y} width={UNIT.w} height={UNIT.h} rx={2.5} fill="#fff" fillOpacity={0.09} stroke="#fff" strokeOpacity={0.4} strokeWidth={1.25} />
+              {/* A bright outline marks the unit as it seats in the rack */}
+              <motion.rect
+                x={UNIT.x} y={y} width={UNIT.w} height={UNIT.h} rx={2.5} fill="none" stroke={TEAL} strokeWidth={2}
+                initial={{ opacity: 0 }} animate={{ opacity: [0, 1, 0] }}
+                transition={{ duration: 0.9, delay: start + 0.55, ease: 'easeOut' }}
+              />
+              <Ports kind={u.kind} y={y} />
+              {/* Status light: amber and flickering while the unit is provisioned, then green once it is online */}
+              {!calm && (
+                <motion.circle
+                  cx={UNIT.x + UNIT.w - 24} cy={y + UNIT.h / 2} r={2.6} fill="#f5a623"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 1, 0.2, 1, 0.2, 1, 0.2, 1, 0] }}
+                  transition={{ delay: start + 0.5, duration: online - start - 0.5, ease: 'linear' }}
+                />
+              )}
+              <motion.circle
+                cx={UNIT.x + UNIT.w - 24} cy={y + UNIT.h / 2} r={2.6} fill="#3ddc84"
+                initial={{ opacity: 0 }}
+                animate={calm ? { opacity: 1 } : { opacity: [0, 1, 0.35, 1] }}
+                transition={calm ? { delay: online, duration: 0.4 } : { delay: online, duration: 1.6 + (i % 4) * 0.45, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }}
+              />
+              <motion.circle
+                cx={UNIT.x + UNIT.w - 13} cy={y + UNIT.h / 2} r={2.6} fill="#4aa3ff"
+                initial={{ opacity: 0 }}
+                animate={calm ? { opacity: 1 } : { opacity: [0, 1, 0.35, 1] }}
+                transition={calm ? { delay: online + 0.2, duration: 0.4 } : { delay: online + 0.2, duration: 1.2 + ((i + 1) % 4) * 0.45, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }}
+              />
+              <text x={RACK.x + RACK.w + 12} y={y + UNIT.h / 2 + 3.5} fontSize={10} fontFamily={MONO} fill="#fff" fillOpacity={0.6}>
+                {u.label}
+              </text>
+            </motion.g>
+          );
+        })}
+
+        <Progress />
       </motion.g>
     </svg>
   );
@@ -256,7 +350,8 @@ const SuccessPhoto: React.FC<{ src?: string; alt?: string }> = ({ src, alt = '' 
 );
 
 /** Draggable comparison. It sweeps once when it scrolls into view to show it can be moved. */
-const BeforeAfter: React.FC<{ label: string }> = ({ label }) => {
+const BeforeAfter: React.FC<{ label: string; before?: string; after?: string }> = ({ label, before, after }) => {
+  const portrait = !!(before && after);
   const box = useRef<HTMLDivElement>(null);
   const inView = useInView(box, { once: true, margin: '0px 0px -20% 0px' });
   const reduced = useReducedMotion();
@@ -290,7 +385,7 @@ const BeforeAfter: React.FC<{ label: string }> = ({ label }) => {
   return (
     <div
       ref={box}
-      className="relative aspect-[16/10] w-full overflow-hidden rounded-[4px] border border-rule select-none touch-pan-y cursor-ew-resize"
+      className={`relative w-full overflow-hidden rounded-[4px] border border-rule select-none touch-pan-y cursor-ew-resize ${portrait ? 'aspect-[3/4] max-w-[460px] mx-auto' : 'aspect-[16/10]'}`}
       onPointerDown={(e) => {
         e.currentTarget.setPointerCapture(e.pointerId);
         dragging.current = true;
@@ -302,9 +397,9 @@ const BeforeAfter: React.FC<{ label: string }> = ({ label }) => {
       onPointerUp={end}
       onPointerCancel={end}
     >
-      <PhotoPlaceholder kind="after" />
+      {after ? <img src={after} alt={`${label}: after`} draggable={false} className="absolute inset-0 w-full h-full object-cover" /> : <PhotoPlaceholder kind="after" />}
       <motion.div className="absolute inset-0 will-change-[clip-path]" style={{ clipPath: clip }}>
-        <PhotoPlaceholder kind="before" />
+        {before ? <img src={before} alt={`${label}: before`} draggable={false} className="absolute inset-0 w-full h-full object-cover" /> : <PhotoPlaceholder kind="before" />}
       </motion.div>
 
       <span className="absolute top-3 left-3 bg-paper/90 text-ink text-[0.75rem] font-medium px-2.5 py-1 rounded-[3px]">Before</span>
@@ -337,7 +432,8 @@ const BeforeAfter: React.FC<{ label: string }> = ({ label }) => {
 };
 
 /** Several photos of one deployment. Slides move in the direction of travel, and thumbnails below jump to any photo. */
-const Gallery: React.FC<{ label: string; count: number }> = ({ label, count }) => {
+const Gallery: React.FC<{ label: string; count: number; photos?: string[] }> = ({ label, count: placeholders, photos }) => {
+  const count = photos?.length ?? placeholders;
   const [[index, dir], setState] = useState<[number, number]>([0, 0]);
   const go = (next: number) => setState(([current]) => [(next + count) % count, next > current ? 1 : -1]);
   const step = (d: number) => setState(([current]) => [(current + d + count) % count, d]);
@@ -352,9 +448,9 @@ const Gallery: React.FC<{ label: string; count: number }> = ({ label, count }) =
         if (e.key === 'ArrowLeft') step(-1);
         if (e.key === 'ArrowRight') step(1);
       }}
-      className="focus-visible:outline-2 focus-visible:outline-offset-4 rounded-[4px]"
+      className={`focus-visible:outline-2 focus-visible:outline-offset-4 rounded-[4px] ${photos ? 'max-w-[460px] mx-auto' : ''}`}
     >
-      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[4px] border border-rule">
+      <div className={`relative w-full overflow-hidden rounded-[4px] border border-rule ${photos ? 'aspect-[3/4] bg-navy-2' : 'aspect-[16/10]'}`}>
         <AnimatePresence initial={false} custom={dir}>
           <motion.div
             key={index}
@@ -370,7 +466,13 @@ const Gallery: React.FC<{ label: string; count: number }> = ({ label, count }) =
             exit="exit"
             transition={{ duration: 0.5, ease: EASE }}
           >
-            <PhotoPlaceholder kind="after" label={`Photo ${index + 1} placeholder`} />
+            {photos ? (
+              <>
+                {/* Shown whole, so a wide photo is not cropped. A blurred copy fills the rest of the frame. */}
+                <img src={photos[index]} alt="" aria-hidden="true" draggable={false} className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60" />
+                <img src={photos[index]} alt={`${label}, photo ${index + 1} of ${count}`} draggable={false} className="absolute inset-0 w-full h-full object-contain" />
+              </>
+            ) : <PhotoPlaceholder kind="after" label={`Photo ${index + 1} placeholder`} />}
           </motion.div>
         </AnimatePresence>
 
@@ -402,7 +504,7 @@ const Gallery: React.FC<{ label: string; count: number }> = ({ label, count }) =
             onClick={() => go(i)}
             className={`relative shrink-0 w-20 aspect-[4/3] rounded-[3px] border bg-paper-3 text-ink-3 flex items-center justify-center cursor-pointer transition-[border-color,opacity] duration-150 ${i === index ? 'border-accent opacity-100' : 'border-rule opacity-60 hover:opacity-100'}`}
           >
-            <ImageIcon size={16} aria-hidden="true" />
+            {photos ? <img src={photos[i]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover rounded-[3px]" /> : <ImageIcon size={16} aria-hidden="true" />}
             {i === index && <motion.span layoutId={`${label}-thumb`} className="absolute inset-0 rounded-[3px] ring-2 ring-accent" transition={{ duration: 0.3, ease: EASE }} />}
           </button>
         ))}
@@ -466,17 +568,33 @@ export const NetworkBuildout: React.FC = () => (
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] gap-6 lg:gap-10 items-start">
                   <div>
-                    {project.kind === 'comparison' && <BeforeAfter label={project.title} />}
+                    {project.kind === 'comparison' &&
+                      (project.pairs ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {project.pairs.map((pair, n) => (
+                            <BeforeAfter key={n} label={`${project.title}, view ${n + 1}`} before={pair.before} after={pair.after} />
+                          ))}
+                        </div>
+                      ) : (
+                        <BeforeAfter label={project.title} before={project.before} after={project.after} />
+                      ))}
                     {project.kind === 'single' && <SuccessPhoto src={project.photo} alt={project.title} />}
-                    {project.kind === 'gallery' && <Gallery label={`${project.title} (${index + 1})`} count={project.count ?? 4} />}
+                    {project.kind === 'gallery' && <Gallery label={`${project.title} (${index + 1})`} count={project.count ?? 4} photos={project.photos} />}
                   </div>
                   <div>
                     <p className="body-copy">
                       {project.summary ?? 'Project summary placeholder. A short account of the requirement, what Techne built and the outcome for the customer.'}
                     </p>
                     {project.link && (
-                      <a href={project.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-4 text-[0.9375rem] font-medium text-accent hover:underline">
-                        View the original post
+                      <a
+                        href={project.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`View the ${project.title} post on Facebook (opens in a new tab)`}
+                        className="inline-flex items-center gap-2 mt-5 text-[0.9375rem] font-medium text-white bg-navy hover:bg-accent rounded-[3px] px-4 py-2.5 transition-colors duration-150"
+                      >
+                        View on Facebook
+                        <ExternalLink size={15} aria-hidden="true" />
                       </a>
                     )}
                   </div>
