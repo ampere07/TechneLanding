@@ -3,6 +3,7 @@ import metaLogo from '../assets/partners/meta.png';
 import riseLogo from '../assets/partners/rise.svg';
 import syncLogo from '../assets/partners/sync-icon.png';
 import telstraLogo from '../assets/partners/telstra.svg';
+import vitroLogo from '../assets/partners/vitro.png';
 
 /**
  * Partners shown under the intro on the About page. Logos are in src/assets/partners/. They are the marks only.
@@ -77,7 +78,9 @@ export const PARTNERS: Partner[] = [
     name: "Vitro",
     type: "Data center",
     summary: "The data center where Techne delivers its services.",
-    website: "https://www.epldt.com",
+    website: "https://vitrodc.com",
+    src: vitroLogo,
+    darkLogo: true,
     about: [
       "VITRO is the data center brand of ePLDT, the enterprise arm of PLDT. Its facilities in Metro Manila and other parts of the Philippines host servers and networking equipment for carriers, enterprises and cloud providers.",
       "Techne delivers its services from VITRO Makati 2 in Makati, Manila. Hosting there places Techne's equipment close to the carriers, networks and content providers that connect in the same building.",
