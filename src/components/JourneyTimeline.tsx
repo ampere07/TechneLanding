@@ -221,21 +221,33 @@ export const JourneyTimeline: React.FC<{ ready: boolean; started: boolean }> = (
   // Work out how far the title is from the middle of the screen, so it can start there.
   useLayoutEffect(() => {
     if (ready) return;
+    // The page opens at the top. When the visitor arrives from a page they had scrolled down, the browser can still
+    // be at the old position for a moment, which used to put the title in the wrong place, out of sight.
+    window.scrollTo(0, 0);
     const measure = () => {
       const box = titleRef.current;
       const heading = headingRef.current;
       if (!box || !heading) return;
       box.style.transform = 'none';
       const rect = heading.getBoundingClientRect();
+      // Measured from the top of the page, not from the top of the window, so scrolling cannot change the answer.
       setOffset({
-        x: document.documentElement.clientWidth / 2 - (rect.left + rect.width / 2),
-        y: window.innerHeight / 2 - (rect.top + rect.height / 2),
+        x: document.documentElement.clientWidth / 2 - (rect.left + window.scrollX + rect.width / 2),
+        y: window.innerHeight / 2 - (rect.top + window.scrollY + rect.height / 2),
       });
       box.style.transform = '';
     };
     measure();
+    // The title is wider or narrower once the page font has loaded, so it is measured again then.
+    let alive = true;
+    void document.fonts?.ready.then(() => {
+      if (alive) measure();
+    });
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    return () => {
+      alive = false;
+      window.removeEventListener('resize', measure);
+    };
   }, [ready]);
 
   // While the title waits in the middle, the page cannot be scrolled.
@@ -289,7 +301,7 @@ export const JourneyTimeline: React.FC<{ ready: boolean; started: boolean }> = (
           className="max-w-3xl mx-auto text-center relative z-10"
           style={{
             transform: centred ? `translate(${offset.x}px, ${offset.y}px)` : 'translate(0, 0)',
-            opacity: started && offset ? 1 : 0,
+            opacity: started && (offset || ready) ? 1 : 0,
           }}
         >
           <h1
