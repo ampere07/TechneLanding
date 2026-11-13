@@ -29,11 +29,12 @@ import {
 } from './components/HomeSections';
 import { ClientsPage } from './components/ClientsPage';
 import { PartnerFlyer } from './components/PartnerFlyer';
+import { Seo } from './components/Seo';
 import { PartnerPage } from './components/PartnerPage';
 import { FAQPage } from './components/FAQPage';
 import { Testimonials } from './components/Testimonials';
 import { TestimonialsPage } from './components/TestimonialsPage';
-import { HOME_PATH, PANEL_IDS, RETIRED_BLOG_IDS } from './constants';
+import { HOME_PATH, PANEL_IDS, RETIRED_BLOG_IDS, movedPageId } from './constants';
 
 const HomePanel = () => (
   <>
@@ -52,6 +53,10 @@ const HomePanel = () => (
 const PanelRenderer = () => {
   const { id } = useParams();
   const location = useLocation();
+
+  // A page's old numeric address goes to its new word address, keeping any search or #section.
+  const moved = movedPageId(id);
+  if (moved) return <Navigate to={{ pathname: `/${moved}`, search: location.search, hash: location.hash }} replace />;
 
   switch (id) {
     case PANEL_IDS.HOME:
@@ -73,6 +78,8 @@ const PanelRenderer = () => {
       return <Pricing />;
     case PANEL_IDS.ABOUT:
       return <About />;
+    case PANEL_IDS.PARTNERS:
+      return <Navigate to={`/${PANEL_IDS.ABOUT}`} replace />;
     case PANEL_IDS.CONTACT:
       return <ContactForm />;
     case PANEL_IDS.IP_TRANSIT:
@@ -109,6 +116,15 @@ const PanelRenderer = () => {
   }
 };
 
+/** An old numeric address that had a second part, such as an article, goes to the same page at its new address. */
+const MovedPage = () => {
+  const { legacyId, slug } = useParams();
+  const location = useLocation();
+  const moved = movedPageId(legacyId);
+  const to = moved ? { pathname: `/${moved}/${slug}`, search: location.search, hash: location.hash } : HOME_PATH;
+  return <Navigate to={to} replace />;
+};
+
 const ScrollToTop = () => {
   const { pathname, hash } = useLocation();
 
@@ -131,6 +147,7 @@ function App() {
     <MotionConfig reducedMotion="user">
     <Router>
       <ScrollToTop />
+      <Seo />
       <PartnerFlyer />
       <div className="min-h-screen bg-paper flex flex-col">
         <Header />
@@ -139,6 +156,7 @@ function App() {
             <Route path={HOME_PATH} element={<HomePanel />} />
             <Route path={`/${PANEL_IDS.BLOG}/:slug`} element={<BlogPost />} />
             <Route path={`/${PANEL_IDS.PARTNERS}/:slug`} element={<PartnerPage />} />
+            <Route path="/:legacyId/:slug" element={<MovedPage />} />
             <Route path="/:id" element={<PanelRenderer />} />
           </Routes>
         </main>

@@ -1,4 +1,136 @@
 {
+  "redirects": [
+    {
+      "source": "/184920573",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/273645189",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/519283746",
+      "destination": "/request-a-quote",
+      "permanent": true
+    },
+    {
+      "source": "/394857261",
+      "destination": "/engagement",
+      "permanent": true
+    },
+    {
+      "source": "/394857261/:slug",
+      "destination": "/engagement/:slug",
+      "permanent": true
+    },
+    {
+      "source": "/485726391",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/596847123",
+      "destination": "/contact",
+      "permanent": true
+    },
+    {
+      "source": "/617283945",
+      "destination": "/ip-transit",
+      "permanent": true
+    },
+    {
+      "source": "/728394156",
+      "destination": "/dedicated-internet-access",
+      "permanent": true
+    },
+    {
+      "source": "/839415267",
+      "destination": "/colocation",
+      "permanent": true
+    },
+    {
+      "source": "/941526378",
+      "destination": "/network-consulting",
+      "permanent": true
+    },
+    {
+      "source": "/112233445",
+      "destination": "/core-network-configuration",
+      "permanent": true
+    },
+    {
+      "source": "/223344556",
+      "destination": "/distribution-configuration",
+      "permanent": true
+    },
+    {
+      "source": "/334455667",
+      "destination": "/system-integration",
+      "permanent": true
+    },
+    {
+      "source": "/445566778",
+      "destination": "/protective-dns",
+      "permanent": true
+    },
+    {
+      "source": "/990011223",
+      "destination": "/metro-e",
+      "permanent": true
+    },
+    {
+      "source": "/556677889",
+      "destination": "/virtual-cross-connect",
+      "permanent": true
+    },
+    {
+      "source": "/667788990",
+      "destination": "/virtual-switch",
+      "permanent": true
+    },
+    {
+      "source": "/778899001",
+      "destination": "/virtual-router",
+      "permanent": true
+    },
+    {
+      "source": "/889900112",
+      "destination": "/content",
+      "permanent": true
+    },
+    {
+      "source": "/151617181",
+      "destination": "/network-buildout",
+      "permanent": true
+    },
+    {
+      "source": "/262728293",
+      "destination": "/faq",
+      "permanent": true
+    },
+    {
+      "source": "/303132333",
+      "destination": "/clients",
+      "permanent": true
+    },
+    {
+      "source": "/343536373",
+      "destination": "/partners",
+      "permanent": true
+    },
+    {
+      "source": "/343536373/:slug",
+      "destination": "/partners/:slug",
+      "permanent": true
+    },
+    {
+      "source": "/373839404",
+      "destination": "/testimonials",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!api/).*)",
