@@ -114,6 +114,16 @@ const PROJECTS: Project[] = [
       "The project established a stronger foundation for future capacity growth and continued network expansion.",
     ],
   },
+  {
+    title: "ARIA 500 Gbps DWDM Deployment — VITRO Makati 2",
+    kind: 'gallery',
+    photos: [1, 2, 3, 4, 5, 6].map((n) => `/network-buildout/aria-dwdm-${n}.jpg`),
+    summary: [
+      "Deployment of a 500 Gbps DWDM transport network powered by ARIA at VITRO Makati 2, engineered with diverse fiber routes to deliver higher capacity, stronger path redundancy, and improved network resiliency.",
+      "By utilizing ARIA DWDM technology, Techne is building a scalable optical transport foundation designed to support growing bandwidth demands while minimizing the impact of single-route fiber failures.",
+      "ARIA DWDM — enabling high-capacity, resilient, and scalable transport for Techne’s network.",
+    ],
+  },
 ];
 
 const FACTS = [
