@@ -210,18 +210,23 @@ export const NetworkMap: React.FC = () => {
 };
 
 /** Logos with white detail inside them. A plain silhouette would lose that detail, so they stay grey in dark mode. */
-const KEEP_DETAIL = new Set(['Twitch', 'Supermicro', 'SmokePing']);
+const KEEP_DETAIL = new Set(['Twitch', 'Supermicro', 'SmokePing', 'YouTube', 'WhatsApp', 'Spotify', 'Facebook']);
 
 const LogoTile: React.FC<{ logo: Logo }> = ({ logo }) => {
   return (
-  <div className="bg-paper h-20 md:h-24 flex items-center justify-center px-6">
+  <div className="group bg-paper h-20 md:h-24 flex items-center justify-center gap-2 px-6">
     <img
       src={logo.src}
-      alt={logo.name}
+      alt={logo.label ? '' : logo.name}
       loading="lazy"
       className={`${KEEP_DETAIL.has(logo.name) ? 'logo-grey' : 'logo-mark'} max-h-8 md:max-h-9 max-w-[120px] w-auto object-contain grayscale opacity-75 hover:grayscale-0 hover:opacity-100 transition-[filter,opacity] duration-150`}
       draggable="false"
     />
+    {logo.label && (
+      <span className="font-display text-[1.125rem] md:text-[1.25rem] font-bold tracking-tight text-ink-3 group-hover:text-ink transition-colors duration-150">
+        {logo.label}
+      </span>
+    )}
   </div>
   );
 };
@@ -230,6 +235,12 @@ export const LogoGrid: React.FC<{ logos: Logo[] }> = ({ logos }) => (
   <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-rule border border-rule rounded-[4px] overflow-hidden">
     {logos.map((logo) => (
       <LogoTile key={logo.name} logo={logo} />
+    ))}
+    {Array.from({ length: logos.length % 2 }, (_, i) => (
+      <div key={`two-${i}`} className="bg-paper md:hidden" aria-hidden="true" />
+    ))}
+    {Array.from({ length: (5 - (logos.length % 5)) % 5 }, (_, i) => (
+      <div key={`five-${i}`} className="bg-paper hidden md:block" aria-hidden="true" />
     ))}
   </div>
 );

@@ -8,6 +8,15 @@ import steam from '../assets/CDNS/Steam_logo.svg';
 import tencent from '../assets/CDNS/Tencent_Logo.svg.png';
 import twitch from '../assets/CDNS/Twitch_logo_2019.svg.png';
 import alibaba from '../assets/CDNS/alibaba-brand-color.png';
+import disneyPlus from '../assets/CDNS/disney-plus.svg';
+import facebook from '../assets/CDNS/facebook.svg';
+import google from '../assets/CDNS/google.svg';
+import instagram from '../assets/CDNS/instagram.svg';
+import paramountPlus from '../assets/CDNS/paramount-plus.svg';
+import spotify from '../assets/CDNS/spotify.svg';
+import whatsapp from '../assets/CDNS/whatsapp.svg';
+import xLogo from '../assets/CDNS/x.svg';
+import youtube from '../assets/CDNS/youtube.svg';
 
 import vsol from '../assets/trusted/6.png';
 import arista from '../assets/trusted/Arista-networks-logo.svg';
@@ -43,6 +52,15 @@ export interface Logo {
 }
 
 export const CONTENT_LOGOS: Logo[] = [
+  { name: 'Google', src: google },
+  { name: 'YouTube', src: youtube },
+  { name: 'WhatsApp', src: whatsapp, label: 'WhatsApp' },
+  { name: 'Spotify', src: spotify },
+  { name: 'X', src: xLogo },
+  { name: 'Disney+', src: disneyPlus },
+  { name: 'Paramount+', src: paramountPlus },
+  { name: 'Facebook', src: facebook, label: 'Facebook' },
+  { name: 'Instagram', src: instagram },
   { name: 'Meta', src: meta },
   { name: 'Amazon', src: amazon },
   { name: 'Alibaba', src: alibaba },

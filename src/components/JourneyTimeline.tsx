@@ -228,6 +228,8 @@ export const JourneyTimeline: React.FC<{ ready: boolean; started: boolean }> = (
       const box = titleRef.current;
       const heading = headingRef.current;
       if (!box || !heading) return;
+      // The title's own position is put back afterwards, so measuring never leaves it out of place.
+      const previous = box.style.transform;
       box.style.transform = 'none';
       const rect = heading.getBoundingClientRect();
       // Measured from the top of the page, not from the top of the window, so scrolling cannot change the answer.
@@ -235,7 +237,7 @@ export const JourneyTimeline: React.FC<{ ready: boolean; started: boolean }> = (
         x: document.documentElement.clientWidth / 2 - (rect.left + window.scrollX + rect.width / 2),
         y: window.innerHeight / 2 - (rect.top + window.scrollY + rect.height / 2),
       });
-      box.style.transform = '';
+      box.style.transform = previous;
     };
     measure();
     // The title is wider or narrower once the page font has loaded, so it is measured again then.
