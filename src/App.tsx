@@ -31,13 +31,14 @@ import { ClientsPage } from './components/ClientsPage';
 import { PartnerFlyer } from './components/PartnerFlyer';
 import { PartnerPage } from './components/PartnerPage';
 import { FAQPage } from './components/FAQPage';
-// import { Testimonials } from './components/Testimonials'; // hidden for now
+import { Testimonials } from './components/Testimonials';
+import { TestimonialsPage } from './components/TestimonialsPage';
 import { HOME_PATH, PANEL_IDS, RETIRED_BLOG_IDS } from './constants';
 
 const HomePanel = () => (
   <>
     <HomeJourney />
-    {/* <Testimonials /> */}
+    <Testimonials />
     <ServiceFinder />
     <VirtualCompare />
     <NetworkMap />
@@ -66,6 +67,8 @@ const PanelRenderer = () => {
       return <FAQPage />;
     case PANEL_IDS.CLIENTS:
       return <ClientsPage />;
+    case PANEL_IDS.TESTIMONIALS:
+      return <TestimonialsPage />;
     case PANEL_IDS.PRICING:
       return <Pricing />;
     case PANEL_IDS.ABOUT:

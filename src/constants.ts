@@ -25,7 +25,8 @@ export const PANEL_IDS = {
   NETWORK_BUILDOUT: '151617181',
   FAQ: '262728293',
   CLIENTS: '303132333',
-  PARTNERS: '343536373'
+  PARTNERS: '343536373',
+  TESTIMONIALS: '373839404'
 };
 
 /** Addresses of the blog articles that were removed. They redirect to the blog page. */
